@@ -12,13 +12,14 @@
 /* Logo sits left, outside the pill, inside the frame */ /* Floating glass pill centered, ~560px wide, blur, 1px sand border at 15% opacity */ /* Small gold km-marker tick under active link */ /* Right Action buttons: outside the pill */ /* Solid gold button with NO arrow icon */ /* Mobile Hamburger Button */ /* Docked Route Progress Line: visible once user scrolls past the hero frame */ /* Mobile Gantry-Styled Full Screen Navigation Menu */ /* Gantry Menu Header */ /* Gantry Road Sign Box */ /* Numbered Large Links */ /* Mobile CTA Buttons */ /* Solid gold sign up button with NO arrow */ /* Quick Contact Shortcuts: WhatsApp & Call */ /* Footer note in mobile menu */
 
 import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { Link, usePathname } from "@/i18n/routing"
+import { useTranslations } from "next-intl"
 import { Menu, X, Phone, MessageSquare } from "lucide-react"
 import gsap from "gsap"
 import Logo from "./Logo"
 import RouteProgressLine from "./RouteProgressLine"
 import AppNavbar from "./layout/AppNavbar"
+import LanguageSwitcher from "./LanguageSwitcher"
 
 interface HeaderProps {
   km?: number
@@ -26,6 +27,8 @@ interface HeaderProps {
 }
 
 export default function Header({ km = 0, activeSection }: HeaderProps) {
+  const tNav = useTranslations("nav")
+  const tCommon = useTranslations("common")
   const [condensed, setCondensed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeNav, setActiveNav] = useState<string>("")
@@ -113,55 +116,36 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
       clearTimeout(resizeTimer)
     }
   }, [activeSection])
+
   useEffect(() => {
     setMobileOpen(false)
   }, [pathname])
+
   useEffect(() => {
     if (!mobileOpen) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key ===
-        "Escape"
-      ) {
+      if (e.key === "Escape") {
         setMobileOpen(false)
         return
       }
 
-      if (
-        e.key ===
-          "Tab" &&
-        menuRef.current
-      ) {
+      if (e.key === "Tab" && menuRef.current) {
         const focusable = menuRef.current.querySelectorAll<HTMLElement>(
           'a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])',
         )
-        if (
-          focusable.length ===
-          0
-        )
-          return
+        if (focusable.length === 0) return
 
         const first = focusable[0]
-        const last =
-          focusable[
-            focusable.length -
-              1
-          ]
+        const last = focusable[focusable.length - 1]
 
         if (e.shiftKey) {
-          if (
-            document.activeElement ===
-            first
-          ) {
+          if (document.activeElement === first) {
             last.focus()
             e.preventDefault()
           }
         } else {
-          if (
-            document.activeElement ===
-            last
-          ) {
+          if (document.activeElement === last) {
             first.focus()
             e.preventDefault()
           }
@@ -183,17 +167,17 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
       window.removeEventListener("keydown", handleKeyDown)
       window.removeEventListener("popstate", handlePopState)
       document.body.style.overflow = ""
-      // If menu was closed programmatically (not by back button), pop the state
       if (window.history.state?.menu) {
         window.history.back()
       }
     }
   }, [mobileOpen])
+
   const handleAnchorClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
     hash: string,
   ) => {
-    if (pathname === "/") {
+    if (pathname === "/" || pathname === "") {
       e.preventDefault()
       const target = document.querySelector(hash)
       if (target) {
@@ -215,19 +199,19 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
 
   const navLinks = [
     {
-      label: "Destinations",
+      label: tNav("destinations"),
       href: "/#destinations",
       id: "destinations",
       num: "01",
     },
     {
-      label: "How it works",
+      label: tNav("howItWorks"),
       href: "/#how-it-works",
       id: "how-it-works",
       num: "02",
     },
     {
-      label: "Why Golden Trip",
+      label: tNav("whyGoldenTrip"),
       href: "/#why-golden-trip",
       id: "why-golden-trip",
       num: "03",
@@ -249,24 +233,22 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
         }`}
       >
         <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between">
-          {}
           <div className="pointer-events-auto shrink-0">
             <Link
               href="/"
-              aria-label="Golden Trip home"
+              aria-label={tCommon("brand")}
               className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227] rounded-sm block"
             >
               <Logo showTagline={false} condensed={condensed} />
             </Link>
           </div>
 
-          {}
           <nav
-            aria-label="Main navigation"
-            className={`nav-pill pointer-events-auto hidden items-center justify-center lg:flex w-full mx-4 rounded-full border border-[#EADFC8]/15 bg-[#0B0A09]/75 transition-all duration-300 ${
+            aria-label={tNav("mainNavAria")}
+            className={`nav-pill pointer-events-auto hidden items-center justify-center lg:flex mx-4 rounded-full border border-[#EADFC8]/15 bg-[#0B0A09]/75 transition-all duration-300 ${
               condensed
-                ? "max-w-[480px] py-1.5 px-6 gap-6 text-xs"
-                : "max-w-[560px] py-2.5 px-8 gap-8 text-sm"
+                ? "py-1.5 px-5 gap-5 text-xs"
+                : "py-2 px-6 gap-6 text-sm"
             }`}
           >
             {navLinks.map((link) => {
@@ -283,32 +265,31 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227] rounded-sm`}
                 >
                   {link.label}
-                  {}
                   {isActive && (
                     <span
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-[3px] w-4 rounded-[1px] bg-[#C9A227]"
+                      className="absolute -bottom-1 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 h-[3px] w-4 rounded-[1px] bg-[#C9A227]"
                       aria-hidden="true"
                     />
                   )}
                 </a>
               )
             })}
+            <div className="h-4 w-[1px] bg-[#EADFC8]/20" aria-hidden="true" />
+            <LanguageSwitcher variant="pill" />
           </nav>
 
-          {}
           <div className="pointer-events-auto hidden items-center gap-5 lg:flex shrink-0">
             <Link
               href="/login"
               className="text-sm font-medium text-[#F4F2EC]/85 transition-colors hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227] rounded-sm px-2 py-1"
             >
-              Log in
+              {tCommon("logIn")}
             </Link>
-            {}
             <Link
               href="/signup"
               className="inline-flex items-center justify-center rounded-sm bg-[#C9A227] px-5 py-2 text-sm font-semibold text-[#0B0A09] transition-colors hover:bg-[#E6CF85] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0A09]"
             >
-              Sign up
+              {tCommon("signUp")}
             </Link>
           </div>
 
@@ -317,7 +298,7 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              aria-label="Open navigation menu"
+              aria-label={tNav("openMenuAria")}
               aria-expanded={mobileOpen}
               className="flex h-12 w-12 items-center justify-center rounded-full border border-[#EADFC8]/20 bg-[#141518] text-[#F4F2EC] hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
             >
@@ -346,31 +327,31 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
           ref={menuRef}
           role="dialog"
           aria-modal="true"
-          aria-label="Mobile navigation"
+          aria-label={tNav("mobileNavAria")}
           className="fixed inset-0 z-[100] flex flex-col bg-[#0B0A09] px-6 py-6 overflow-y-auto animate-in fade-in duration-200"
         >
-          {}
           <div className="flex items-center justify-between border-b border-[#2A2B2E] pb-5">
             <Logo showTagline={false} condensed={false} />
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              aria-label="Close navigation menu"
-              className="flex h-12 w-12 items-center justify-center rounded-sm border border-[#2A2B2E] text-[#F4F2EC] hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
-            >
-              <X className="h-7 w-7 stroke-[2.2]" />
-            </button>
+            <div className="flex items-center gap-3">
+              <LanguageSwitcher variant="sheet" />
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                aria-label={tNav("closeMenuAria")}
+                className="flex h-11 w-11 items-center justify-center rounded-sm border border-[#2A2B2E] text-[#F4F2EC] hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
+              >
+                <X className="h-6 w-6 stroke-[2.2]" />
+              </button>
+            </div>
           </div>
 
-          {}
           <div className="my-auto py-8">
             <div className="rounded-sm border-2 border-[#C9A227] bg-[#141518] p-6">
               <div className="mb-4 flex items-center justify-between border-b border-[#2A2B2E] pb-3 text-xs font-medium text-[#C9A227]">
-                <span>Highway Route Navigator</span>
-                <span>Egypt</span>
+                <span>{tNav("routeNavigator")}</span>
+                <span>{tNav("egyptTitle")}</span>
               </div>
 
-              {}
               <nav className="flex flex-col space-y-5">
                 {navLinks.map((link) => (
                   <a
@@ -387,53 +368,50 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
                 ))}
               </nav>
 
-              {}
               <div className="mt-8 flex flex-col gap-3 pt-6 border-t border-[#2A2B2E]">
-                {}
                 <Link
                   href="/signup"
                   onClick={() => setMobileOpen(false)}
                   className="flex h-12 w-full items-center justify-center rounded-sm bg-[#C9A227] text-base font-semibold text-[#0E0E10] transition-colors hover:bg-[#E6CF85]"
                 >
-                  Sign up
+                  {tCommon("signUp")}
                 </Link>
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
                   className="flex h-12 w-full items-center justify-center rounded-sm border border-[#2A2B2E] text-base font-medium text-[#F4F2EC] hover:border-[#C9A227] hover:text-[#C9A227] transition-colors"
                 >
-                  Log in
+                  {tCommon("logIn")}
                 </Link>
               </div>
             </div>
 
-            {}
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <a
-                href="https://wa.me/201006803316"
+                href={`https://wa.me/201006803316?text=${encodeURIComponent(tCommon("whatsAppDefaultMessage"))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex flex-1 items-center justify-center gap-2.5 rounded-sm border border-[#2A2B2E] bg-[#161719] py-3 text-sm font-medium text-[#F4F2EC] hover:border-[#C9A227] hover:text-[#C9A227] transition-colors"
               >
                 <MessageSquare className="h-4 w-4 text-[#C9A227]" />
-                WhatsApp · 010 06803316
+                <span>{tCommon("chatWhatsApp")} · <bdi dir="ltr">{tCommon("phone")}</bdi></span>
               </a>
               <a
                 href="tel:+201006803316"
                 className="flex flex-1 items-center justify-center gap-2.5 rounded-sm border border-[#2A2B2E] bg-[#161719] py-3 text-sm font-medium text-[#F4F2EC] hover:border-[#C9A227] hover:text-[#C9A227] transition-colors"
               >
                 <Phone className="h-4 w-4 text-[#C9A227]" />
-                Call 010 06803316
+                <span>{tCommon("callUs")}</span>
               </a>
             </div>
           </div>
 
-          {}
           <div className="border-t border-[#2A2B2E] pt-4 text-center text-xs text-[#B9B7B0]">
-            Alexandria, Egypt · Open 24/7
+            {tCommon("companyLocation")} · {tCommon("open247")}
           </div>
         </div>
       )}
     </>
   )
 }
+
