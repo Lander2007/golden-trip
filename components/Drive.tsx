@@ -159,17 +159,20 @@ export default function Drive({
       })
 
       // Hero headline mask sweep
-      gsap.fromTo(
-        "[data-reveal]",
-        { clipPath: "polygon(0 0, 0 0, 0 100%, 0 100%)" },
-        {
-          clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
-          duration: 0.85,
-          stagger: 0.35,
-          ease: "power3.out",
-          delay: 0.2,
-        }
-      )
+      const revealTargets = root.current.querySelectorAll("[data-reveal]")
+      if (revealTargets.length > 0) {
+        gsap.fromTo(
+          revealTargets,
+          { clipPath: "polygon(0 0, 0 0, 0 100%, 0 100%)" },
+          {
+            clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
+            duration: 0.85,
+            stagger: 0.35,
+            ease: "power3.out",
+            delay: 0.2,
+          }
+        )
+      }
 
       const mm = gsap.matchMedia()
 
@@ -303,11 +306,13 @@ export default function Drive({
         )
 
         // 9. Headlight beam brightens across p: 0.40 -> 0.85
-        heroTimeline.to(
-          ".headlight-beam",
-          { opacity: 1, duration: 0.45, ease: "none" },
-          0.40
-        )
+        if (root.current.querySelector(".headlight-beam")) {
+          heroTimeline.to(
+            ".headlight-beam",
+            { opacity: 1, duration: 0.45, ease: "none" },
+            0.40
+          )
+        }
 
         // SCENE 1: GANTRY INTRO (#welcome)
         ScrollTrigger.create({
@@ -559,15 +564,18 @@ export default function Drive({
         })
 
         // Dim parked vehicle into footer cleanly
-        ScrollTrigger.create({
-          trigger: "#footer",
-          start: "top 85%",
-          end: "top 55%",
-          scrub: true,
-          onUpdate: (self) => {
-            scrollCarRef.current?.setOpacity(1 - self.progress)
-          },
-        })
+        const footerEl = document.getElementById("footer")
+        if (footerEl) {
+          ScrollTrigger.create({
+            trigger: footerEl,
+            start: "top 85%",
+            end: "top 55%",
+            scrub: true,
+            onUpdate: (self) => {
+              scrollCarRef.current?.setOpacity(1 - self.progress)
+            },
+          })
+        }
 
       })
 

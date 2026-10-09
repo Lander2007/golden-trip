@@ -29,7 +29,7 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
 
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: "#welcome",
+          trigger: el.closest("#welcome") || el,
           start: "top 80%",
           end: "center center",
           scrub: 0.5,
