@@ -1,26 +1,33 @@
 "use client"
+
+import { useTranslations } from "next-intl"
+
 export const route = [
-  "Alexandria",
-  "Cairo",
-  "Sharm El-Sheikh",
-  "Hurghada",
-  "Luxor",
-  "Aswan",
+  "cities.alexandria.name",
+  "cities.cairo.name",
+  "cities.sharm.name",
+  "cities.hurghada.name",
+  "cities.luxor.name",
+  "cities.aswan.name",
 ]
+
 export default function RouteBoard({ active = 0 }: { active?: number }) {
+  const tRoute = useTranslations("route")
+  const t = useTranslations()
+
   return (
     <aside
-      aria-label="Journey route"
+      aria-label={tRoute("journeyRouteAria")}
       className="w-[180px] border border-gold/40 bg-asphalt px-4 py-3 text-xs"
     >
       <p className="mb-3 hidden border-b border-road-grey pb-2 text-lane-white/60 md:block">
-        Your route through Egypt{" "}
-        <span className="float-right text-gold">↘</span>
+        {tRoute("routeThroughEgypt")}{" "}
+        <span className="float-end text-gold">↘</span>
       </p>
       <ol className="space-y-2">
-        {route.map((city, index) => (
+        {route.map((cityKey, index) => (
           <li
-            key={city}
+            key={cityKey}
             aria-current={active === index ? "location" : undefined}
             className={`${
               active === index
@@ -28,10 +35,10 @@ export default function RouteBoard({ active = 0 }: { active?: number }) {
                 : "hidden text-lane-white/60 md:block"
             }`}
           >
-            <span className="mr-3 text-[10px]">
+            <span className="me-3 text-[10px]">
               {active === index ? "→" : "·"}
             </span>
-            <span className="route-flap inline-block">{city}</span>
+            <span className="route-flap inline-block">{t(cityKey)}</span>
           </li>
         ))}
       </ol>
