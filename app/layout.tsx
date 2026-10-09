@@ -3,6 +3,7 @@ import Script from "next/script"
 import { Anybody, Instrument_Serif, Source_Sans_3 } from "next/font/google"
 import Footer from "@/components/Footer"
 import Header from "@/components/Header"
+import DevFpsMeter from "@/components/DevFpsMeter"
 import "./globals.css"
 
 const anybody = Anybody({
@@ -104,6 +105,7 @@ export default function RootLayout({
         <Header />
         {children}
         <Footer />
+        <DevFpsMeter />
       </body>
     </html>
   )

@@ -37,6 +37,9 @@ const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
     const dustRef = useRef<DustTrailHandle>(null)
 
     const currentXRef = useRef(6)
+    const quickBodyY = useRef<((v: number) => void) | null>(null)
+    const quickBodyRot = useRef<((v: number) => void) | null>(null)
+    const quickShadowScaleX = useRef<((v: number) => void) | null>(null)
 
     useImperativeHandle(
       ref,
@@ -79,11 +82,12 @@ const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
           const shadowStretch =
             1 + Math.min(0.35, absVel * 0.008)
 
-          if (bodyRef.current) {
-            bodyRef.current.style.transform = `translate3d(0, ${bob}px, 0) rotate(${lean}deg)`
+          if (quickBodyY.current && quickBodyRot.current) {
+            quickBodyY.current(bob)
+            quickBodyRot.current(lean)
           }
-          if (shadowRef.current) {
-            shadowRef.current.style.transform = `scaleX(${shadowStretch})`
+          if (quickShadowScaleX.current) {
+            quickShadowScaleX.current(shadowStretch)
           }
 
           // Imperative dust trail tick without React re-render
@@ -109,6 +113,13 @@ const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
           force3D: true,
         })
       }
+      if (bodyRef.current) {
+        quickBodyY.current = gsap.quickSetter(bodyRef.current, "y", "px") as (v: number) => void
+        quickBodyRot.current = gsap.quickSetter(bodyRef.current, "rotation", "deg") as (v: number) => void
+      }
+      if (shadowRef.current) {
+        quickShadowScaleX.current = gsap.quickSetter(shadowRef.current, "scaleX") as (v: number) => void
+      }
     }, [])
 
     const isFleet = variant === "fleet"
@@ -116,7 +127,7 @@ const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
     return (
       <div
         ref={rootRef}
-        className="road-zone-car absolute bottom-[4.5vh] will-change-transform select-none pointer-events-none transition-opacity duration-300"
+        className="road-zone-car absolute bottom-[4.5vh] will-change-transform select-none pointer-events-none"
         style={{
           left: 0,
           opacity: visible ? 1 : 0,

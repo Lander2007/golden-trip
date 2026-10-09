@@ -80,16 +80,11 @@ export default function Drive({
       odometerRef.current?.updateKm(scrollProgress.km)
       skyRef.current?.update(p)
       celestialRef.current?.update(p)
-      scrollCarRef.current?.updatePhysics(vel, window.scrollY)
+      scrollCarRef.current?.updatePhysics(vel, lenis.scroll || 0)
     }
 
     gsap.ticker.add(tickerCallback)
     gsap.ticker.lagSmoothing(0)
-
-    const onNativeScroll = () => {
-      ScrollTrigger.update()
-    }
-    window.addEventListener("scroll", onNativeScroll, { passive: true })
 
     // Debounced resize handler
     let resizeTimer: NodeJS.Timeout
@@ -108,7 +103,6 @@ export default function Drive({
 
     return () => {
       clearTimeout(resizeTimer)
-      window.removeEventListener("scroll", onNativeScroll)
       window.removeEventListener("resize", handleResize)
       gsap.ticker.remove(tickerCallback)
       lenis.destroy()

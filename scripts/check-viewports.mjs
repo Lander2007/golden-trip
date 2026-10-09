@@ -27,7 +27,7 @@ async function main() {
     const page = await browser.newPage()
     await page.setViewport({ width: vp.width, height: vp.height })
 
-    await page.goto("http://localhost:3000", { waitUntil: "networkidle0", timeout: 30000 })
+    await page.goto("http://localhost:3000", { waitUntil: "load", timeout: 30000 })
     // Wait for animations to settle
     await new Promise((r) => setTimeout(r, 1500))
 

@@ -56,37 +56,44 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
     }
     window.addEventListener("resize", handleResize, { passive: true })
 
+    let ticking = false
     const handleScroll = () => {
-      const scrollY = window.scrollY
-      const nextCondensed = scrollY > 24
-      if (nextCondensed !== condensedRef.current) {
-        condensedRef.current = nextCondensed
-        setCondensed(nextCondensed)
-      }
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(() => {
+          ticking = false
+          const scrollY = window.scrollY
+          const nextCondensed = scrollY > 24
+          if (nextCondensed !== condensedRef.current) {
+            condensedRef.current = nextCondensed
+            setCondensed(nextCondensed)
+          }
 
-      if (activeSection) {
-        if (activeSection !== activeNavRef.current) {
-          activeNavRef.current = activeSection
-          setActiveNav(activeSection)
-        }
-        return
-      }
+          if (activeSection) {
+            if (activeSection !== activeNavRef.current) {
+              activeNavRef.current = activeSection
+              setActiveNav(activeSection)
+            }
+            return
+          }
 
-      const scrollPos = scrollY + 200
-      const { destinations, howItWorks, whyUs } = offsetsRef.current
+          const scrollPos = scrollY + 200
+          const { destinations, howItWorks, whyUs } = offsetsRef.current
 
-      let nextNav = ""
-      if (whyUs > 0 && scrollPos >= whyUs) {
-        nextNav = "why-golden-trip"
-      } else if (howItWorks > 0 && scrollPos >= howItWorks) {
-        nextNav = "how-it-works"
-      } else if (destinations > 0 && scrollPos >= destinations) {
-        nextNav = "destinations"
-      }
+          let nextNav = ""
+          if (whyUs > 0 && scrollPos >= whyUs) {
+            nextNav = "why-golden-trip"
+          } else if (howItWorks > 0 && scrollPos >= howItWorks) {
+            nextNav = "how-it-works"
+          } else if (destinations > 0 && scrollPos >= destinations) {
+            nextNav = "destinations"
+          }
 
-      if (nextNav !== activeNavRef.current) {
-        activeNavRef.current = nextNav
-        setActiveNav(nextNav)
+          if (nextNav !== activeNavRef.current) {
+            activeNavRef.current = nextNav
+            setActiveNav(nextNav)
+          }
+        })
       }
     }
 
