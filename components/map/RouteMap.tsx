@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useRef, forwardRef, useImperativeHandle } from "react"
+import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from "react"
 import {
   EGYPT_PATH_DATA,
   ROUTE_PATH_DATA,
   EGYPT_MAP_WIDTH,
   EGYPT_MAP_HEIGHT,
   ALL_CITIES,
+  ROUTE_CITIES,
   type CityData,
 } from "./egyptMapData"
 
@@ -23,11 +24,21 @@ interface RouteMapProps {
 
 const LABEL_LAYOUT: Record<string, { dx: number; dy: number; anchor: "start" | "end" | "middle"; name: string }> = {
   alexandria: { dx: -12, dy: 4, anchor: "end", name: "Alexandria" },
-  cairo: { dx: 12, dy: 16, anchor: "start", name: "Cairo" },
-  sharm: { dx: 12, dy: -6, anchor: "start", name: "Sharm" },
-  hurghada: { dx: -12, dy: 14, anchor: "end", name: "Hurghada" },
-  luxor: { dx: -12, dy: 4, anchor: "end", name: "Luxor" },
-  aswan: { dx: 12, dy: 4, anchor: "start", name: "Aswan" },
+  cairo: { dx: 14, dy: 16, anchor: "start", name: "Cairo" },
+  sharm: { dx: 14, dy: -6, anchor: "start", name: "Sharm" },
+  hurghada: { dx: -14, dy: 14, anchor: "end", name: "Hurghada" },
+  luxor: { dx: -14, dy: 4, anchor: "end", name: "Luxor" },
+  aswan: { dx: 14, dy: 4, anchor: "start", name: "Aswan" },
+}
+
+// Milestone progress points for the 6 route cities
+const CITY_PROGRESS_MAP: Record<string, number> = {
+  alexandria: 0.0,
+  cairo: 0.1728,
+  sharm: 0.5346,
+  hurghada: 0.6398,
+  luxor: 0.835,
+  aswan: 1.0,
 }
 
 const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
@@ -35,27 +46,31 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
     progress = 0,
     activeCity,
     onSelectCity,
-    showOtherCities = false,
+    showOtherCities = true,
   },
   ref
 ) {
   const routePathRef = useRef<SVGPathElement>(null)
+  const routeGlowPathRef = useRef<SVGPathElement>(null)
   const carMarkerRef = useRef<SVGGElement>(null)
   const otherCitiesRef = useRef<SVGGElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
+  const liveKmBadgeRef = useRef<HTMLSpanElement>(null)
+  const coordinatesBadgeRef = useRef<HTMLSpanElement>(null)
 
-  const sampledPointsRef = useRef<{ x: number; y: number; angle: number }[]>([])
-  const totalLengthRef = useRef<number>(1200)
+  const sampledPointsRef = useRef<{ x: number; y: number; angle: number; km: number }[]>([])
+  const totalLengthRef = useRef<number>(651)
+  const [hoveredCity, setHoveredCity] = useState<CityData | null>(null)
 
-  // Pre-sample 200 points along the path once on mount to eliminate getPointAtLength calls during scroll
+  // Pre-sample 240 points along the path once on mount for butter-smooth 60fps tracking
   useEffect(() => {
     if (!routePathRef.current) return
     const path = routePathRef.current
     const len = path.getTotalLength()
     totalLengthRef.current = len
 
-    const samples: { x: number; y: number; angle: number }[] = []
-    const sampleCount = 200
+    const samples: { x: number; y: number; angle: number; km: number }[] = []
+    const sampleCount = 240
     for (let i = 0; i <= sampleCount; i++) {
       const d = (i / sampleCount) * len
       const pt = path.getPointAtLength(d)
@@ -67,11 +82,35 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
       const angleRad = Math.atan2(pNext.y - pPrev.y, pNext.x - pPrev.x)
       const angleDeg = (angleRad * 180) / Math.PI
 
-      samples.push({ x: pt.x, y: pt.y, angle: angleDeg })
+      // Piecewise odometer km interpolation across the 980 km route
+      const t = i / sampleCount
+      let estimatedKm = 0
+      if (t <= 0.1728) {
+        estimatedKm = Math.round((t / 0.1728) * 220)
+      } else if (t <= 0.5346) {
+        estimatedKm = Math.round(220 + ((t - 0.1728) / (0.5346 - 0.1728)) * 280)
+      } else if (t <= 0.6398) {
+        estimatedKm = Math.round(500 + ((t - 0.5346) / (0.6398 - 0.5346)) * 150)
+      } else if (t <= 0.835) {
+        estimatedKm = Math.round(650 + ((t - 0.6398) / (0.835 - 0.6398)) * 190)
+      } else {
+        estimatedKm = Math.round(840 + ((t - 0.835) / (1 - 0.835)) * 140)
+      }
+
+      samples.push({ x: pt.x, y: pt.y, angle: angleDeg, km: estimatedKm })
     }
     sampledPointsRef.current = samples
 
-    // Initial position
+    // Initialize stroke dash properties
+    if (routePathRef.current) {
+      routePathRef.current.style.strokeDasharray = `${len} ${len}`
+      routePathRef.current.style.strokeDashoffset = String(len)
+    }
+    if (routeGlowPathRef.current) {
+      routeGlowPathRef.current.style.strokeDasharray = `${len} ${len}`
+      routeGlowPathRef.current.style.strokeDashoffset = String(len)
+    }
+
     updateProgress(progress)
   }, [])
 
@@ -79,25 +118,37 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
     const clamped = Math.max(0, Math.min(1, p))
     const len = totalLengthRef.current
 
-    // Dash offset update
+    const offsetVal = String(len * (1 - clamped))
+
+    // 1. Draw glowing traveled route line
     if (routePathRef.current) {
-      routePathRef.current.style.strokeDashoffset = String(len * (1 - clamped))
+      routePathRef.current.style.strokeDashoffset = offsetVal
+    }
+    if (routeGlowPathRef.current) {
+      routeGlowPathRef.current.style.strokeDashoffset = offsetVal
     }
 
-    // Car marker position update
+    // 2. Hardware-accelerated car transform & heading
     const samples = sampledPointsRef.current
     if (samples.length > 0 && carMarkerRef.current) {
       const idx = Math.min(samples.length - 1, Math.max(0, Math.round(clamped * (samples.length - 1))))
       const pt = samples[idx]
       carMarkerRef.current.style.transform = `translate3d(${pt.x}px, ${pt.y}px, 0) rotate(${pt.angle}deg)`
+
+      // 3. Update live kilometer readout directly on DOM for zero React re-render overhead
+      if (liveKmBadgeRef.current) {
+        liveKmBadgeRef.current.textContent = `${pt.km} km · ${Math.round(clamped * 100)}% route`
+      }
     }
 
-    // Other cities group visibility
-    if (otherCitiesRef.current && !showOtherCities) {
-      otherCitiesRef.current.style.opacity = clamped >= 0.45 ? "1" : "0"
+    // 4. Update coordinates telemetry
+    if (coordinatesBadgeRef.current) {
+      const lat = (31.2 - clamped * (31.2 - 24.08)).toFixed(2)
+      const lon = (29.9 + clamped * (32.9 - 29.9)).toFixed(2)
+      coordinatesBadgeRef.current.textContent = `${lat}°N ${lon}°E`
     }
 
-    // Bottom progress meter
+    // 5. Update bottom progress bar width
     if (progressBarRef.current) {
       progressBarRef.current.style.width = `${Math.round(clamped * 100)}%`
     }
@@ -113,74 +164,160 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
     []
   )
 
-  // Split cities into 6 route cities and 8 other cities
-  const routeCities = ALL_CITIES.filter((c) => c.isRouteCity)
   const otherCities = ALL_CITIES.filter((c) => !c.isRouteCity)
 
   return (
-    <div className="relative w-full h-full min-h-[380px] sm:min-h-[460px] lg:min-h-[560px] flex items-center justify-center rounded-2xl border border-[#EADFC8]/15 bg-[#0C1A2B] p-2 sm:p-4 overflow-hidden select-none">
-      {/* Subtle Coordinate Grid Lines for Cartographic Aesthetics */}
+    <div className="relative flex h-full w-full select-none items-center justify-center overflow-hidden rounded-2xl border border-[#C9A227]/25 bg-gradient-to-b from-[#0F1722] via-[#0A1018] to-[#070B10] p-3 shadow-2xl sm:p-5">
+      {/* High-tech Cartographic Grid Pattern */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.06] bg-[radial-gradient(#EADFC8_1px,transparent_1px)] [background-size:24px_24px]"
+        className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[radial-gradient(#C9A227_1px,transparent_1px)] [background-size:28px_28px]"
         aria-hidden="true"
       />
 
-      {/* Cartographic Compass Rose Top Left */}
+      {/* Ambient Gold Horizon Radial Glow */}
       <div
-        className="pointer-events-none absolute top-4 left-4 flex items-center gap-1.5 text-[#B9B7B0]/50 font-mono text-[10px] select-none"
+        className="pointer-events-none absolute -top-24 right-1/4 h-72 w-72 rounded-full bg-[#C9A227]/10 blur-3xl"
+        aria-hidden="true"
+      />
+
+      {/* Top Left: Compass Rose & Coordinates */}
+      <div
+        className="pointer-events-none absolute left-4 top-4 z-10 flex items-center gap-2.5 font-mono text-[10px] text-[#EADFC8]/70"
         aria-hidden="true"
       >
-        <span className="font-bold text-[#C9A227]/80">N</span>
-        <span>Egypt</span>
+        <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#C9A227]/30 bg-[#0B0A09]/80 text-[#C9A227]">
+          <span className="font-bold">N</span>
+        </div>
+        <div className="flex flex-col leading-tight">
+          <span className="font-semibold tracking-wider text-[#F4F2EC]">EGYPT HIGHWAY NETWORK</span>
+          <span ref={coordinatesBadgeRef} className="text-[#C9A227]/80 tabular-nums">
+            31.20°N 29.92°E
+          </span>
+        </div>
       </div>
 
-      {/* Main SVG Map */}
+      {/* Top Right: Live Corridor Status Pill */}
+      <div
+        className="pointer-events-none absolute right-4 top-4 z-10 hidden items-center gap-2 rounded-full border border-[#C9A227]/25 bg-[#0B0A09]/80 px-3 py-1 font-mono text-[10px] backdrop-blur-md sm:flex"
+        aria-hidden="true"
+      >
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C9A227] opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#C9A227]" />
+        </span>
+        <span className="text-[#B9B7B0]">CORRIDOR:</span>
+        <span className="font-bold text-[#E6CF85]">ALEXANDRIA HQ ➔ ASWAN</span>
+      </div>
+
+      {/* Main Interactive SVG Map */}
       <svg
         viewBox={`0 0 ${EGYPT_MAP_WIDTH} ${EGYPT_MAP_HEIGHT}`}
-        className="w-full h-full max-h-[720px] object-contain"
-        aria-label="Route map across Egypt"
+        className="h-full max-h-[680px] w-full object-contain"
+        aria-label="Interactive Egypt Highway Route Map"
         role="img"
       >
-        {/* Base Egypt Landmass Outline: Filled --ink (#0B0A09), 1px --sand outline at 20% opacity */}
+        <defs>
+          {/* Headlight beam gradient */}
+          <linearGradient id="headlight-beam-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#FFF2B2" stopOpacity="0.9" />
+            <stop offset="35%" stopColor="#C9A227" stopOpacity="0.5" />
+            <stop offset="75%" stopColor="#C9A227" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#C9A227" stopOpacity="0" />
+          </linearGradient>
+
+          {/* Taillight glow gradient */}
+          <radialGradient id="taillight-glow-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#E07A2F" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#E07A2F" stopOpacity="0" />
+          </radialGradient>
+
+          {/* Golden metallic car body gradient */}
+          <linearGradient id="gold-car-gradient" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#E6CF85" />
+            <stop offset="45%" stopColor="#C9A227" />
+            <stop offset="100%" stopColor="#967718" />
+          </linearGradient>
+
+          {/* Traveled route neon bloom filter */}
+          <filter id="route-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur1" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2" />
+            <feMerge>
+              <feMergeNode in="blur2" />
+              <feMergeNode in="blur1" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          {/* Landmass subtle fill pattern */}
+          <linearGradient id="egypt-land-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#0B1017" />
+            <stop offset="50%" stopColor="#080C12" />
+            <stop offset="100%" stopColor="#05080E" />
+          </linearGradient>
+        </defs>
+
+        {/* Latitude Reference Parallels */}
+        <g opacity="0.08" stroke="#EADFC8" strokeDasharray="4 6" strokeWidth="1">
+          <line x1="50" y1="150" x2="750" y2="150" /> {/* 30°N Cairo */}
+          <line x1="50" y1="300" x2="750" y2="300" /> {/* 28°N Sinai */}
+          <line x1="50" y1="450" x2="750" y2="450" /> {/* 26°N Upper Egypt */}
+          <line x1="50" y1="550" x2="750" y2="550" /> {/* 24°N Tropic of Cancer / Aswan */}
+        </g>
+
+        {/* Base Egypt Landmass Outline */}
         <path
           d={EGYPT_PATH_DATA}
-          fill="#0B0A09"
-          stroke="#EADFC8"
-          strokeOpacity="0.2"
-          strokeWidth="1"
+          fill="url(#egypt-land-grad)"
+          stroke="#C9A227"
+          strokeOpacity="0.25"
+          strokeWidth="1.2"
           className="transition-colors duration-300"
         />
 
-        {/* 
-          Route Path:
-          Stylized path through Alexandria, Cairo, Sharm, Hurghada, Luxor, Aswan
-          2px --gold dashed, drawn progressively with stroke-dashoffset
-        */}
-        {/* Shadow layer for route */}
+        {/* Projected highway path (untraveled dashed line) */}
+        <path
+          d={ROUTE_PATH_DATA}
+          fill="none"
+          stroke="#C9A227"
+          strokeWidth="2"
+          strokeDasharray="6 6"
+          strokeOpacity="0.22"
+          strokeLinecap="round"
+        />
+
+        {/* Route Shadow Layer */}
         <path
           d={ROUTE_PATH_DATA}
           fill="none"
           stroke="#000000"
-          strokeWidth="4"
-          strokeOpacity="0.5"
+          strokeWidth="6"
+          strokeOpacity="0.6"
         />
 
-        {/* Dynamic dashed gold route line */}
+        {/* Glowing Traveled Neon Highway Layer */}
+        <path
+          ref={routeGlowPathRef}
+          d={ROUTE_PATH_DATA}
+          fill="none"
+          stroke="#C9A227"
+          strokeWidth="6"
+          strokeOpacity="0.5"
+          strokeLinecap="round"
+          filter="url(#route-glow)"
+        />
+
+        {/* Crisp Golden Core Traveled Highway Line */}
         <path
           ref={routePathRef}
           d={ROUTE_PATH_DATA}
           fill="none"
-          stroke="#C9A227"
-          strokeWidth="2.5"
-          strokeDasharray="8 5"
-          strokeDashoffset={1200}
+          stroke="#FFD54F"
+          strokeWidth="2.75"
           strokeLinecap="round"
         />
 
-        {/* 
-          8 OTHER CITIES:
-          Small --sand dots that appear when marker passes section midpoint (or showOtherCities)
-        */}
+        {/* 8 Secondary Network Destination Dots */}
         <g
           ref={otherCitiesRef}
           className="transition-opacity duration-300"
@@ -189,155 +326,217 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
           {otherCities.map((city) => (
             <g
               key={city.id}
-              className="cursor-pointer group"
+              className="group cursor-pointer"
               onClick={() => onSelectCity?.(city)}
+              onMouseEnter={() => setHoveredCity(city)}
+              onMouseLeave={() => setHoveredCity(null)}
             >
               <circle
                 cx={city.x}
                 cy={city.y}
-                r="3"
+                r="3.5"
                 fill="#EADFC8"
-                stroke="#0B0A09"
-                strokeWidth="1"
-              >
-                <title>{city.city}</title>
-              </circle>
+                fillOpacity="0.65"
+                stroke="#080D15"
+                strokeWidth="1.2"
+                className="transition-all duration-200 group-hover:scale-150 group-hover:fill-[#C9A227]"
+              />
+              <title>{`${city.city} (${city.km} km from Alex)`}</title>
             </g>
           ))}
         </g>
 
-        {/* 
-          6 ROUTE CITIES:
-          Large pins (gold dot with an active radiating pulse)
-        */}
-        {routeCities.map((city) => {
+        {/* 6 Primary Highway Route Cities */}
+        {ROUTE_CITIES.map((city) => {
           const isActive = activeCity.id === city.id
           const label = LABEL_LAYOUT[city.id]
+          const cityProg = CITY_PROGRESS_MAP[city.id] ?? 0
+          const isVisited = progress >= cityProg - 0.015
+
           return (
             <g
               key={city.id}
-              className="cursor-pointer"
+              className="cursor-pointer transition-transform duration-200"
               onClick={() => onSelectCity?.(city)}
             >
+              {/* Radar sonar pulse wave on active city */}
               {isActive && (
-                <circle
-                  cx={city.x}
-                  cy={city.y}
-                  r="11"
-                  fill="none"
-                  stroke="#C9A227"
-                  strokeWidth="1.25"
-                  opacity="0.45"
-                />
+                <>
+                  <circle
+                    cx={city.x}
+                    cy={city.y}
+                    r="18"
+                    fill="none"
+                    stroke="#C9A227"
+                    strokeWidth="1"
+                    opacity="0.3"
+                    className="animate-ping"
+                    style={{ transformOrigin: `${city.x}px ${city.y}px`, animationDuration: "2.2s" }}
+                  />
+                  <circle
+                    cx={city.x}
+                    cy={city.y}
+                    r="12"
+                    fill="#C9A227"
+                    fillOpacity="0.15"
+                    stroke="#C9A227"
+                    strokeWidth="1.5"
+                    opacity="0.7"
+                  />
+                </>
               )}
+
+              {/* Visited / Active Outer Pin Rim */}
               <circle
                 cx={city.x}
                 cy={city.y}
-                r={isActive ? "6.5" : "5"}
-                fill="#C9A227"
-                stroke="#0B0A09"
+                r={isActive ? "7.5" : "5.5"}
+                fill={isActive ? "#FFD54F" : isVisited ? "#C9A227" : "#1A2433"}
+                stroke="#080D15"
                 strokeWidth="2"
+                className="transition-all duration-300"
               />
+
+              {/* Core Pin Center */}
               <circle
                 cx={city.x}
                 cy={city.y}
-                r="2"
-                fill={isActive ? "#0B0A09" : "#F4F2EC"}
+                r={isActive ? "3" : "2"}
+                fill={isActive ? "#080D15" : isVisited ? "#080D15" : "#EADFC8"}
+                className="transition-all duration-300"
               />
+
+              {/* City Name Label with Sleek Backplate */}
               {label && (
-                <text
-                  x={city.x + label.dx}
-                  y={city.y + label.dy}
-                  textAnchor={label.anchor}
-                  fill={isActive ? "#C9A227" : "#F4F2EC"}
-                  fontSize="11"
-                  fontFamily="var(--font-anybody), sans-serif"
-                  fontWeight={isActive ? "700" : "500"}
-                  className="select-none pointer-events-none"
-                >
-                  {label.name}
-                  {city.isHq ? " HQ" : ""}
-                </text>
+                <g className="pointer-events-none select-none">
+                  <text
+                    x={city.x + label.dx}
+                    y={city.y + label.dy}
+                    textAnchor={label.anchor}
+                    fill={isActive ? "#FFD54F" : isVisited ? "#F4F2EC" : "#B9B7B0"}
+                    fontSize={isActive ? "12" : "11"}
+                    fontFamily="var(--font-anybody), sans-serif"
+                    fontWeight={isActive ? "800" : "600"}
+                    letterSpacing="0.02em"
+                    className="transition-colors duration-200"
+                  >
+                    {label.name}
+                    {city.isHq ? " HQ" : ""}
+                  </text>
+                  {isActive && (
+                    <text
+                      x={city.x + label.dx}
+                      y={city.y + label.dy + 12}
+                      textAnchor={label.anchor}
+                      fill="#C9A227"
+                      fontSize="9"
+                      fontFamily="monospace"
+                      fontWeight="600"
+                      opacity="0.85"
+                    >
+                      {city.km} KM
+                    </text>
+                  )}
+                </g>
               )}
             </g>
           )
         })}
 
         {/* 
-          SMALL TOP-DOWN GOLD CAR MARKER:
-          Pre-sampled tangent & coordinates, hardware-accelerated transform
+          TOP-DOWN GOLDEN TRIP VEHICLE MARKER:
+          Precisely aligned with sampled tangents along the highway curve
         */}
         <g ref={carMarkerRef} id="map-car-marker" style={{ transformOrigin: "0px 0px" }}>
-          {/* Headlight beams radiating forward */}
+          {/* Forward Headlight High-Beam Cones */}
           <path
-            d="M 12 0 L 32 -10 L 32 10 Z"
+            d="M 14 -2 L 52 -18 L 52 18 L 14 2 Z"
             fill="url(#headlight-beam-grad)"
-            opacity="0.65"
+            opacity="0.8"
             pointerEvents="none"
           />
 
-          {/* Aerodynamic top-down gold car body */}
+          {/* Soft Taillight Glow behind vehicle */}
+          <circle cx="-16" cy="0" r="10" fill="url(#taillight-glow-grad)" pointerEvents="none" />
+
+          {/* Aerodynamic Luxury Vehicle Body */}
           <rect
-            x="-11"
-            y="-5.5"
-            width="22"
-            height="11"
-            rx="3"
-            fill="#C9A227"
-            stroke="#0B0A09"
-            strokeWidth="1.2"
+            x="-13"
+            y="-6.5"
+            width="26"
+            height="13"
+            rx="4"
+            fill="url(#gold-car-gradient)"
+            stroke="#080D15"
+            strokeWidth="1.5"
           />
 
-          {/* Windshield */}
+          {/* Tinted Panoramic Windshield & Roof */}
           <rect
-            x="0"
+            x="-2"
+            y="-4.5"
+            width="7"
+            height="9"
+            rx="2"
+            fill="#080D15"
+          />
+
+          {/* Rear Tinted Glass */}
+          <rect
+            x="-10"
             y="-4"
-            width="5"
+            width="4.5"
             height="8"
             rx="1.5"
-            fill="#0B0A09"
+            fill="#080D15"
           />
 
-          {/* Rear window */}
-          <rect
-            x="-8"
-            y="-3.5"
-            width="3.5"
-            height="7"
-            rx="1"
-            fill="#0B0A09"
-          />
+          {/* Front Dual LED Projector Headlights */}
+          <circle cx="12" cy="-4.5" r="1.3" fill="#FFFFFF" />
+          <circle cx="12" cy="4.5" r="1.3" fill="#FFFFFF" />
 
-          {/* Front headlights */}
-          <circle cx="10" cy="-4" r="1.2" fill="#FFFFFF" />
-          <circle cx="10" cy="4" r="1.2" fill="#FFFFFF" />
-
-          {/* Rear taillights in --ember */}
-          <circle cx="-10.5" cy="-4" r="1" fill="#E07A2F" />
-          <circle cx="-10.5" cy="4" r="1" fill="#E07A2F" />
+          {/* Rear Red/Amber LED Taillight Ribbons */}
+          <rect x="-12.8" y="-5.5" width="1.5" height="2.5" rx="0.5" fill="#E07A2F" />
+          <rect x="-12.8" y="3" width="1.5" height="2.5" rx="0.5" fill="#E07A2F" />
         </g>
-
-        {/* Headlight Gradient Definition */}
-        <defs>
-          <linearGradient id="headlight-beam-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#C9A227" stopOpacity="0.8" />
-            <stop offset="40%" stopColor="#E6CF85" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#E6CF85" stopOpacity="0" />
-          </linearGradient>
-        </defs>
       </svg>
 
-      {/* Bottom Route Progress Meter inside Map Frame */}
-      <div className="absolute bottom-3 inset-x-6 sm:inset-x-8 flex items-center justify-between text-[11px] font-mono text-[#B9B7B0]/60 pointer-events-none">
-        <span>Alexandria (0 km)</span>
-        <div className="mx-4 flex-1 h-1 bg-[#2A2B2E] rounded-full overflow-hidden">
-          <div
-            ref={progressBarRef}
-            className="h-full bg-[#C9A227]"
-            style={{ width: "0%" }}
-          />
+      {/* Floating Tooltip when hovering secondary cities */}
+      {hoveredCity && (
+        <div className="pointer-events-none absolute bottom-12 left-1/2 -translate-x-1/2 rounded-md border border-[#C9A227]/40 bg-[#080D15]/95 px-3 py-1.5 font-mono text-xs text-[#F4F2EC] shadow-xl backdrop-blur-md">
+          <span className="font-bold text-[#C9A227]">{hoveredCity.city}</span>
+          <span className="ml-2 text-[#B9B7B0]">· {hoveredCity.km} km from Alex HQ</span>
         </div>
-        <span>Aswan (980 km)</span>
+      )}
+
+      {/* Bottom Automotive Highway Distance Progress Meter */}
+      <div className="pointer-events-none absolute bottom-3.5 inset-x-5 flex items-center justify-between font-mono text-[11px] text-[#B9B7B0]/80">
+        <div className="flex items-center gap-1.5">
+          <span className="font-bold text-[#C9A227]">Alexandria HQ</span>
+          <span className="hidden sm:inline text-[#B9B7B0]/60">(0 km)</span>
+        </div>
+
+        {/* Central Track & Live Odometer Badge */}
+        <div className="mx-3 sm:mx-6 flex flex-1 flex-col items-center">
+          <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-[#1A2433]">
+            <div
+              ref={progressBarRef}
+              className="h-full bg-gradient-to-r from-[#967718] via-[#C9A227] to-[#FFD54F] shadow-[0_0_8px_#C9A227]"
+              style={{ width: "0%" }}
+            />
+          </div>
+          <span
+            ref={liveKmBadgeRef}
+            className="mt-1 font-mono text-[10px] font-semibold text-[#E6CF85] tabular-nums"
+          >
+            0 km · 0% route
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 text-right">
+          <span className="font-bold text-[#C9A227]">Aswan</span>
+          <span className="hidden sm:inline text-[#B9B7B0]/60">(980 km)</span>
+        </div>
       </div>
     </div>
   )

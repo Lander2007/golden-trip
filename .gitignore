@@ -59,6 +59,9 @@ Thumbs.db
 .claude-replay.*
 .tmp-*
 *.tmp
+/*.png
+*.lprof
+perf-*.json
 /.figma/design-context/
 
 # Platform-managed agentplat state

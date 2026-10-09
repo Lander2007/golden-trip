@@ -67,7 +67,11 @@ export default function Scene({
           light ? "text-[#0B0A09]" : "text-[#F4F2EC]"
         }`}
       >
-        <div className="content-zone relative z-10 mx-auto w-full max-w-[1200px] flex-1 flex flex-col justify-center px-6 pt-[88px] pb-[22vh] sm:px-8 lg:px-12">
+        <div
+          className={`content-zone relative z-10 mx-auto w-full max-w-[1240px] flex-1 flex flex-col justify-center px-4 sm:px-8 lg:px-12 pt-[76px] sm:pt-[84px] ${
+            index === 2 ? "pb-4 sm:pb-6 lg:pb-8" : "pb-[22vh]"
+          }`}
+        >
           {children}
         </div>
 

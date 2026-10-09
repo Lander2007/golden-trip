@@ -53,6 +53,9 @@ export default function Drive({
       syncTouch: false,
     })
     lenis.on("scroll", ScrollTrigger.update)
+    if (typeof window !== "undefined") {
+      ;(window as any).__lenis = lenis
+    }
 
     let lastWrittenP = -1
     let lastWrittenSky = ""
@@ -105,6 +108,9 @@ export default function Drive({
       window.removeEventListener("resize", handleResize)
       gsap.ticker.remove(tickerCallback)
       lenis.destroy()
+      if (typeof window !== "undefined") {
+        delete (window as any).__lenis
+      }
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
     }
   }, [frames])
