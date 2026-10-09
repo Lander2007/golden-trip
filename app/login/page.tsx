@@ -1,13 +1,13 @@
 import LoginForm from "@/components/auth/LoginForm"
 
 export const metadata = {
-  title: "Log In — Golden Trip",
-  description: "Access your Golden Trip account and track bookings nationwide.",
+  title: "تسجيل الدخول — جولدن تريب | Golden Trip",
+  description: "سجل الدخول لحسابك في جولدن تريب واستعرض أسطول السيارات وحجوزاتك.",
 }
 
 export default function LoginPage() {
   return (
-    <main className="relative min-h-[100svh] bg-[#0B0A09] px-4 pt-32 pb-24 sm:px-6 lg:px-8">
+    <main dir="rtl" className="relative min-h-[100svh] bg-[#0B0A09] px-4 pt-28 pb-24 sm:px-6 lg:px-8">
       {/* Background film grain texture */}
       <div className="film-grain" />
 

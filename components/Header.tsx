@@ -18,6 +18,7 @@ import { Menu, X, Phone, MessageSquare } from "lucide-react"
 import gsap from "gsap"
 import Logo from "./Logo"
 import RouteProgressLine from "./RouteProgressLine"
+import AppNavbar from "./layout/AppNavbar"
 
 interface HeaderProps {
   km?: number
@@ -232,6 +233,11 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
       num: "03",
     },
   ]
+
+  const isAppRoute = pathname.startsWith("/cars") || pathname.startsWith("/booking") || pathname.startsWith("/my-bookings")
+  if (isAppRoute) {
+    return <AppNavbar />
+  }
 
   return (
     <>

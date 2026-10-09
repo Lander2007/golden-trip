@@ -4,6 +4,8 @@ import { Anybody, Instrument_Serif, Source_Sans_3 } from "next/font/google"
 import Footer from "@/components/Footer"
 import Header from "@/components/Header"
 import PerfLab from "@/components/PerfLab"
+import { AppProvider } from "@/context/AppContext"
+import ToastContainer from "@/components/shared/ToastContainer"
 import "./globals.css"
 
 const anybody = Anybody({
@@ -111,9 +113,12 @@ export default function RootLayout({
           }}
         />
         <div className="film-grain" aria-hidden="true" />
-        <Header />
-        {children}
-        <Footer />
+        <AppProvider>
+          <Header />
+          {children}
+          <Footer />
+          <ToastContainer />
+        </AppProvider>
         <PerfLab />
       </body>
     </html>

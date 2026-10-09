@@ -1,8 +1,17 @@
+"use client"
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Phone, MessageSquare } from "lucide-react"
 import Logo from "./Logo"
+import AppFooter from "./layout/AppFooter"
 
 export default function Footer() {
+  const pathname = usePathname()
+  const isAppRoute = pathname.startsWith("/cars") || pathname.startsWith("/booking") || pathname.startsWith("/my-bookings")
+  if (isAppRoute) {
+    return <AppFooter />
+  }
   return (
     <footer
       id="footer"

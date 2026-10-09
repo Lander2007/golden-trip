@@ -1,9 +1,8 @@
 import SignupForm from "@/components/auth/SignupForm"
 
 export const metadata = {
-  title: "Sign Up — Golden Trip",
-  description:
-    "Create your Golden Trip account and book transfers across Egypt.",
+  title: "إنشاء حساب — جولدن تريب | Golden Trip",
+  description: "أنشئ حسابك في جولدن تريب واستمتع بحجز السيارات والتنقل الفاخر في مصر.",
 }
 
 export default async function SignupPage({
@@ -16,7 +15,7 @@ export default async function SignupPage({
     typeof params.branch === "string" ? params.branch : undefined
 
   return (
-    <main className="relative min-h-[100svh] bg-[#0B0A09] px-4 pt-32 pb-24 sm:px-6 lg:px-8">
+    <main dir="rtl" className="relative min-h-[100svh] bg-[#0B0A09] px-4 pt-28 pb-24 sm:px-6 lg:px-8">
       {/* Background film grain texture */}
       <div className="film-grain" />
 
