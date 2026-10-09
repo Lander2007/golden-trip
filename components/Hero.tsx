@@ -87,10 +87,11 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
       }
 
       // 6. Headlight beam sweep across the wordmark
+      const dirSign = isRtl ? -1 : 1
       tl.fromTo(
         ".hero-headlight-sweep",
-        { xPercent: -150, opacity: 0 },
-        { xPercent: 250, opacity: 0.5, duration: 0.9, ease: "power2.inOut" },
+        { xPercent: -150 * dirSign, opacity: 0 },
+        { xPercent: 250 * dirSign, opacity: 0.5, duration: 0.9, ease: "power2.inOut" },
         0.7
       )
     },

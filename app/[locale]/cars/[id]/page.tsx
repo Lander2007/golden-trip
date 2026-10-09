@@ -149,7 +149,7 @@ export default function CarDetailsPage() {
 
   return (
     <ProtectedRoute>
-      <div dir="rtl" className="min-h-screen bg-[#0B0A09] text-[#F4F2EC] pb-24">
+      <div className="min-h-screen bg-[#0B0A09] text-[#F4F2EC] pb-24">
         {/* Breadcrumb Bar */}
         <div className="border-b border-[#2A2B2E] bg-[#141518]/60 py-3.5 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl flex items-center gap-2 text-xs text-[#B9B7B0]">
@@ -176,7 +176,7 @@ export default function CarDetailsPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#141518] via-transparent to-black/30" />
 
                   {/* Top Badges */}
-                  <div className="absolute top-4 right-4 flex items-center gap-2">
+                  <div className="absolute top-4 end-4 flex items-center gap-2">
                     <span className="rounded-md bg-[#0B0A09]/80 backdrop-blur-md px-3 py-1.5 text-xs font-bold text-[#C9A227] border border-[#C9A227]/30">
                       فئة {car.type}
                     </span>
@@ -185,7 +185,7 @@ export default function CarDetailsPage() {
                     </span>
                   </div>
 
-                  <div className="absolute top-4 left-4">
+                  <div className="absolute top-4 start-4">
                     <span
                       className={`rounded-md px-3 py-1 text-xs font-bold backdrop-blur-md border ${
                         car.available
@@ -198,7 +198,7 @@ export default function CarDetailsPage() {
                   </div>
 
                   {/* Branch tag overlay */}
-                  <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-lg bg-[#0B0A09]/80 backdrop-blur-md px-3.5 py-2 border border-[#2A2B2E]">
+                  <div className="absolute bottom-4 end-4 flex items-center gap-2 rounded-lg bg-[#0B0A09]/80 backdrop-blur-md px-3.5 py-2 border border-[#2A2B2E]">
                     <MapPin className="w-4 h-4 text-[#C9A227]" />
                     <span className="text-xs font-semibold text-[#F4F2EC]">
                       متواجد بـ {branchInfo.city} - {branchInfo.name}
@@ -241,7 +241,7 @@ export default function CarDetailsPage() {
                   <span>المواصفات الفنية الرئيسية</span>
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-right">
+                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Users className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>سعة الركاب</span>
@@ -249,7 +249,7 @@ export default function CarDetailsPage() {
                     <span className="text-sm font-bold text-[#F4F2EC]">{car.seats} ركاب</span>
                   </div>
 
-                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-right">
+                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Gauge className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>ناقل الحركة</span>
@@ -257,7 +257,7 @@ export default function CarDetailsPage() {
                     <span className="text-sm font-bold text-[#F4F2EC]">{car.transmission}</span>
                   </div>
 
-                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-right">
+                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Fuel className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>نوع الوقود</span>
@@ -265,7 +265,7 @@ export default function CarDetailsPage() {
                     <span className="text-sm font-bold text-[#F4F2EC]">{car.fuel}</span>
                   </div>
 
-                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-right">
+                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Briefcase className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>سعة الحقائب</span>
@@ -273,7 +273,7 @@ export default function CarDetailsPage() {
                     <span className="text-sm font-bold text-[#F4F2EC]">{car.luggage} حقائب كبيرة</span>
                   </div>
 
-                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-right">
+                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <CarIcon className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>عدد الأبواب</span>
@@ -281,7 +281,7 @@ export default function CarDetailsPage() {
                     <span className="text-sm font-bold text-[#F4F2EC]">{car.doors} أبواب</span>
                   </div>
 
-                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-right">
+                  <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>سنة الموديل</span>
@@ -373,7 +373,7 @@ export default function CarDetailsPage() {
                     {car.reviews.map((rev) => (
                       <div
                         key={rev.id}
-                        className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-4 text-right"
+                        className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-4 text-start"
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2.5">
@@ -418,7 +418,7 @@ export default function CarDetailsPage() {
                     <span className="text-2xl font-black text-[#F4F2EC] font-mono">
                       {formatEGP(car.pricePerDay)}
                     </span>
-                    <span className="text-xs text-[#B9B7B0] mr-1">/ يوم</span>
+                    <span className="text-xs text-[#B9B7B0] me-1">/ يوم</span>
                   </div>
                   <span className="text-xs font-bold text-[#C9A227] bg-[#C9A227]/10 px-2.5 py-1 rounded border border-[#C9A227]/30">
                     أفضل سعر مضمون
@@ -536,7 +536,7 @@ export default function CarDetailsPage() {
                               </div>
                             </div>
 
-                            <span className="text-xs font-bold text-[#C9A227] font-mono shrink-0 mr-2">
+                            <span className="text-xs font-bold text-[#C9A227] font-mono shrink-0 me-2">
                               +{extra.pricePerDay} ج.م
                             </span>
                           </div>
@@ -566,7 +566,7 @@ export default function CarDetailsPage() {
 
                     <div className="border-t border-[#2A2B2E] pt-3 flex justify-between items-baseline font-bold">
                       <span className="text-sm text-[#F4F2EC]">المبلغ الإجمالي التقريبي:</span>
-                      <div className="text-left">
+                      <div className="text-end">
                         <span className="text-xl font-black text-[#C9A227] font-mono">
                           {formatEGP(grandTotal)}
                         </span>
@@ -584,7 +584,7 @@ export default function CarDetailsPage() {
                       className="w-full rounded-md bg-[#C9A227] py-4 font-bold text-sm text-[#0B0A09] transition-all hover:bg-[#E6CF85] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-[#C9A227]/10"
                     >
                       <span>متابعة إتمام الحجز (4 خطوات سريعة)</span>
-                      <ArrowRight className="w-4 h-4 rotate-180" />
+                      <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
                     </button>
                   ) : (
                     <div className="space-y-2">

@@ -21,14 +21,14 @@ export function MotionNote({ index }: { index: number }) {
       </span>
       {motionNotes[index]}
       <a
-        className="frame-download-desktop ml-3 inline-block text-[#C9A227] underline underline-offset-4"
+        className="frame-download-desktop ms-3 inline-block text-[#C9A227] underline underline-offset-4"
         href={`/storyboards/desktop-${String(index + 1).padStart(2, "0")}.png`}
         download
       >
         Download frame ↗
       </a>
       <a
-        className="frame-download-mobile ml-3 text-[#C9A227] underline underline-offset-4"
+        className="frame-download-mobile ms-3 text-[#C9A227] underline underline-offset-4"
         href={`/storyboards/mobile-${String(index + 1).padStart(2, "0")}.png`}
         download
       >

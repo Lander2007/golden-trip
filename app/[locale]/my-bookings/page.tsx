@@ -121,7 +121,7 @@ export default function MyBookingsPage() {
 
   return (
     <ProtectedRoute>
-      <div dir="rtl" className="min-h-screen bg-[#0B0A09] text-[#F4F2EC] pb-24">
+      <div className="min-h-screen bg-[#0B0A09] text-[#F4F2EC] pb-24">
         {/* Hero Header */}
         <section className="border-b border-[#2A2B2E] bg-gradient-to-b from-[#141518] to-[#0B0A09] pt-10 pb-12 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl">
@@ -291,7 +291,7 @@ export default function MyBookingsPage() {
                     </div>
 
                     {/* Trip Specs: 4 cols */}
-                    <div className="lg:col-span-4 space-y-2.5 text-xs text-[#B9B7B0] border-t lg:border-t-0 lg:border-r border-[#2A2B2E] pt-4 lg:pt-0 lg:pr-6">
+                    <div className="lg:col-span-4 space-y-2.5 text-xs text-[#B9B7B0] border-t lg:border-t-0 lg:border-e border-[#2A2B2E] pt-4 lg:pt-0 lg:pe-6">
                       <div className="flex items-start gap-2">
                         <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0 mt-0.5" />
                         <div>
@@ -323,8 +323,8 @@ export default function MyBookingsPage() {
                     </div>
 
                     {/* Pricing & Actions: 4 cols */}
-                    <div className="lg:col-span-4 flex flex-col justify-between items-start lg:items-end border-t lg:border-t-0 border-[#2A2B2E] pt-4 lg:pt-0 lg:border-r lg:pr-6">
-                      <div className="text-right lg:text-left mb-4">
+                    <div className="lg:col-span-4 flex flex-col justify-between items-start lg:items-end border-t lg:border-t-0 border-[#2A2B2E] pt-4 lg:pt-0 lg:border-e lg:pe-6">
+                      <div className="text-start lg:text-end mb-4">
                         <span className="text-xs text-[#B9B7B0] block">المبلغ الإجمالي</span>
                         <span className="text-xl font-black text-[#C9A227] font-mono">
                           {formatEGP(b.totalPrice)}
@@ -403,7 +403,7 @@ export default function MyBookingsPage() {
         {/* MODAL 1: CANCEL CONFIRMATION DIALOG */}
         {cancelingBookingId && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-            <div className="rounded-xl border border-[#2A2B2E] bg-[#141518] p-6 max-w-md w-full shadow-2xl relative text-right">
+            <div className="rounded-xl border border-[#2A2B2E] bg-[#141518] p-6 max-w-md w-full shadow-2xl relative text-start">
               <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mb-4">
                 <ShieldAlert className="w-6 h-6" />
               </div>
@@ -438,10 +438,10 @@ export default function MyBookingsPage() {
         {/* MODAL 2: ADD REVIEW TO COMPLETED CAR */}
         {reviewingBooking && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-            <div className="rounded-xl border border-[#2A2B2E] bg-[#141518] p-6 max-w-lg w-full shadow-2xl relative text-right">
+            <div className="rounded-xl border border-[#2A2B2E] bg-[#141518] p-6 max-w-lg w-full shadow-2xl relative text-start">
               <button
                 onClick={() => setReviewingBooking(null)}
-                className="absolute top-4 left-4 p-1 rounded text-[#B9B7B0] hover:text-[#F4F2EC]"
+                className="absolute top-4 end-4 p-1 rounded text-[#B9B7B0] hover:text-[#F4F2EC]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -481,7 +481,7 @@ export default function MyBookingsPage() {
                         />
                       </button>
                     ))}
-                    <span className="mr-3 text-xs font-bold text-[#C9A227]">
+                    <span className="me-3 text-xs font-bold text-[#C9A227]">
                       {reviewRating === 5
                         ? "ممتاز 5/5"
                         : reviewRating === 4

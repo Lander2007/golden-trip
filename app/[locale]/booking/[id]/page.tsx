@@ -239,7 +239,7 @@ export default function BookingCheckoutPage() {
 
   return (
     <ProtectedRoute>
-      <div dir="rtl" className="min-h-screen bg-[#0B0A09] text-[#F4F2EC] pb-24">
+      <div className="min-h-screen bg-[#0B0A09] text-[#F4F2EC] pb-24">
         {/* Stepper Header Bar */}
         <section className="border-b border-[#2A2B2E] bg-[#141518]/90 pt-8 pb-8 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl">
@@ -311,7 +311,7 @@ export default function BookingCheckoutPage() {
                   alt={car.name}
                   className="w-full sm:w-48 h-32 rounded-lg object-cover bg-[#0B0A09]"
                 />
-                <div className="flex-1 text-right w-full">
+                <div className="flex-1 text-start w-full">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[11px] font-bold text-[#C9A227] bg-[#C9A227]/10 px-2 py-0.5 rounded border border-[#C9A227]/30">
                       فئة {car.type}
@@ -448,9 +448,9 @@ export default function BookingCheckoutPage() {
                           type="text"
                           value={customerName}
                           onChange={(e) => setCustomerName(e.target.value)}
-                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pr-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
+                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
                         />
-                        <User className="absolute top-3.5 right-3 w-4 h-4 text-[#B9B7B0]/60" />
+                        <User className="absolute top-3.5 end-3 w-4 h-4 text-[#B9B7B0]/60" />
                       </div>
                       {step2Errors.name && (
                         <p className="text-xs text-red-400 mt-1">{step2Errors.name}</p>
@@ -466,9 +466,9 @@ export default function BookingCheckoutPage() {
                           type="tel"
                           value={customerPhone}
                           onChange={(e) => setCustomerPhone(e.target.value)}
-                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pr-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
+                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
                         />
-                        <Phone className="absolute top-3.5 right-3 w-4 h-4 text-[#B9B7B0]/60" />
+                        <Phone className="absolute top-3.5 end-3 w-4 h-4 text-[#B9B7B0]/60" />
                       </div>
                       {step2Errors.phone && (
                         <p className="text-xs text-red-400 mt-1">{step2Errors.phone}</p>
@@ -486,9 +486,9 @@ export default function BookingCheckoutPage() {
                         type="email"
                         value={customerEmail}
                         onChange={(e) => setCustomerEmail(e.target.value)}
-                        className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pr-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
+                        className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
                       />
-                      <Mail className="absolute top-3.5 right-3 w-4 h-4 text-[#B9B7B0]/60" />
+                      <Mail className="absolute top-3.5 end-3 w-4 h-4 text-[#B9B7B0]/60" />
                     </div>
                     {step2Errors.email && (
                       <p className="text-xs text-red-400 mt-1">{step2Errors.email}</p>
@@ -507,9 +507,9 @@ export default function BookingCheckoutPage() {
                           value={nationalId}
                           onChange={(e) => setNationalId(e.target.value)}
                           placeholder="29508140102345"
-                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pr-10 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
+                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
                         />
-                        <FileText className="absolute top-3.5 right-3 w-4 h-4 text-[#B9B7B0]/60" />
+                        <FileText className="absolute top-3.5 end-3 w-4 h-4 text-[#B9B7B0]/60" />
                       </div>
                       {step2Errors.nationalId && (
                         <p className="text-xs text-red-400 mt-1">{step2Errors.nationalId}</p>
@@ -526,9 +526,9 @@ export default function BookingCheckoutPage() {
                           value={licenseNumber}
                           onChange={(e) => setLicenseNumber(e.target.value)}
                           placeholder="DL-EGY-89420"
-                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pr-10 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
+                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
                         />
-                        <ShieldCheck className="absolute top-3.5 right-3 w-4 h-4 text-[#B9B7B0]/60" />
+                        <ShieldCheck className="absolute top-3.5 end-3 w-4 h-4 text-[#B9B7B0]/60" />
                       </div>
                       {step2Errors.license && (
                         <p className="text-xs text-red-400 mt-1">{step2Errors.license}</p>
@@ -647,7 +647,7 @@ export default function BookingCheckoutPage() {
                 {paymentMethod === "online" && (
                   <div className="rounded-xl border border-[#2A2B2E] bg-[#0B0A09] p-5 sm:p-6 space-y-4">
                     {/* Simulated Credit Card Visual */}
-                    <div className="rounded-xl bg-gradient-to-tr from-[#1b1916] via-[#2a2414] to-[#141518] p-5 border border-[#C9A227]/40 shadow-xl max-w-sm mx-auto mb-4 text-right">
+                    <div className="rounded-xl bg-gradient-to-tr from-[#1b1916] via-[#2a2414] to-[#141518] p-5 border border-[#C9A227]/40 shadow-xl max-w-sm mx-auto mb-4 text-start">
                       <div className="flex justify-between items-center mb-6">
                         <span className="text-xs font-bold text-[#C9A227] tracking-widest uppercase">Golden Card VIP</span>
                         <div className="w-8 h-6 bg-[#C9A227]/30 rounded border border-[#C9A227]/50" />
@@ -660,7 +660,7 @@ export default function BookingCheckoutPage() {
                           <span className="block text-[9px] uppercase">حامل البطاقة</span>
                           <span className="font-bold text-[#F4F2EC] truncate max-w-[140px] block">{cardHolder}</span>
                         </div>
-                        <div className="text-left font-mono">
+                        <div className="text-end font-mono">
                           <span className="block text-[9px] uppercase">انتهاء</span>
                           <span className="text-[#F4F2EC]">{cardExpiry}</span>
                         </div>
@@ -785,7 +785,7 @@ export default function BookingCheckoutPage() {
                 </div>
 
                 {/* Summary Voucher Card */}
-                <div className="rounded-xl border border-[#2A2B2E] bg-[#0B0A09] p-5 text-right text-xs max-w-xl mx-auto space-y-3 mb-8">
+                <div className="rounded-xl border border-[#2A2B2E] bg-[#0B0A09] p-5 text-start text-xs max-w-xl mx-auto space-y-3 mb-8">
                   <div className="flex justify-between items-center border-b border-[#2A2B2E] pb-2.5">
                     <span className="text-[#B9B7B0]">السيارة المحجوزة:</span>
                     <span className="font-bold text-[#F4F2EC] text-sm">{car.name}</span>

@@ -282,9 +282,9 @@ export default function CarsPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="مثال: تويوتا، BMW، SUV..."
-                      className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2 pr-9 text-xs text-[#F4F2EC] placeholder-[#B9B7B0]/40 focus:border-[#C9A227] focus:outline-none"
+                      className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2 pe-9 text-xs text-[#F4F2EC] placeholder-[#B9B7B0]/40 focus:border-[#C9A227] focus:outline-none"
                     />
-                    <Search className="absolute top-2.5 right-2.5 w-4 h-4 text-[#B9B7B0]/50" />
+                    <Search className="absolute top-2.5 end-2.5 w-4 h-4 text-[#B9B7B0]/50" />
                   </div>
                 </div>
 
@@ -485,13 +485,13 @@ export default function CarsPage() {
                           <div className="absolute inset-0 bg-gradient-to-t from-[#141518] via-transparent to-black/30" />
 
                           {/* Category Tag */}
-                          <span className="absolute top-3 right-3 rounded-md bg-[#0B0A09]/80 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-[#C9A227] border border-[#C9A227]/30">
+                          <span className="absolute top-3 end-3 rounded-md bg-[#0B0A09]/80 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-[#C9A227] border border-[#C9A227]/30">
                             {car.type}
                           </span>
 
                           {/* Availability Badge */}
                           <span
-                            className={`absolute top-3 left-3 rounded-md px-2 py-0.5 text-[10px] font-bold backdrop-blur-md flex items-center gap-1 border ${
+                            className={`absolute top-3 start-3 rounded-md px-2 py-0.5 text-[10px] font-bold backdrop-blur-md flex items-center gap-1 border ${
                               car.available
                                 ? "bg-emerald-950/80 text-emerald-400 border-emerald-500/30"
                                 : "bg-red-950/80 text-red-400 border-red-500/30"
@@ -511,7 +511,7 @@ export default function CarsPage() {
                           </span>
 
                           {/* Branch indicator */}
-                          <div className="absolute bottom-2.5 right-3 flex items-center gap-1.5 text-xs text-[#F4F2EC] drop-shadow-md">
+                          <div className="absolute bottom-2.5 end-3 flex items-center gap-1.5 text-xs text-[#F4F2EC] drop-shadow-md">
                             <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
                             <span className="font-medium text-[11px]">
                               {branchInfo?.city} - {branchInfo?.name.split(" ")[1]}
@@ -558,10 +558,10 @@ export default function CarsPage() {
                                 <span className="text-lg font-black text-[#F4F2EC] font-mono">
                                   {formatEGP(car.pricePerDay)}
                                 </span>
-                                <span className="text-xs text-[#B9B7B0] mr-1">/ يوم</span>
+                                <span className="text-xs text-[#B9B7B0] me-1">/ يوم</span>
                               </div>
 
-                              <div className="text-left text-[11px] text-[#B9B7B0]">
+                              <div className="text-end text-[11px] text-[#B9B7B0]">
                                 <span>إجمالي {rentalDays} {rentalDays === 1 ? "يوم" : "أيام"}: </span>
                                 <span className="text-[#C9A227] font-bold font-mono">
                                   {formatEGP(totalTripPrice)}
