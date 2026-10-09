@@ -1,0 +1,130 @@
+"use client"
+
+// Determine active city based on real km
+/* 2px Track across full width */ /* Filled gold progress bar */ /* 6 City Ticks & Active Labels */
+
+// Calculate edge alignment for label
+/* Tick marker */ /* Active City Label - positioned BELOW the line (top-2.5) */
+
+export interface CityMarker {
+  name: string
+  km: number
+  pct: number
+}
+
+export const ROUTE_CITIES: CityMarker[] = [
+  { name: "Alexandria", km: 0, pct: 0 },
+  { name: "Cairo", km: 220, pct: 22.4 },
+  { name: "Sharm El-Sheikh", km: 500, pct: 51.0 },
+  { name: "Hurghada", km: 650, pct: 66.3 },
+  { name: "Luxor", km: 840, pct: 85.7 },
+  { name: "Aswan", km: 980, pct: 100 },
+]
+
+export default function RouteProgressLine({
+  km = 0,
+  condensed = false,
+}: {
+  km: number
+  condensed?: boolean
+}) {
+  const currentKm = Math.max(0, Math.min(980, km))
+  const progressPct = (currentKm / 980) * 100
+  let activeIndex = 0
+  if (
+    currentKm <
+    110
+  )
+    activeIndex = 0
+  else if (
+    currentKm <
+    360
+  )
+    activeIndex = 1
+  else if (
+    currentKm <
+    575
+  )
+    activeIndex = 2
+  else if (
+    currentKm <
+    745
+  )
+    activeIndex = 3
+  else if (
+    currentKm <
+    910
+  )
+    activeIndex = 4
+  else activeIndex = 5
+
+  return (
+    <div
+      className={`fixed inset-x-0 z-40 pointer-events-none transition-all duration-300 ${
+        condensed ? "top-[56px]" : "top-[72px]"
+      }`}
+      aria-label="Route progress through Egypt"
+    >
+      {}
+      <div className="relative h-[2px] w-full bg-[#2A2B2E] overflow-visible">
+        {}
+        <div
+          className="h-full bg-[#C9A227] transition-all duration-150 ease-out"
+          style={{ width: `${progressPct}%` }}
+        />
+
+        {}
+        <div className="absolute inset-0 max-w-[1200px] mx-auto px-4 sm:px-8 overflow-visible">
+          <div className="relative h-full w-full overflow-visible">
+            {ROUTE_CITIES.map((city, index) => {
+              const isPassed =
+                currentKm >=
+                city.km
+              const isActive =
+                activeIndex ===
+                index
+              let labelTransform = "-translate-x-1/2"
+              if (index === 0) labelTransform = "translate-x-0"
+              if (index === ROUTE_CITIES.length - 1)
+                labelTransform = "-translate-x-full"
+
+              return (
+                <div
+                  key={city.name}
+                  className="absolute top-1/2 -translate-y-1/2 overflow-visible"
+                  style={{ left: `${city.pct}%` }}
+                >
+                  {}
+                  <div
+                    className={`h-2.5 w-1 rounded-[1px] transition-colors duration-200 ${
+                      isActive
+                        ? "bg-[#C9A227] ring-2 ring-[#C9A227]/40 ring-offset-1 ring-offset-[#0E0E10]"
+                        : isPassed
+                          ? "bg-[#C9A227]"
+                          : "bg-[#2A2B2E]"
+                    }`}
+                  />
+
+                  {}
+                  {isActive && (
+                    <div
+                      className={`absolute top-2.5 ${labelTransform} whitespace-nowrap pointer-events-auto`}
+                    >
+                      <span className="inline-flex items-center gap-1.5 rounded-[2px] border border-[#C9A227]/60 bg-[#0E0E10]/95 px-2 py-0.5 font-display text-[10px] font-bold text-[#C9A227] shadow-lg backdrop-blur-sm animate-in fade-in duration-150">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#C9A227] animate-pulse" />
+                        {city.name}
+                        <span className="text-[#B9B7B0] font-normal">
+                          · {city.km} km
+                        </span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

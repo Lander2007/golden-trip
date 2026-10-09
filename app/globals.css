@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #0B0A09;
+  --night: #0C1A2B;
+  --gold: #C9A227;
+  --sand: #EADFC8;
+  --ember: #E07A2F;
+  --sky: #0B0A09;
+}
+
+@theme {
+  --color-ink: #0B0A09;
+  --color-night: #0C1A2B;
+  --color-gold: #C9A227;
+  --color-sand: #EADFC8;
+  --color-ember: #E07A2F;
+
+  --color-asphalt: #0B0A09;
+  --color-road-grey: #2A2B2E;
+  --color-lane-white: #F4F2EC;
+  --color-soft-gold: #E6CF85;
+  --color-body-text: #B9B7B0;
+
+  --font-display: var(--font-anybody);
+  --font-accent: var(--font-instrument-serif);
+  --font-body: var(--font-source-sans);
+}
+
+@layer base {
+  body {
+    background-color: var(--sky, #0B0A09);
+    color: #F4F2EC;
+    font-family: var(--font-source-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    transition: background-color 0.2s ease-out;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-anybody), sans-serif;
+    font-variation-settings: "wdth" 105;
+    letter-spacing: -0.04em;
+    text-transform: none; /* sentence case */
+  }
+
+  a, button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid #C9A227;
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background-color: #C9A227;
+    color: #0B0A09;
+  }
+}
+
+.font-accent {
+  font-family: var(--font-instrument-serif), serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Subtle Film Grain (strictly 4% opacity) */
+.film-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  z-index: 38;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cpath fill='%23F4F2EC' filter='url(%23n)' opacity='.5' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+}
+
+/* Soft Vignette */
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 37;
+  background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(11, 10, 9, 0.45) 100%);
+}
+
+/* Hero Star Twinkle Animation */
+@keyframes heroTwinkle {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .hero-star-dot {
+    animation: none !important;
+    opacity: 0.8 !important;
+  }
+  .hero-sun, .celestial-wrapper, .celestial-body {
+    transform: none !important;
+  }
+  .destination-track {
+    width: auto !important;
+    transform: none !important;
+    flex-wrap: wrap !important;
+  }
+  .travel-lane {
+    transform: none !important;
+  }
+  .gantry, .final-gantry {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .step-panel {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .benefit {
+    opacity: 1 !important;
+  }
+  .sign-shine, .benefit-shine {
+    display: none !important;
+  }
+  [data-reveal] {
+    clip-path: none !important;
+  }
+  html {
+    scroll-behavior: auto !important;
+  }
+}

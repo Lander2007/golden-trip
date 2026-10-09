@@ -1,0 +1,10 @@
+{
+  "description": "A car rental booking platform for Egypt offering a seamless, visually engaging landing page that guides users to create accounts and start bookings easily.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

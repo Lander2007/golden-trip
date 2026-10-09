@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#0E0E10" />
+  <rect x="2" y="2" width="60" height="60" rx="10" stroke="#C9A227" stroke-width="1.5" />
+  <path
+    d="M24 53C2 44 5 17 17 8M40 53C62 44 59 17 47 8"
+    stroke="#C9A227"
+    stroke-width="2"
+  />
+  <g fill="#C9A227">
+    <path d="M13 10l-7-5 1 9 8 3M51 10l7-5-1 9-8 3" />
+    <path d="M13 18l-7-5 1 9 8 3M51 18l7-5-1 9-8 3" />
+    <path d="M13 26l-7-5 1 9 8 3M51 26l7-5-1 9-8 3" />
+    <path d="M13 34l-7-5 1 9 8 3M51 34l7-5-1 9-8 3" />
+    <path d="M13 42l-7-5 1 9 8 3M51 42l7-5-1 9-8 3" />
+  </g>
+  <text
+    x="32"
+    y="38"
+    text-anchor="middle"
+    fill="#C9A227"
+    font-family="sans-serif"
+    font-size="20"
+    font-weight="800"
+    letter-spacing="-0.05em"
+  >
+    GT
+  </text>
+  <path d="M25 53l7-4 7 4" stroke="#C9A227" stroke-width="2" />
+</svg>
