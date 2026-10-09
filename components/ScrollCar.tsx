@@ -1,10 +1,5 @@
 "use client"
 
-// Body physics: 2 to 3px harmonic vertical bob and pitch lean up to 1.5deg
-
-// Throttle React state for wheel rotation and dust particle canvas to keep 60fps
-/* Soft ground shadow that stretches with velocity */ /* Sand-dust trail emitted behind rear wheel (mounted client-only) */ /* Vehicle body with physics bob and lean */
-
 import {
   useEffect,
   useRef,
@@ -14,7 +9,7 @@ import {
 } from "react"
 import gsap from "gsap"
 import Vehicle, { type VehicleVariant } from "./Vehicle"
-import DustTrail from "./vehicle/DustTrail"
+import DustTrail, { type DustTrailHandle } from "./vehicle/DustTrail"
 
 export interface ScrollCarHandle {
   setX: (xVw: number) => void
@@ -34,17 +29,14 @@ const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
   function ScrollCar({ initialVariant = "suv", reducedMotion = false }, ref) {
     const [variant, setVariantState] = useState<VehicleVariant>(initialVariant)
     const [visible, setVisibleState] = useState(true)
-    const [beamBrightness, setBeamBrightnessState] = useState(0.5)
-    const [velState, setVelState] = useState(0)
     const [mounted, setMounted] = useState(false)
 
     const rootRef = useRef<HTMLDivElement>(null)
     const bodyRef = useRef<HTMLDivElement>(null)
     const shadowRef = useRef<HTMLDivElement>(null)
-    const dustRef = useRef<HTMLDivElement>(null)
+    const dustRef = useRef<DustTrailHandle>(null)
 
     const currentXRef = useRef(6)
-    const lastVelUpdateRef = useRef(0)
 
     useImperativeHandle(
       ref,
@@ -94,14 +86,16 @@ const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
             shadowRef.current.style.transform = `scaleX(${shadowStretch})`
           }
 
-          const now = performance.now()
-          if (now - lastVelUpdateRef.current > 64) {
-            lastVelUpdateRef.current = now
-            setVelState(velocity)
-          }
+          // Imperative dust trail tick without React re-render
+          dustRef.current?.tick(velocity)
         },
         setBeamBrightness: (brightness: number) => {
-          setBeamBrightnessState(brightness)
+          if (rootRef.current) {
+            rootRef.current.style.setProperty(
+              "--beam-opacity",
+              String(Math.max(0.2, Math.min(1.2, brightness)))
+            )
+          }
         },
       }),
       [reducedMotion]
@@ -140,11 +134,8 @@ const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
 
         {/* Sand-dust trail emitted behind rear wheel (mounted client-only) */}
         {mounted && !isFleet && !reducedMotion && (
-          <div
-            ref={dustRef}
-            className="absolute left-[-60px] bottom-[-8px] pointer-events-none z-0"
-          >
-            <DustTrail velocity={velState} reducedMotion={reducedMotion} />
+          <div className="absolute left-[-60px] bottom-[-8px] pointer-events-none z-0">
+            <DustTrail ref={dustRef} reducedMotion={reducedMotion} />
           </div>
         )}
 
@@ -153,7 +144,6 @@ const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
           <Vehicle
             variant={variant}
             showBeam={!isFleet}
-            beamBrightness={beamBrightness}
             className="w-full h-auto drop-shadow-2xl"
           />
         </div>

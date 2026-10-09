@@ -26,7 +26,7 @@ export default function FinalCta({ frames = false }: { frames?: boolean }) {
         />
 
         {/* Final Gantry Highway Sign Box */}
-        <div className="final-gantry relative z-10 w-full rounded-sm border-2 border-[#C9A227] bg-[#141518]/95 p-6 sm:p-10 md:p-12 text-center shadow-2xl backdrop-blur-md">
+        <div className="final-gantry relative z-10 w-full rounded-sm border-2 border-[#C9A227] bg-[#141518] p-6 sm:p-10 md:p-12 text-center shadow-2xl">
           {/* Status Subtitle */}
           <div className="flex items-center justify-center gap-2 mb-4 text-xs font-mono text-[#C9A227]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#C9A227] animate-pulse" />

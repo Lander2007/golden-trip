@@ -1,13 +1,18 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { useGSAP } from "@gsap/react"
 import Scene from "./Scene"
-import RouteMap from "./map/RouteMap"
+import RouteMap, { type RouteMapHandle } from "./map/RouteMap"
 import CityPanel from "./map/CityPanel"
 import DestinationsList from "./map/DestinationsList"
 import { ROUTE_CITIES, ALL_CITIES, type CityData } from "./map/egyptMapData"
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger)
+}
 
 export interface DestinationExit {
   exit: string
@@ -25,40 +30,17 @@ export const destinationsList: DestinationExit[] = ALL_CITIES.map((c, idx) => ({
 
 export default function Destinations({ frames = false }: { frames?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [mapProgress, setMapProgress] = useState(0)
+  const routeMapRef = useRef<RouteMapHandle>(null)
   const [activeCityIndex, setActiveCityIndex] = useState(0)
   const [manualCity, setManualCity] = useState<CityData | null>(null)
+  const cityIndexRef = useRef(0)
+  const manualCityRef = useRef<CityData | null>(null)
+  manualCityRef.current = manualCity
 
-  // Determine active route city from scroll progress
-  useEffect(() => {
-    if (manualCity) return
+  useGSAP(
+    () => {
+      if (frames || !containerRef.current) return
 
-    let nextIndex = 0
-    if (mapProgress >= 0.92) {
-      nextIndex = 5 // Aswan
-    } else if (mapProgress >= 0.76) {
-      nextIndex = 4 // Luxor
-    } else if (mapProgress >= 0.58) {
-      nextIndex = 3 // Hurghada
-    } else if (mapProgress >= 0.36) {
-      nextIndex = 2 // Sharm El-Sheikh
-    } else if (mapProgress >= 0.12) {
-      nextIndex = 1 // Cairo
-    } else {
-      nextIndex = 0 // Alexandria
-    }
-
-    if (nextIndex !== activeCityIndex) {
-      setActiveCityIndex(nextIndex)
-    }
-  }, [mapProgress, manualCity, activeCityIndex])
-
-  // GSAP ScrollTrigger pinning for the Destinations Map Scene
-  useEffect(() => {
-    if (frames || !containerRef.current) return
-    gsap.registerPlugin(ScrollTrigger)
-
-    const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: containerRef.current,
         start: "top top",
@@ -66,16 +48,31 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
         pin: true,
         scrub: 0.6,
         onUpdate: (self) => {
-          setMapProgress(self.progress)
-          if (manualCity) {
-            setManualCity(null) // Resume scroll-driven city following user scroll
+          const p = self.progress
+          routeMapRef.current?.setProgress(p)
+
+          if (manualCityRef.current) {
+            setManualCity(null)
+          }
+
+          // Calculate active city index from scroll progress and only setState when it CHANGES
+          let nextIndex = 0
+          if (p >= 0.92) nextIndex = 5 // Aswan
+          else if (p >= 0.76) nextIndex = 4 // Luxor
+          else if (p >= 0.58) nextIndex = 3 // Hurghada
+          else if (p >= 0.36) nextIndex = 2 // Sharm El-Sheikh
+          else if (p >= 0.12) nextIndex = 1 // Cairo
+          else nextIndex = 0 // Alexandria
+
+          if (nextIndex !== cityIndexRef.current) {
+            cityIndexRef.current = nextIndex
+            setActiveCityIndex(nextIndex)
           }
         },
       })
-    }, containerRef)
-
-    return () => ctx.revert()
-  }, [frames, manualCity])
+    },
+    { scope: containerRef, dependencies: [frames] }
+  )
 
   const currentCity = manualCity || ROUTE_CITIES[activeCityIndex] || ROUTE_CITIES[0]
 
@@ -83,6 +80,7 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
     setManualCity(city)
     const idx = ROUTE_CITIES.findIndex((c) => c.id === city.id)
     if (idx !== -1) {
+      cityIndexRef.current = idx
       setActiveCityIndex(idx)
     }
   }
@@ -121,10 +119,9 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
           {/* Map Section: 60% Width on Desktop (cols 1 to 7) */}
           <div className="lg:col-span-7 h-[44vh] sm:h-[50vh] lg:h-[62vh] min-h-[380px] w-full">
             <RouteMap
-              progress={mapProgress}
+              ref={routeMapRef}
               activeCity={currentCity}
               onSelectCity={handleSelectCity}
-              showOtherCities={mapProgress >= 0.45}
             />
           </div>
 

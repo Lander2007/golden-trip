@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { useGSAP } from "@gsap/react"
 import Scene from "./Scene"
 import Fleet from "./Fleet"
 
@@ -12,17 +13,17 @@ if (typeof window !== "undefined") {
 
 export default function GantryIntro({ frames = false }: { frames?: boolean }) {
   const introRef = useRef<HTMLDivElement>(null)
-  const [destCount, setDestCount] = useState(0)
-  const [hoursCount, setHoursCount] = useState(0)
-  const [classCount, setClassCount] = useState(0)
+  const destCountRef = useRef<HTMLDivElement>(null)
+  const hoursCountRef = useRef<HTMLDivElement>(null)
+  const classCountRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (frames || !introRef.current) return
+  useGSAP(
+    () => {
+      if (frames || !introRef.current) return
 
-    const el = introRef.current
-    const words = el.querySelectorAll<HTMLElement>(".intro-word")
+      const el = introRef.current
+      const words = el.querySelectorAll<HTMLElement>(".intro-word")
 
-    const ctx = gsap.context(() => {
       // Word-by-word scrub timeline
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -32,10 +33,16 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
           scrub: 0.6,
           onUpdate: (self) => {
             const p = self.progress
-            // Tick up the three counters smoothly with scroll progress
-            setDestCount(Math.min(14, Math.round(p * 14)))
-            setHoursCount(Math.min(24, Math.round(p * 24)))
-            setClassCount(Math.min(3, Math.round(p * 3)))
+            // Imperatively tick up the three counters smoothly without React re-rendering
+            const d = Math.min(14, Math.round(p * 14))
+            const h = Math.min(24, Math.round(p * 24))
+            const c = Math.min(3, Math.round(p * 3))
+
+            if (destCountRef.current) destCountRef.current.textContent = String(d)
+            if (hoursCountRef.current) {
+              hoursCountRef.current.firstChild!.textContent = String(h)
+            }
+            if (classCountRef.current) classCountRef.current.textContent = String(c)
           },
         },
       })
@@ -54,16 +61,15 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
           idx * 0.15
         )
       })
-    }, introRef)
-
-    return () => ctx.revert()
-  }, [frames])
+    },
+    { scope: introRef, dependencies: [frames] }
+  )
 
   return (
     <Scene index={1} id="welcome" frames={frames}>
       <div ref={introRef} className="gantry mx-auto w-full max-w-[960px] py-4">
         {/* Overhead highway gantry frame */}
-        <div className="relative rounded-sm border border-[#2A2B2E] bg-[#141518]/95 p-6 sm:p-10 md:p-12 text-center shadow-2xl backdrop-blur-md">
+        <div className="relative rounded-sm border border-[#2A2B2E] bg-[#141518] p-6 sm:p-10 md:p-12 text-center shadow-2xl">
           {/* Subtle Gantry Serial Identifier */}
           <div className="flex items-center justify-between border-b border-[#2A2B2E] pb-4 mb-8">
             <span className="font-mono text-xs text-[#B9B7B0]/60">
@@ -95,8 +101,11 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[#2A2B2E] pt-8">
             {/* Counter 1: 14 Destinations */}
             <div className="flex flex-col items-center justify-center rounded-sm bg-[#0B0A09]/60 p-4 border border-[#2A2B2E]/60">
-              <div className="font-display text-4xl sm:text-5xl font-extrabold tabular-nums text-[#F4F2EC]">
-                {destCount}
+              <div
+                ref={destCountRef}
+                className="font-display text-4xl sm:text-5xl font-extrabold tabular-nums text-[#F4F2EC]"
+              >
+                0
               </div>
               <div className="mt-1 text-sm font-semibold text-[#C9A227]">
                 Destinations
@@ -108,8 +117,11 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
 
             {/* Counter 2: 24/7 Availability */}
             <div className="flex flex-col items-center justify-center rounded-sm bg-[#0B0A09]/60 p-4 border border-[#2A2B2E]/60">
-              <div className="font-display text-4xl sm:text-5xl font-extrabold tabular-nums text-[#F4F2EC]">
-                {hoursCount}
+              <div
+                ref={hoursCountRef}
+                className="font-display text-4xl sm:text-5xl font-extrabold tabular-nums text-[#F4F2EC]"
+              >
+                <span>0</span>
                 <span className="text-2xl text-[#C9A227]">/7</span>
               </div>
               <div className="mt-1 text-sm font-semibold text-[#C9A227]">
@@ -122,8 +134,11 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
 
             {/* Counter 3: 3 Vehicle Classes */}
             <div className="flex flex-col items-center justify-center rounded-sm bg-[#0B0A09]/60 p-4 border border-[#2A2B2E]/60">
-              <div className="font-display text-4xl sm:text-5xl font-extrabold tabular-nums text-[#F4F2EC]">
-                {classCount}
+              <div
+                ref={classCountRef}
+                className="font-display text-4xl sm:text-5xl font-extrabold tabular-nums text-[#F4F2EC]"
+              >
+                0
               </div>
               <div className="mt-1 text-sm font-semibold text-[#C9A227]">
                 Vehicle classes

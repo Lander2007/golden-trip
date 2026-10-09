@@ -86,7 +86,7 @@ export default function Vehicle({
         <div
           className="pointer-events-none absolute right-[-24%] top-[42%] w-[55%] h-[40%]"
           style={{
-            opacity: Math.max(0.2, Math.min(1.2, beamBrightness)),
+            opacity: "var(--beam-opacity, 0.5)",
             background:
               "linear-gradient(90deg, rgba(201,162,39,0.5) 0%, rgba(230,207,133,0.22) 35%, transparent 100%)",
             clipPath: "polygon(0 35%, 100% 0, 100% 100%, 0 65%)",

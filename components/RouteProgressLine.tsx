@@ -1,10 +1,7 @@
 "use client"
 
-// Determine active city based on real km
-/* 2px Track across full width */ /* Filled gold progress bar */ /* 6 City Ticks & Active Labels */
-
-// Calculate edge alignment for label
-/* Tick marker */ /* Active City Label - positioned BELOW the line (top-2.5) */
+import { useEffect, useState } from "react"
+import { subscribeCityChange, scrollProgress } from "@/lib/scrollEngine"
 
 export interface CityMarker {
   name: string
@@ -25,38 +22,17 @@ export default function RouteProgressLine({
   km = 0,
   condensed = false,
 }: {
-  km: number
+  km?: number
   condensed?: boolean
 }) {
-  const currentKm = Math.max(0, Math.min(980, km))
-  const progressPct = (currentKm / 980) * 100
-  let activeIndex = 0
-  if (
-    currentKm <
-    110
-  )
-    activeIndex = 0
-  else if (
-    currentKm <
-    360
-  )
-    activeIndex = 1
-  else if (
-    currentKm <
-    575
-  )
-    activeIndex = 2
-  else if (
-    currentKm <
-    745
-  )
-    activeIndex = 3
-  else if (
-    currentKm <
-    910
-  )
-    activeIndex = 4
-  else activeIndex = 5
+  const [activeIndex, setActiveIndex] = useState(() => scrollProgress.activeCityIndex)
+
+  // Subscribe to city changes from the scroll engine: only fires when active city index CHANGES
+  useEffect(() => {
+    return subscribeCityChange((newIndex) => {
+      setActiveIndex(newIndex)
+    })
+  }, [])
 
   return (
     <div
@@ -65,24 +41,20 @@ export default function RouteProgressLine({
       }`}
       aria-label="Route progress through Egypt"
     >
-      {}
+      {/* 2px Track across full width */}
       <div className="relative h-[2px] w-full bg-[#2A2B2E] overflow-visible">
-        {}
+        {/* Filled gold progress bar driven by CSS variable --p */}
         <div
-          className="h-full bg-[#C9A227] transition-all duration-150 ease-out"
-          style={{ width: `${progressPct}%` }}
+          className="h-full bg-[#C9A227] will-change-[width]"
+          style={{ width: "calc(var(--p, 0) * 100%)" }}
         />
 
-        {}
+        {/* 6 City Ticks & Active Labels */}
         <div className="absolute inset-0 max-w-[1200px] mx-auto px-4 sm:px-8 overflow-visible">
           <div className="relative h-full w-full overflow-visible">
             {ROUTE_CITIES.map((city, index) => {
-              const isPassed =
-                currentKm >=
-                city.km
-              const isActive =
-                activeIndex ===
-                index
+              const isPassed = activeIndex >= index
+              const isActive = activeIndex === index
               let labelTransform = "-translate-x-1/2"
               if (index === 0) labelTransform = "translate-x-0"
               if (index === ROUTE_CITIES.length - 1)
@@ -94,7 +66,7 @@ export default function RouteProgressLine({
                   className="absolute top-1/2 -translate-y-1/2 overflow-visible"
                   style={{ left: `${city.pct}%` }}
                 >
-                  {}
+                  {/* Tick marker */}
                   <div
                     className={`h-2.5 w-1 rounded-[1px] transition-colors duration-200 ${
                       isActive
@@ -105,7 +77,7 @@ export default function RouteProgressLine({
                     }`}
                   />
 
-                  {}
+                  {/* Active City Label - positioned BELOW the line (top-2.5) */}
                   {isActive && (
                     <div
                       className={`absolute top-2.5 ${labelTransform} whitespace-nowrap pointer-events-auto`}

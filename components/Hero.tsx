@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import gsap from "gsap"
+import { useGSAP } from "@gsap/react"
 import { ArrowDown } from "lucide-react"
 import BookingBar from "./BookingBar"
 import FitText from "./FitText"
@@ -24,11 +25,11 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
   const heroRef = useRef<HTMLDivElement>(null)
   const [imgFailed, setImgFailed] = useState(false)
 
-  useEffect(() => {
-    if (frames || typeof window === "undefined") return
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+  useGSAP(
+    () => {
+      if (frames || typeof window === "undefined") return
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 
-    const ctx = gsap.context(() => {
       // Initial Load Entrance Animation (1.6s total)
       const tl = gsap.timeline({ defaults: { ease: "power2.out" } })
 
@@ -88,10 +89,9 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         { xPercent: 250, opacity: 0.5, duration: 0.9, ease: "power2.inOut" },
         0.7
       )
-    }, heroRef)
-
-    return () => ctx.revert()
-  }, [frames])
+    },
+    { scope: heroRef, dependencies: [frames] }
+  )
 
   return (
     <section
@@ -115,15 +115,18 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
             role="presentation"
             onError={() => setImgFailed(true)}
             className="hero-bg-photo hero-parallax-far absolute inset-0 h-full w-full object-cover object-center will-change-transform pointer-events-none z-[1]"
-            style={{
-              filter: "brightness(1) saturate(1)",
-            }}
           />
         ) : (
           <div className="absolute inset-0 pointer-events-none z-[1]">
             <GizaPyramids className="hero-parallax-far absolute right-0 bottom-16 w-[640px] opacity-40 will-change-transform" />
           </div>
         )}
+
+        {/* Photo darkening overlay div (replaces runtime CSS filter) */}
+        <div
+          className="hero-bg-photo-overlay pointer-events-none absolute inset-0 bg-[#0B0A09] opacity-0 z-[1] will-change-[opacity]"
+          aria-hidden="true"
+        />
 
         {/* Base dark grading for consistent text contrast */}
         <div

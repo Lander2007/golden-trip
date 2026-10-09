@@ -1,87 +1,19 @@
 "use client"
-// High-performance physics tick for persistent ScrollCar
-// 1. Overall trip odometer tracker: 000 to 980 km & --sky interpolation
-
-// Headlight beam grows brighter as the sky darkens towards dusk/night
-
-// 2. Active scene detection and light mode toggle
-// Scene 3 is How it works (light section)
-
-// 3. Motion animations (skipped if prefers-reduced-motion)
-// Hero headline mask sweep
-
-// CHOREOGRAPHY — SCENE 0: HERO (Pin hero for 100% extra scroll)
-// The SUV drives from 6vw to 78vw across the wordmark.
-// Parallax layers move at: far 0.15x, mid 0.4x, road surface/lane 1.0x, foreground 1.3x.
-// SUV drives smoothly across wordmark: 6vw to 78vw
-// Scene boundary exit right at high speed: x to 120vw
-
-// Parallax speeds during Hero pinned scroll
-
-// CHOREOGRAPHY — SCENE 1: GANTRY INTRO (#welcome)
-// Sedan enters from left (-35vw), drives across, exits right (120vw)
-// -35vw -> 18vw
-// 18vw -> 75vw
-// 75vw -> 120vw
-
-// Welcome Gantry: slides in from top, then exits upward
-
-// CHOREOGRAPHY — SCENE 2: MAP SECTION / DESTINATIONS (#destinations)
-// Map section uses small route marker so the car hides
-
-// CHOREOGRAPHY — SCENE 3: HOW IT WORKS (#how-it-works)
-// Sedan enters from left (-35vw), drives across past milestone steps, exits right
-// -35vw -> 16vw
-// 16vw -> 74vw
-// 74vw -> 120vw
-
-// Step panels flip when car passes
-
-// CHOREOGRAPHY — SCENE 4: WHY GOLDEN TRIP (#why-golden-trip)
-// Van enters from left (-35vw), drives across, exits right (120vw)
-// -35vw -> 16vw
-// 16vw -> 74vw
-// 74vw -> 120vw
-
-// Benefit cards lit by headlights sequentially
-
-// CHOREOGRAPHY — SCENE 5: FINAL CTA (#ready)
-// All three vehicles parked side by side
-// slides to 8vw
-// parked cleanly side by side
-
-// Final Gantry: arrives from top
-
-// Continuous highway lane dashes travel with distance (1.0x road speed)
-
-// Dim parked vehicle into footer
-
-// 4. Desktop horizontal scroll pinning for Destinations scene
-
-// Exit signs retroreflective shine sweep on crossing
-
-// 5. Mobile vertical sequence shine for exit signs
-
-// Recompute scroll dimensions on font loading and resize
-/* Sky system: photographic sky grading, dusk, gold stars, 4% film grain, soft vignette */ /* Signature Celestial Sun/Moon disc traveling on an arc across the page */ /* Main content scenes */ /* 
-        ROAD ZONE:
-        Fixed bottom 24vh strip across the entire page.
-        Houses ONLY the persistent ScrollCar, the lane line, and the mechanical odometer plate.
-        Nothing from the Content Zone ever enters this area.
-      */ /* Lane Line: dashed highway dividing line */ /* 
-            PERSISTENT SCROLL-DRIVEN VEHICLE:
-            Travels continuously with ScrollTrigger scrub: 0.6.
-            Real-time wheel rotation, body bob, pitch lean, dust trail, and variant swaps.
-          */ /* Mechanical Odometer Plate: bottom left, safe distance from lane and car */ /* Subtle journey direction mark */
 
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { useGSAP } from "@gsap/react"
 import Lenis from "lenis"
 import ScrollCar, { type ScrollCarHandle } from "./ScrollCar"
-import Odometer from "./Odometer"
-import CelestialBody from "./landscape/CelestialBody"
-import SkySystem, { getSkyColor } from "./landscape/SkySystem"
+import Odometer, { type OdometerHandle } from "./Odometer"
+import CelestialBody, { type CelestialBodyHandle } from "./landscape/CelestialBody"
+import SkySystem, { getSkyColor, type SkySystemHandle } from "./landscape/SkySystem"
+import { scrollProgress, updateScrollProgress } from "@/lib/scrollEngine"
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger)
+}
 
 export default function Drive({
   children,
@@ -92,70 +24,108 @@ export default function Drive({
 }) {
   const root = useRef<HTMLDivElement>(null)
   const scrollCarRef = useRef<ScrollCarHandle>(null)
-  const [km, setKm] = useState(0)
-  const [progress, setProgress] = useState(0)
+  const odometerRef = useRef<OdometerHandle>(null)
+  const skyRef = useRef<SkySystemHandle>(null)
+  const celestialRef = useRef<CelestialBodyHandle>(null)
+
   const [activeScene, setActiveScene] = useState(0)
   const [light, setLight] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
 
+  // 1. Lenis & Master GSAP Ticker Integration (exactly once at app level)
   useEffect(() => {
-    if (frames || !root.current) return
-    gsap.registerPlugin(ScrollTrigger)
+    if (frames || typeof window === "undefined") return
 
-    let lenis: Lenis | undefined
-    let tickerCallback: ((time: number) => void) | undefined
-
-    const isReduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches
+    const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     setReducedMotion(isReduced)
 
-    lenis = new Lenis({
+    const lenis = new Lenis({
+      autoRaf: false,
       duration: 1.05,
       smoothWheel: true,
       syncTouch: false,
     })
     lenis.on("scroll", ScrollTrigger.update)
 
-    tickerCallback = (time: number) => {
-      lenis?.raf(time * 1000)
-      if (scrollCarRef.current) {
-        const vel = lenis ? lenis.velocity : 0
-        scrollCarRef.current.updatePhysics(vel, window.scrollY)
+    let lastWrittenP = -1
+    let lastWrittenSky = ""
+
+    const tickerCallback = (time: number) => {
+      lenis.raf(time * 1000)
+
+      const p = scrollProgress.value
+      const vel = lenis.velocity || 0
+
+      // Write CSS variables on root element at most once per frame
+      if (Math.abs(p - lastWrittenP) > 0.0001) {
+        lastWrittenP = p
+        document.documentElement.style.setProperty("--p", p.toFixed(4))
+        const skyColor = getSkyColor(p)
+        if (skyColor !== lastWrittenSky) {
+          lastWrittenSky = skyColor
+          document.documentElement.style.setProperty("--sky", skyColor)
+        }
       }
+
+      // Imperative DOM updates via refs and quickSetters inside ticker
+      odometerRef.current?.updateKm(scrollProgress.km)
+      skyRef.current?.update(p)
+      celestialRef.current?.update(p)
+      scrollCarRef.current?.updatePhysics(vel, window.scrollY)
     }
+
     gsap.ticker.add(tickerCallback)
     gsap.ticker.lagSmoothing(0)
 
     const onNativeScroll = () => {
-      if (!lenis) {
-        ScrollTrigger.update()
-        scrollCarRef.current?.updatePhysics(0, window.scrollY)
-      }
+      ScrollTrigger.update()
     }
     window.addEventListener("scroll", onNativeScroll, { passive: true })
 
-    const context = gsap.context(() => {
-      // 1. Overall trip odometer tracker: 000 to 980 km & --sky interpolation
+    // Debounced resize handler
+    let resizeTimer: NodeJS.Timeout
+    const handleResize = () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => {
+        ScrollTrigger.refresh()
+      }, 150)
+    }
+    window.addEventListener("resize", handleResize, { passive: true })
+
+    // Refresh after fonts load
+    if (typeof document !== "undefined" && document.fonts) {
+      document.fonts.ready.then(() => ScrollTrigger.refresh())
+    }
+
+    return () => {
+      clearTimeout(resizeTimer)
+      window.removeEventListener("scroll", onNativeScroll)
+      window.removeEventListener("resize", handleResize)
+      gsap.ticker.remove(tickerCallback)
+      lenis.destroy()
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
+    }
+  }, [frames])
+
+  // 2. GSAP Scened Choreography with useGSAP
+  useGSAP(
+    () => {
+      if (frames || !root.current) return
+
+      // Master ScrollTrigger tracking overall page progress (writes to mutable scrollProgress)
       ScrollTrigger.create({
         trigger: root.current,
         start: "top top",
         end: "bottom bottom",
         onUpdate: (self) => {
-          const current = Math.round(self.progress * 980)
-          setKm(current)
-          setProgress(self.progress)
-          const skyColor = getSkyColor(self.progress)
-          document.documentElement.style.setProperty("--sky", skyColor)
-          const beamBrightness =
-            0.35 + Math.min(0.85, self.progress * 0.9)
+          updateScrollProgress(self.progress)
+          const beamBrightness = 0.35 + Math.min(0.85, self.progress * 0.9)
           scrollCarRef.current?.setBeamBrightness(beamBrightness)
         },
       })
 
-      // 2. Active scene detection and light mode toggle
-      const sceneElements =
-        root.current!.querySelectorAll<HTMLElement>("[data-scene]")
+      // Active scene detection: update React state ONLY when index changes
+      const sceneElements = root.current.querySelectorAll<HTMLElement>("[data-scene]")
       sceneElements.forEach((scene, index) => {
         ScrollTrigger.create({
           trigger: scene,
@@ -163,8 +133,11 @@ export default function Drive({
           end: "bottom 45%",
           onToggle: (self) => {
             if (self.isActive) {
-              setActiveScene(index)
-              setLight(index === 3)
+              setActiveScene((prev) => (prev !== index ? index : prev))
+              setLight((prev) => {
+                const nextLight = index === 3
+                return prev !== nextLight ? nextLight : prev
+              })
             }
           },
         })
@@ -180,13 +153,10 @@ export default function Drive({
           stagger: 0.35,
           ease: "power3.out",
           delay: 0.2,
-        },
+        }
       )
 
-      // CHOREOGRAPHY — SCENE 0: HERO (Pin hero for 120% extra scroll)
-      // The SUV drives from 6vw to 78vw across the wordmark.
-      // Parallax layers move at: far 0.15x, mid 0.4x, road surface/lane 1.0x, foreground 1.3x.
-      // Celestial body transitions: sun in ember rises and transforms into crescent moon in sand, with sky grading and stars.
+      // SCENE 0: HERO (Pin hero for 120% extra scroll)
       const heroTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: "#alexandria",
@@ -220,20 +190,20 @@ export default function Drive({
         },
       })
 
-      // Parallax layers
+      // Parallax layers (hardware accelerated transform only)
       heroTimeline.to(".hero-parallax-far", { x: -60, ease: "none" }, 0)
       heroTimeline.to(".hero-parallax-mid", { x: -160, ease: "none" }, 0)
       heroTimeline.to(".hero-parallax-fg", { x: -520, ease: "none" }, 0)
       heroTimeline.to(".travel-lane", { x: "-=480", ease: "none" }, 0)
 
-      // Celestial position: x moves 68% -> 90%, y moves 40% -> 24% (22cqw, -16cqh)
+      // Celestial position: x moves 68% -> 90%, y moves 40% -> 24%
       heroTimeline.to(
         ".celestial-wrapper",
         { x: "22cqw", y: "-16cqh", duration: 1, ease: "power1.out" },
         0
       )
 
-      // Celestial color: p 0.00 to 0.35 --ember, p 0.35 to 0.65 pale gold (#E3C46A), p 0.65 to 1.00 --sand (#EADFC8)
+      // Celestial color transition
       heroTimeline.to(
         ".celestial-disc",
         { fill: "#E3C46A", duration: 0.3, ease: "none" },
@@ -245,57 +215,54 @@ export default function Drive({
         0.65
       )
 
-      // Celestial glow: starts large & warm, shrinks to small cool halo (about 40% of starting size) by p 0.7
+      // Celestial glow: scale down smoothly
       heroTimeline.to(
         ".celestial-glow",
         { scale: 0.4, opacity: 0.5, duration: 0.7, ease: "power1.out" },
         0
       )
 
-      // Crescent mask cutter circle: slides in from p 0.55 to 1.0 (cx 220 -> 126)
+      // Crescent mask cutter circle
       heroTimeline.to(
         "#crescentCutter",
         { attr: { cx: 126 }, duration: 0.45, ease: "power1.inOut" },
         0.55
       )
 
-      // Sky overlays: dawn opacity 1 -> 0 across p 0 to 0.6
+      // Sky overlays
       heroTimeline.to(
         ".hero-dawn-overlay",
         { opacity: 0, duration: 0.6, ease: "none" },
         0
       )
-
-      // Night overlay: opacity 0 -> 0.65 across p 0.2 to 1.0
       heroTimeline.to(
         ".hero-night-overlay",
         { opacity: 0.65, duration: 0.8, ease: "none" },
         0.2
       )
 
-      // Photo filter: brightness 1 -> 0.6 and saturate 1 -> 0.75
+      // Photo darkening via opacity overlay div (avoid full-screen CSS filter recalculations)
       heroTimeline.to(
-        ".hero-bg-photo",
-        { filter: "brightness(0.6) saturate(0.75)", duration: 1, ease: "none" },
+        ".hero-bg-photo-overlay",
+        { opacity: 0.4, duration: 1, ease: "none" },
         0
       )
 
-      // Stars: fade in from p 0.5 to 1
+      // Stars
       heroTimeline.to(
         ".hero-stars",
         { opacity: 1, duration: 0.5, ease: "none" },
         0.5
       )
 
-      // Headlight beam brightness
+      // Headlight beam
       heroTimeline.to(
         ".headlight-beam",
         { opacity: 1, duration: 1, ease: "none" },
         0
       )
 
-      // CHOREOGRAPHY — SCENE 1: GANTRY INTRO (#welcome)
-      // Sedan enters from left (-35vw), drives across, exits right (120vw)
+      // SCENE 1: GANTRY INTRO (#welcome)
       ScrollTrigger.create({
         trigger: "#welcome",
         start: "top 95%",
@@ -327,35 +294,19 @@ export default function Drive({
         },
       })
 
-      // Welcome Gantry: slides in from top, then exits upward
-      gsap.fromTo(
-        ".gantry",
-        { y: -150, opacity: 0.3 },
-        {
-          y: 0,
-          opacity: 1,
-          ease: "expo.out",
-          duration: 0.75,
-          scrollTrigger: {
-            trigger: "#welcome",
-            start: "top 60%",
-            toggleActions: "play none none reverse",
-          },
-        },
-      )
-      gsap.to(".gantry", {
-        y: -240,
-        ease: "none",
+      // Welcome Gantry: consolidated animation
+      const welcomeGantryTl = gsap.timeline({
         scrollTrigger: {
           trigger: "#welcome",
-          start: "bottom 85%",
+          start: "top 60%",
           end: "bottom 20%",
           scrub: true,
         },
       })
+      welcomeGantryTl.fromTo(".gantry", { y: -150, opacity: 0.3 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" })
+      welcomeGantryTl.to(".gantry", { y: -240, duration: 0.6, ease: "power1.in" }, 0.6)
 
-      // CHOREOGRAPHY — SCENE 2: MAP SECTION / DESTINATIONS (#destinations)
-      // Map section uses small route marker so the car hides
+      // SCENE 2: MAP SECTION / DESTINATIONS (#destinations)
       ScrollTrigger.create({
         trigger: "#destinations",
         start: "top 80%",
@@ -374,8 +325,7 @@ export default function Drive({
         },
       })
 
-      // CHOREOGRAPHY — SCENE 3: HOW IT WORKS (#how-it-works)
-      // Sedan enters from left (-35vw), drives across past milestone steps, exits right
+      // SCENE 3: HOW IT WORKS (#how-it-works)
       ScrollTrigger.create({
         trigger: "#how-it-works",
         start: "top 95%",
@@ -425,13 +375,12 @@ export default function Drive({
               opacity: 1,
               duration: 0.65,
               ease: "power2.inOut",
-            },
+            }
           )
         })
       }
 
-      // CHOREOGRAPHY — SCENE 4: WHY GOLDEN TRIP (#why-golden-trip)
-      // Van enters from left (-35vw), drives across, exits right (120vw)
+      // SCENE 4: WHY GOLDEN TRIP (#why-golden-trip)
       ScrollTrigger.create({
         trigger: "#why-golden-trip",
         start: "top 95%",
@@ -480,7 +429,7 @@ export default function Drive({
               opacity: 1,
               duration: 0.6,
               ease: "power3.out",
-            },
+            }
           )
           const shine = benefit.querySelector(".benefit-shine")
           if (shine) {
@@ -492,14 +441,13 @@ export default function Drive({
                 duration: 0.45,
                 ease: "power2.inOut",
               },
-              "<0.1",
+              "<0.1"
             )
           }
         })
       }
 
-      // CHOREOGRAPHY — SCENE 5: FINAL CTA (#ready)
-      // All three vehicles parked side by side
+      // SCENE 5: FINAL CTA (#ready)
       ScrollTrigger.create({
         trigger: "#ready",
         start: "top 85%",
@@ -527,7 +475,7 @@ export default function Drive({
         },
       })
 
-      // Final Gantry: arrives from top
+      // Final Gantry arrives from top
       gsap.from(".final-gantry", {
         y: -120,
         opacity: 0.4,
@@ -540,7 +488,7 @@ export default function Drive({
         },
       })
 
-      // Continuous highway lane dashes travel with distance (1.0x road speed)
+      // Continuous highway lane dashes travel with distance
       gsap.to(".travel-lane", {
         x: -3600,
         ease: "none",
@@ -552,7 +500,7 @@ export default function Drive({
         },
       })
 
-      // Dim parked vehicle into footer cleanly via setOpacity
+      // Dim parked vehicle into footer cleanly
       ScrollTrigger.create({
         trigger: "#footer",
         start: "top 85%",
@@ -562,46 +510,28 @@ export default function Drive({
           scrollCarRef.current?.setOpacity(1 - self.progress)
         },
       })
-    }, root)
-
-    const handleResize = () => {
-      ScrollTrigger.refresh()
-    }
-    window.addEventListener("resize", handleResize)
-    if (document.fonts) {
-      document.fonts.ready.then(() => ScrollTrigger.refresh())
-    }
-    const timer = setTimeout(() => ScrollTrigger.refresh(), 350)
-
-    return () => {
-      clearTimeout(timer)
-      window.removeEventListener("resize", handleResize)
-      window.removeEventListener("scroll", onNativeScroll)
-      context.revert()
-      if (tickerCallback) gsap.ticker.remove(tickerCallback)
-      lenis?.destroy()
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
-    }
-  }, [frames])
+    },
+    { scope: root, dependencies: [frames] }
+  )
 
   return (
     <div ref={root} className="relative w-full">
-      {}
-      {!frames && <SkySystem progress={progress} />}
+      {/* Sky System */}
+      {!frames && <SkySystem ref={skyRef} />}
 
-      {}
-      {!frames && <CelestialBody progress={progress} />}
+      {/* Floating Celestial Body */}
+      {!frames && <CelestialBody ref={celestialRef} />}
 
-      {}
+      {/* Main Scenes */}
       <main className="relative z-10">{children}</main>
 
-      {}
+      {/* Fixed Road Zone Strip */}
       {!frames && (
         <div
           className="road-zone fixed inset-x-0 bottom-0 z-30 h-[24vh] pointer-events-none overflow-hidden select-none"
           aria-hidden="true"
         >
-          {}
+          {/* Lane Line */}
           <div className="absolute inset-x-0 bottom-[8.5vh] h-2 overflow-hidden">
             <svg className="travel-lane h-2 w-[200%]" aria-hidden="true">
               <path
@@ -613,19 +543,19 @@ export default function Drive({
             </svg>
           </div>
 
-          {}
+          {/* Persistent Scroll-Driven Vehicle */}
           <ScrollCar
             ref={scrollCarRef}
             initialVariant="suv"
             reducedMotion={reducedMotion}
           />
 
-          {}
+          {/* Mechanical Odometer Plate */}
           <div className="absolute bottom-4 left-7 sm:left-12 z-40 pointer-events-auto">
-            <Odometer km={km} light={light} />
+            <Odometer ref={odometerRef} km={0} light={light} />
           </div>
 
-          {}
+          {/* Subtle journey direction mark */}
           <div
             className={`absolute bottom-5 right-6 z-40 hidden text-xs font-medium md:block ${
               light ? "text-[#0E0E10]/70" : "text-[#B9B7B0]/60"

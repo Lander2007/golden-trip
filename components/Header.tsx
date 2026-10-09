@@ -29,52 +29,75 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
   const [activeNav, setActiveNav] = useState<string>("")
   const menuRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY
-      setCondensed(
-        scrollY >
-          24,
-      )
 
-      if (activeSection) {
-        setActiveNav(activeSection)
-        return
-      }
+  const condensedRef = useRef(false)
+  const activeNavRef = useRef("")
+  const offsetsRef = useRef({ destinations: 0, howItWorks: 0, whyUs: 0 })
+
+  useEffect(() => {
+    // Cache section offset tops to prevent layout thrashing on scroll
+    const measureSections = () => {
       const destinations = document.getElementById("destinations")
       const howItWorks = document.getElementById("how-it-works")
       const whyUs = document.getElementById("why-golden-trip")
+      offsetsRef.current = {
+        destinations: destinations ? destinations.offsetTop : 0,
+        howItWorks: howItWorks ? howItWorks.offsetTop : 0,
+        whyUs: whyUs ? whyUs.offsetTop : 0,
+      }
+    }
 
-      const scrollPos =
-        scrollY +
-        200
+    measureSections()
 
-      if (
-        whyUs &&
-        scrollPos >=
-          whyUs.offsetTop
-      ) {
-        setActiveNav("why-golden-trip")
-      } else if (
-        howItWorks &&
-        scrollPos >=
-          howItWorks.offsetTop
-      ) {
-        setActiveNav("how-it-works")
-      } else if (
-        destinations &&
-        scrollPos >=
-          destinations.offsetTop
-      ) {
-        setActiveNav("destinations")
-      } else {
-        setActiveNav("")
+    let resizeTimer: NodeJS.Timeout
+    const handleResize = () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(measureSections, 150)
+    }
+    window.addEventListener("resize", handleResize, { passive: true })
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+      const nextCondensed = scrollY > 24
+      if (nextCondensed !== condensedRef.current) {
+        condensedRef.current = nextCondensed
+        setCondensed(nextCondensed)
+      }
+
+      if (activeSection) {
+        if (activeSection !== activeNavRef.current) {
+          activeNavRef.current = activeSection
+          setActiveNav(activeSection)
+        }
+        return
+      }
+
+      const scrollPos = scrollY + 200
+      const { destinations, howItWorks, whyUs } = offsetsRef.current
+
+      let nextNav = ""
+      if (whyUs > 0 && scrollPos >= whyUs) {
+        nextNav = "why-golden-trip"
+      } else if (howItWorks > 0 && scrollPos >= howItWorks) {
+        nextNav = "how-it-works"
+      } else if (destinations > 0 && scrollPos >= destinations) {
+        nextNav = "destinations"
+      }
+
+      if (nextNav !== activeNavRef.current) {
+        activeNavRef.current = nextNav
+        setActiveNav(nextNav)
       }
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })
     handleScroll()
-    return () => window.removeEventListener("scroll", handleScroll)
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("resize", handleResize)
+      clearTimeout(resizeTimer)
+    }
   }, [activeSection])
   useEffect(() => {
     setMobileOpen(false)
@@ -256,14 +279,14 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
             </Link>
           </div>
 
-          {}
+          {/* Mobile Hamburger Button */}
           <div className="pointer-events-auto lg:hidden">
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
               aria-label="Open navigation menu"
               aria-expanded={mobileOpen}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#EADFC8]/20 bg-[#0B0A09]/80 backdrop-blur-md text-[#F4F2EC] hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#EADFC8]/20 bg-[#141518] text-[#F4F2EC] hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
             >
               <Menu className="h-5 w-5 stroke-[2.2]" />
             </button>
@@ -271,7 +294,7 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
         </div>
       </header>
 
-      {}
+      {/* Docked Route Progress Line: visible once user scrolls past the hero frame */}
       {pathname === "/" && (
         <div
           className={`transition-opacity duration-300 ${
@@ -284,14 +307,14 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
         </div>
       )}
 
-      {}
+      {/* Mobile Gantry-Styled Full Screen Navigation Menu */}
       {mobileOpen && (
         <div
           ref={menuRef}
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
-          className="fixed inset-0 z-[100] flex flex-col bg-[#0B0A09]/98 backdrop-blur-xl px-6 py-6 overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] flex flex-col bg-[#0B0A09] px-6 py-6 overflow-y-auto animate-in fade-in duration-200"
         >
           {}
           <div className="flex items-center justify-between border-b border-[#2A2B2E] pb-5">

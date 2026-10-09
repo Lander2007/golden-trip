@@ -1,83 +1,112 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import gsap from "gsap"
-import { MotionPathPlugin } from "gsap/MotionPathPlugin"
+import { useEffect, useRef, forwardRef, useImperativeHandle } from "react"
 import {
   EGYPT_PATH_DATA,
   ROUTE_PATH_DATA,
   EGYPT_MAP_WIDTH,
   EGYPT_MAP_HEIGHT,
   ALL_CITIES,
-  ROUTE_CITIES,
   type CityData,
 } from "./egyptMapData"
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(MotionPathPlugin)
+export interface RouteMapHandle {
+  setProgress: (progress: number) => void
 }
 
 interface RouteMapProps {
-  progress: number
+  progress?: number
   activeCity: CityData
   onSelectCity?: (city: CityData) => void
   showOtherCities?: boolean
 }
 
-export default function RouteMap({
-  progress = 0,
-  activeCity,
-  onSelectCity,
-  showOtherCities = false,
-}: RouteMapProps) {
+const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
+  {
+    progress = 0,
+    activeCity,
+    onSelectCity,
+    showOtherCities = false,
+  },
+  ref
+) {
   const routePathRef = useRef<SVGPathElement>(null)
   const carMarkerRef = useRef<SVGGElement>(null)
-  const [pathTotalLength, setPathTotalLength] = useState(1200)
+  const otherCitiesRef = useRef<SVGGElement>(null)
+  const progressBarRef = useRef<HTMLDivElement>(null)
 
-  // Measure path length on mount
+  const sampledPointsRef = useRef<{ x: number; y: number; angle: number }[]>([])
+  const totalLengthRef = useRef<number>(1200)
+
+  // Pre-sample 200 points along the path once on mount to eliminate getPointAtLength calls during scroll
   useEffect(() => {
-    if (routePathRef.current) {
-      const len = routePathRef.current.getTotalLength()
-      setPathTotalLength(len)
+    if (!routePathRef.current) return
+    const path = routePathRef.current
+    const len = path.getTotalLength()
+    totalLengthRef.current = len
+
+    const samples: { x: number; y: number; angle: number }[] = []
+    const sampleCount = 200
+    for (let i = 0; i <= sampleCount; i++) {
+      const d = (i / sampleCount) * len
+      const pt = path.getPointAtLength(d)
+
+      const nextD = Math.min(len, d + 1.5)
+      const prevD = Math.max(0, d - 1.5)
+      const pNext = path.getPointAtLength(nextD)
+      const pPrev = path.getPointAtLength(prevD)
+      const angleRad = Math.atan2(pNext.y - pPrev.y, pNext.x - pPrev.x)
+      const angleDeg = (angleRad * 180) / Math.PI
+
+      samples.push({ x: pt.x, y: pt.y, angle: angleDeg })
     }
+    sampledPointsRef.current = samples
+
+    // Initial position
+    updateProgress(progress)
   }, [])
 
-  // Position car marker and update stroke-dashoffset on progress change
-  useEffect(() => {
-    if (!routePathRef.current || !carMarkerRef.current) return
+  const updateProgress = (p: number) => {
+    const clamped = Math.max(0, Math.min(1, p))
+    const len = totalLengthRef.current
 
-    const path = routePathRef.current
-    const totalLength = pathTotalLength || path.getTotalLength()
-    const clampedProgress = Math.max(0, Math.min(1, progress))
+    // Dash offset update
+    if (routePathRef.current) {
+      routePathRef.current.style.strokeDashoffset = String(len * (1 - clamped))
+    }
 
-    // Position along path
-    const currentDistance = clampedProgress * totalLength
-    const point = path.getPointAtLength(currentDistance)
+    // Car marker position update
+    const samples = sampledPointsRef.current
+    if (samples.length > 0 && carMarkerRef.current) {
+      const idx = Math.min(samples.length - 1, Math.max(0, Math.round(clamped * (samples.length - 1))))
+      const pt = samples[idx]
+      carMarkerRef.current.style.transform = `translate3d(${pt.x}px, ${pt.y}px, 0) rotate(${pt.angle}deg)`
+    }
 
-    // Calculate tangent angle for rotation
-    const delta = 1.5
-    const nextDistance = Math.min(totalLength, currentDistance + delta)
-    const prevDistance = Math.max(0, currentDistance - delta)
-    const pNext = path.getPointAtLength(nextDistance)
-    const pPrev = path.getPointAtLength(prevDistance)
-    const angleRad = Math.atan2(pNext.y - pPrev.y, pNext.x - pPrev.x)
-    const angleDeg = (angleRad * 180) / Math.PI
+    // Other cities group visibility
+    if (otherCitiesRef.current && !showOtherCities) {
+      otherCitiesRef.current.style.opacity = clamped >= 0.45 ? "1" : "0"
+    }
 
-    // Update marker transform directly for smooth 60fps
-    gsap.set(carMarkerRef.current, {
-      x: point.x,
-      y: point.y,
-      rotation: angleDeg,
-      transformOrigin: "50% 50%",
-    })
-  }, [progress, pathTotalLength])
+    // Bottom progress meter
+    if (progressBarRef.current) {
+      progressBarRef.current.style.width = `${Math.round(clamped * 100)}%`
+    }
+  }
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      setProgress: (p: number) => {
+        updateProgress(p)
+      },
+    }),
+    []
+  )
 
   // Split cities into 6 route cities and 8 other cities
   const routeCities = ALL_CITIES.filter((c) => c.isRouteCity)
   const otherCities = ALL_CITIES.filter((c) => !c.isRouteCity)
-
-  // Calculate stroke-dashoffset for progressive route drawing
-  const dashOffset = pathTotalLength * (1 - Math.max(0, Math.min(1, progress)))
 
   return (
     <div className="relative w-full h-full min-h-[380px] sm:min-h-[460px] lg:min-h-[560px] flex items-center justify-center rounded-2xl border border-[#EADFC8]/15 bg-[#0C1A2B] p-2 sm:p-4 overflow-hidden shadow-2xl select-none">
@@ -135,9 +164,9 @@ export default function RouteMap({
           stroke="#C9A227"
           strokeWidth="2.5"
           strokeDasharray="8 5"
-          strokeDashoffset={dashOffset}
+          strokeDashoffset={1200}
           strokeLinecap="round"
-          className="transition-[stroke-dashoffset] duration-75 ease-linear"
+          className="will-change-[stroke-dashoffset]"
         />
 
         {/* 
@@ -145,9 +174,9 @@ export default function RouteMap({
           Small --sand dots that appear when marker passes section midpoint (or showOtherCities)
         */}
         <g
-          className={`transition-opacity duration-500 ${
-            showOtherCities || progress >= 0.45 ? "opacity-100" : "opacity-0"
-          }`}
+          ref={otherCitiesRef}
+          className="transition-opacity duration-300"
+          style={{ opacity: showOtherCities ? 1 : 0 }}
         >
           {otherCities.map((city) => (
             <g
@@ -183,7 +212,7 @@ export default function RouteMap({
           6 ROUTE CITIES:
           Large pins (gold dot with an active radiating pulse)
         */}
-        {routeCities.map((city, idx) => {
+        {routeCities.map((city) => {
           const isActive = activeCity.id === city.id
           return (
             <g
@@ -244,10 +273,9 @@ export default function RouteMap({
 
         {/* 
           SMALL TOP-DOWN GOLD CAR MARKER:
-          Travels along the path using GSAP MotionPathPlugin / getPointAtLength
-          Rotating to follow the tangent
+          Pre-sampled tangent & coordinates, hardware-accelerated transform
         */}
-        <g ref={carMarkerRef} id="map-car-marker" className="will-change-transform">
+        <g ref={carMarkerRef} id="map-car-marker" className="will-change-transform" style={{ transformOrigin: "0px 0px" }}>
           {/* Headlight beams radiating forward */}
           <path
             d="M 12 0 L 32 -10 L 32 10 Z"
@@ -313,12 +341,15 @@ export default function RouteMap({
         <span>Alexandria (0 km)</span>
         <div className="mx-4 flex-1 h-1 bg-[#2A2B2E] rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#C9A227] transition-all duration-75"
-            style={{ width: `${Math.round(progress * 100)}%` }}
+            ref={progressBarRef}
+            className="h-full bg-[#C9A227]"
+            style={{ width: "0%" }}
           />
         </div>
         <span>Aswan (980 km)</span>
       </div>
     </div>
   )
-}
+})
+
+export default RouteMap

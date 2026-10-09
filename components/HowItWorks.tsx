@@ -51,7 +51,7 @@ export default function HowItWorks({ frames = false }: { frames?: boolean }) {
 
             {/* Step Panel that flips 180 degrees physically on scroll */}
             <div
-              className="step-panel origin-center rounded-sm border border-[#2A2B2E]/20 bg-white/70 p-6 backdrop-blur-xs shadow-xs"
+              className="step-panel origin-center rounded-sm border border-[#2A2B2E]/20 bg-white p-6 shadow-sm"
               style={{ perspective: "1000px" }}
             >
               <h3 className="font-display text-xl sm:text-2xl font-bold text-[#0E0E10]">

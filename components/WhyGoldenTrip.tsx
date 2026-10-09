@@ -54,7 +54,7 @@ export default function WhyGoldenTrip({
           return (
             <div
               key={item.id}
-              className="benefit group relative flex flex-col items-center text-center sm:items-start sm:text-left rounded-sm border border-[#2A2B2E] bg-[#141518]/90 p-6 sm:p-8 backdrop-blur-xs shadow-lg overflow-hidden transition-all duration-300 hover:border-[#C9A227]/40 w-[84vw] max-w-[340px] shrink-0 snap-center md:w-auto md:max-w-none"
+              className="benefit group relative flex flex-col items-center text-center sm:items-start sm:text-left rounded-sm border border-[#2A2B2E] bg-[#141518] p-6 sm:p-8 shadow-lg overflow-hidden transition-all duration-300 hover:border-[#C9A227]/40 w-[84vw] max-w-[340px] shrink-0 snap-center md:w-auto md:max-w-none"
             >
               {/* 160px Square Pictogram Container */}
               <div className="relative mb-6 flex h-[160px] w-[160px] items-center justify-center shrink-0">

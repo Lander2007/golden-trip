@@ -70,13 +70,16 @@ export default function FitText({ className = "" }: FitTextProps) {
       })
     }
 
-    // Observe container resize
+    // Observe container resize (debounced)
+    let roTimer: NodeJS.Timeout
     const ro = new ResizeObserver(() => {
-      computeSizes()
+      clearTimeout(roTimer)
+      roTimer = setTimeout(computeSizes, 100)
     })
     ro.observe(container)
 
     return () => {
+      clearTimeout(roTimer)
       ro.disconnect()
     }
   }, [])
