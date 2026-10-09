@@ -30,10 +30,10 @@ export default function BookingBar({ className = "" }: { className?: string }) {
       {}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-[20px] sm:rounded-full border border-[#EADFC8]/20 bg-[#0B0A09]/90 p-2 sm:p-1.5 transition-all hover:border-[#EADFC8]/35"
+        className="grid grid-cols-1 md:grid-cols-2 lg:flex lg:flex-row items-stretch lg:items-center gap-2 rounded-[20px] lg:rounded-full border border-[#EADFC8]/20 bg-[#0B0A09]/90 p-2 lg:p-1.5 transition-all hover:border-[#EADFC8]/35 landscape-phone:grid-cols-[1fr_1fr_auto]"
       >
         {}
-        <div className="relative flex-1 flex items-center gap-2.5 px-3.5 py-2.5 sm:py-1 rounded-xl sm:rounded-full bg-white/[0.04] sm:bg-transparent border border-white/5 sm:border-transparent">
+        <div className="relative flex-1 flex items-center gap-2.5 px-3.5 py-2.5 lg:py-1 rounded-[12px] lg:rounded-full bg-white/[0.04] lg:bg-transparent border border-white/5 lg:border-transparent">
           <MapPin className="h-4 w-4 text-[#C9A227] shrink-0" />
           <div className="flex flex-col min-w-0 flex-1">
             <span className="text-[11px] text-[#EADFC8]/70 font-medium">
@@ -58,7 +58,7 @@ export default function BookingBar({ className = "" }: { className?: string }) {
           </div>
         </div>
 
-        <div className="relative flex-1 flex items-center gap-2.5 px-3.5 py-2.5 sm:py-1 rounded-xl sm:rounded-full bg-white/[0.04] sm:bg-transparent border border-white/5 sm:border-transparent">
+        <div className="relative flex-1 flex items-center gap-2.5 px-3.5 py-2.5 lg:py-1 rounded-[12px] lg:rounded-full bg-white/[0.04] lg:bg-transparent border border-white/5 lg:border-transparent">
           <Calendar className="h-4 w-4 text-[#C9A227] shrink-0" />
           <div className="flex flex-col min-w-0 flex-1">
             <span className="text-[11px] text-[#EADFC8]/70 font-medium">
@@ -78,7 +78,7 @@ export default function BookingBar({ className = "" }: { className?: string }) {
         {}
         <button
           type="submit"
-          className="inline-flex items-center justify-center gap-2 rounded-xl sm:rounded-full bg-[#C9A227] px-6 py-3.5 sm:py-3 font-display text-sm font-bold text-[#0B0A09] transition-all hover:bg-[#E6CF85] active:scale-[0.98] shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
+          className="md:col-span-2 lg:col-span-1 landscape-phone:col-span-1 inline-flex items-center justify-center gap-2 rounded-[12px] lg:rounded-full bg-[#C9A227] px-6 py-3.5 lg:py-3 font-display text-sm font-bold text-[#0B0A09] transition-all hover:bg-[#E6CF85] active:scale-[0.98] shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
         >
           <span>Start booking</span>
           <ArrowRight className="h-4 w-4 stroke-[2.5]" />

@@ -47,25 +47,30 @@ export default function Drive({
       document.documentElement.classList.add("lite")
     }
 
-    const lenis = new Lenis({
-      autoRaf: false,
-      duration: 1.05,
-      smoothWheel: true,
-      syncTouch: false,
-    })
-    lenis.on("scroll", ScrollTrigger.update)
-    if (typeof window !== "undefined") {
-      ;(window as any).__lenis = lenis
+    const isMobile = window.matchMedia("(max-width: 767px)").matches
+    let lenis: Lenis | null = null
+
+    if (!isMobile) {
+      lenis = new Lenis({
+        autoRaf: false,
+        duration: 1.05,
+        smoothWheel: true,
+        syncTouch: false,
+      })
+      lenis.on("scroll", ScrollTrigger.update)
+      if (typeof window !== "undefined") {
+        ;(window as any).__lenis = lenis
+      }
     }
 
     let lastWrittenP = -1
     let lastWrittenSky = ""
 
     const tickerCallback = (time: number) => {
-      lenis.raf(time * 1000)
+      lenis?.raf(time * 1000)
 
       const p = scrollProgress.value
-      const vel = lenis.velocity || 0
+      const vel = lenis?.velocity || 0
 
       // Write CSS variables on root element at most once per frame
       if (Math.abs(p - lastWrittenP) > 0.0001) {
@@ -82,7 +87,7 @@ export default function Drive({
       odometerRef.current?.updateKm(scrollProgress.km)
       skyRef.current?.update(p)
       celestialRef.current?.update(p)
-      scrollCarRef.current?.updatePhysics(vel, lenis.scroll || 0)
+      scrollCarRef.current?.updatePhysics(vel, lenis?.scroll || 0)
       if (!LITE) dustRef.current?.tick(vel)
     }
 
@@ -108,7 +113,7 @@ export default function Drive({
       clearTimeout(resizeTimer)
       window.removeEventListener("resize", handleResize)
       gsap.ticker.remove(tickerCallback)
-      lenis.destroy()
+      lenis?.destroy()
       if (typeof window !== "undefined") {
         delete (window as any).__lenis
       }
@@ -165,410 +170,408 @@ export default function Drive({
         }
       )
 
-      // SCENE 0: HERO (Pin hero for 120% extra scroll)
-      const heroTimeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: "#alexandria",
-          start: "top top",
-          end: "+=120%",
-          pin: true,
-          scrub: 0.5,
+      const mm = gsap.matchMedia()
+
+      mm.add("(min-width: 768px)", () => {
+        // SCENE 0: HERO (Pin hero for 120% extra scroll)
+        const heroTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: "#alexandria",
+            start: "top top",
+            end: "+=120%",
+            pin: true,
+            scrub: 0.5,
+            onEnter: () => {
+              scrollCarRef.current?.setVariant("suv")
+              scrollCarRef.current?.setVisible(true)
+              scrollCarRef.current?.setBeamBrightness(0.4)
+            },
+            onEnterBack: () => {
+              scrollCarRef.current?.setVariant("suv")
+              scrollCarRef.current?.setVisible(true)
+            },
+            onUpdate: (self) => {
+              const p = self.progress
+              scrollCarRef.current?.setVariant("suv")
+              scrollCarRef.current?.setVisible(true)
+              scrollCarRef.current?.setBeamBrightness(0.4 + p * 0.6)
+
+              if (p <= 0.82) {
+                const travelX = 6 + (p / 0.82) * 72
+                scrollCarRef.current?.setX(travelX)
+              } else {
+                const exitP = (p - 0.82) / 0.18
+                scrollCarRef.current?.setX(78 + exitP * 42)
+              }
+            },
+          },
+        })
+
+        if (!LITE && !off("parallax")) {
+          heroTimeline.to(".hero-parallax-far", { x: -60, ease: "none" }, 0)
+          heroTimeline.to(".hero-parallax-mid", { x: -160, ease: "none" }, 0)
+          heroTimeline.to(".hero-parallax-fg", { x: -520, ease: "none" }, 0)
+        }
+        heroTimeline.to(".travel-lane", { x: "-=480", ease: "none" }, 0)
+
+        // ----------------------------------------------------------------------
+        // PHASE 7c: SUNSET TO MOON CHOREOGRAPHY
+        // Sun drifts right (west), sinks behind horizon at p=0.55,
+        // dusk haze peaks at p=0.40, night overlay and stars appear,
+        // crescent moon emerges in the western sky from p=0.55 to 0.90.
+        // Reverses cleanly on scroll up.
+        // ----------------------------------------------------------------------
+
+        // 1. Sun Movement: drifts west (x: 0 -> 18cqw) & sinks (y: 0 -> 85cqh)
+        // Clamped container height is 74%, so at 85cqh it is fully sunken below the horizon & dunes
+        heroTimeline.to(
+          ".hero-sun-wrapper",
+          {
+            x: "18cqw",
+            y: "85cqh",
+            opacity: 0,
+            duration: 0.55,
+            ease: "power1.in",
+          },
+          0
+        )
+
+        // 2. Sun Color: gold (#E07A2F) -> deep sunset orange (#E8742A) -> crimson red (#C93D1B)
+        heroTimeline.to(
+          ".hero-sun-disc",
+          { fill: "#E8742A", duration: 0.30, ease: "none" },
+          0
+        )
+        heroTimeline.to(
+          ".hero-sun-disc",
+          { fill: "#C93D1B", duration: 0.25, ease: "power1.in" },
+          0.30
+        )
+
+        // 3. Sun Glow: shrinks and dims as it sets
+        heroTimeline.to(
+          ".hero-sun-glow",
+          { scale: 0.52, opacity: 0.2, duration: 0.55, ease: "power1.in" },
+          0
+        )
+
+        // 4. Dusk-red Horizon Haze: peaks at p=0.38 - 0.42, fades by p=0.65
+        heroTimeline.to(
+          ".hero-dusk-haze",
+          { opacity: 0.95, duration: 0.36, ease: "power1.out" },
+          0.05
+        )
+        heroTimeline.to(
+          ".hero-dusk-haze",
+          { opacity: 0, duration: 0.25, ease: "power1.in" },
+          0.41
+        )
+
+        // 5. Sky Overlays: Dawn fades out, Night fades in
+        heroTimeline.to(
+          ".hero-dawn-overlay",
+          { opacity: 0, duration: 0.45, ease: "none" },
+          0
+        )
+        heroTimeline.to(
+          ".hero-night-overlay",
+          { opacity: 0.72, duration: 0.60, ease: "power1.inOut" },
+          0.25
+        )
+
+        // 6. Stars fade in
+        heroTimeline.to(
+          ".hero-stars",
+          { opacity: 1, duration: 0.40, ease: "power1.inOut" },
+          0.45
+        )
+
+        // 7. Crescent Moon emerges in western night sky (p: 0.55 -> 0.90)
+        heroTimeline.fromTo(
+          ".hero-moon-wrapper",
+          { opacity: 0, scale: 0.82 },
+          { opacity: 1, scale: 1, duration: 0.38, ease: "power1.out" },
+          0.55
+        )
+
+        // 8. Photo Darkening via opacity overlay
+        heroTimeline.to(
+          ".hero-bg-photo-overlay",
+          { opacity: 0.45, duration: 1, ease: "none" },
+          0
+        )
+
+        // 9. Headlight beam brightens across p: 0.40 -> 0.85
+        heroTimeline.to(
+          ".headlight-beam",
+          { opacity: 1, duration: 0.45, ease: "none" },
+          0.40
+        )
+
+        // SCENE 1: GANTRY INTRO (#welcome)
+        ScrollTrigger.create({
+          trigger: "#welcome",
+          start: "top 95%",
+          end: "bottom 15%",
+          scrub: 0.6,
           onEnter: () => {
-            scrollCarRef.current?.setVariant("suv")
+            scrollCarRef.current?.setVariant("sedan")
             scrollCarRef.current?.setVisible(true)
-            scrollCarRef.current?.setBeamBrightness(0.4)
           },
           onEnterBack: () => {
+            scrollCarRef.current?.setVariant("sedan")
+            scrollCarRef.current?.setVisible(true)
+          },
+          onLeave: () => {
+            scrollCarRef.current?.setVisible(false)
+          },
+          onLeaveBack: () => {
             scrollCarRef.current?.setVariant("suv")
             scrollCarRef.current?.setVisible(true)
           },
           onUpdate: (self) => {
             const p = self.progress
-            scrollCarRef.current?.setVariant("suv")
-            scrollCarRef.current?.setVisible(true)
-            scrollCarRef.current?.setBeamBrightness(0.4 + p * 0.6)
+            scrollCarRef.current?.setVariant("sedan")
+            scrollCarRef.current?.setVisible(p < 0.98)
 
-            if (p <= 0.82) {
-              const travelX = 6 + (p / 0.82) * 72
-              scrollCarRef.current?.setX(travelX)
+            if (p < 0.22) {
+              const inP = p / 0.22
+              scrollCarRef.current?.setX(-35 + inP * 53)
+            } else if (p < 0.82) {
+              const midP = (p - 0.22) / 0.6
+              scrollCarRef.current?.setX(18 + midP * 57)
             } else {
-              const exitP = (p - 0.82) / 0.18
-              scrollCarRef.current?.setX(78 + exitP * 42)
+              const outP = (p - 0.82) / 0.18
+              scrollCarRef.current?.setX(75 + outP * 45)
             }
           },
-        },
-      })
-
-      const mm = gsap.matchMedia()
-      if (!LITE && !off("parallax")) {
-        mm.add("(min-width: 768px)", () => {
-          heroTimeline.to(".hero-parallax-far", { x: -60, ease: "none" }, 0)
-          heroTimeline.to(".hero-parallax-mid", { x: -160, ease: "none" }, 0)
-          heroTimeline.to(".hero-parallax-fg", { x: -520, ease: "none" }, 0)
         })
-        mm.add("(max-width: 767px)", () => {
-          heroTimeline.to(".hero-parallax-far", { x: -40, ease: "none" }, 0)
-        })
-      }
-      heroTimeline.to(".travel-lane", { x: "-=480", ease: "none" }, 0)
 
-      // ----------------------------------------------------------------------
-      // PHASE 7c: SUNSET TO MOON CHOREOGRAPHY
-      // Sun drifts right (west), sinks behind horizon at p=0.55,
-      // dusk haze peaks at p=0.40, night overlay and stars appear,
-      // crescent moon emerges in the western sky from p=0.55 to 0.90.
-      // Reverses cleanly on scroll up.
-      // ----------------------------------------------------------------------
-
-      // 1. Sun Movement: drifts west (x: 0 -> 18cqw) & sinks (y: 0 -> 85cqh)
-      // Clamped container height is 74%, so at 85cqh it is fully sunken below the horizon & dunes
-      heroTimeline.to(
-        ".hero-sun-wrapper",
-        {
-          x: "18cqw",
-          y: "85cqh",
-          opacity: 0,
-          duration: 0.55,
-          ease: "power1.in",
-        },
-        0
-      )
-
-      // 2. Sun Color: gold (#E07A2F) -> deep sunset orange (#E8742A) -> crimson red (#C93D1B)
-      heroTimeline.to(
-        ".hero-sun-disc",
-        { fill: "#E8742A", duration: 0.30, ease: "none" },
-        0
-      )
-      heroTimeline.to(
-        ".hero-sun-disc",
-        { fill: "#C93D1B", duration: 0.25, ease: "power1.in" },
-        0.30
-      )
-
-      // 3. Sun Glow: shrinks and dims as it sets
-      heroTimeline.to(
-        ".hero-sun-glow",
-        { scale: 0.52, opacity: 0.2, duration: 0.55, ease: "power1.in" },
-        0
-      )
-
-      // 4. Dusk-red Horizon Haze: peaks at p=0.38 - 0.42, fades by p=0.65
-      heroTimeline.to(
-        ".hero-dusk-haze",
-        { opacity: 0.95, duration: 0.36, ease: "power1.out" },
-        0.05
-      )
-      heroTimeline.to(
-        ".hero-dusk-haze",
-        { opacity: 0, duration: 0.25, ease: "power1.in" },
-        0.41
-      )
-
-      // 5. Sky Overlays: Dawn fades out, Night fades in
-      heroTimeline.to(
-        ".hero-dawn-overlay",
-        { opacity: 0, duration: 0.45, ease: "none" },
-        0
-      )
-      heroTimeline.to(
-        ".hero-night-overlay",
-        { opacity: 0.72, duration: 0.60, ease: "power1.inOut" },
-        0.25
-      )
-
-      // 6. Stars fade in
-      heroTimeline.to(
-        ".hero-stars",
-        { opacity: 1, duration: 0.40, ease: "power1.inOut" },
-        0.45
-      )
-
-      // 7. Crescent Moon emerges in western night sky (p: 0.55 -> 0.90)
-      heroTimeline.fromTo(
-        ".hero-moon-wrapper",
-        { opacity: 0, scale: 0.82 },
-        { opacity: 1, scale: 1, duration: 0.38, ease: "power1.out" },
-        0.55
-      )
-
-      // 8. Photo Darkening via opacity overlay
-      heroTimeline.to(
-        ".hero-bg-photo-overlay",
-        { opacity: 0.45, duration: 1, ease: "none" },
-        0
-      )
-
-      // 9. Headlight beam brightens across p: 0.40 -> 0.85
-      heroTimeline.to(
-        ".headlight-beam",
-        { opacity: 1, duration: 0.45, ease: "none" },
-        0.40
-      )
-
-      // SCENE 1: GANTRY INTRO (#welcome)
-      ScrollTrigger.create({
-        trigger: "#welcome",
-        start: "top 95%",
-        end: "bottom 15%",
-        scrub: 0.6,
-        onEnter: () => {
-          scrollCarRef.current?.setVariant("sedan")
-          scrollCarRef.current?.setVisible(true)
-        },
-        onEnterBack: () => {
-          scrollCarRef.current?.setVariant("sedan")
-          scrollCarRef.current?.setVisible(true)
-        },
-        onLeave: () => {
-          scrollCarRef.current?.setVisible(false)
-        },
-        onLeaveBack: () => {
-          scrollCarRef.current?.setVariant("suv")
-          scrollCarRef.current?.setVisible(true)
-        },
-        onUpdate: (self) => {
-          const p = self.progress
-          scrollCarRef.current?.setVariant("sedan")
-          scrollCarRef.current?.setVisible(p < 0.98)
-
-          if (p < 0.22) {
-            const inP = p / 0.22
-            scrollCarRef.current?.setX(-35 + inP * 53)
-          } else if (p < 0.82) {
-            const midP = (p - 0.22) / 0.6
-            scrollCarRef.current?.setX(18 + midP * 57)
-          } else {
-            const outP = (p - 0.82) / 0.18
-            scrollCarRef.current?.setX(75 + outP * 45)
-          }
-        },
-      })
-
-      // Welcome Gantry: consolidated animation
-      const welcomeGantryTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: "#welcome",
-          start: "top 75%",
-          end: "center center",
-          scrub: true,
-        },
-      })
-      welcomeGantryTl.fromTo(
-        ".gantry",
-        { y: 28, opacity: 0.35 },
-        { y: 0, opacity: 1, duration: 1, ease: "power2.out" }
-      )
-
-      // SCENE 2: MAP SECTION / DESTINATIONS (#destinations)
-      ScrollTrigger.create({
-        trigger: "#destinations",
-        start: "top 95%",
-        end: "bottom top",
-        onEnter: () => {
-          scrollCarRef.current?.setVisible(false)
-        },
-        onEnterBack: () => {
-          scrollCarRef.current?.setVisible(false)
-        },
-        onLeave: () => {
-          scrollCarRef.current?.setVisible(false)
-        },
-        onLeaveBack: () => {
-          scrollCarRef.current?.setVariant("sedan")
-          scrollCarRef.current?.setVisible(true)
-        },
-      })
-
-      // SCENE 3: HOW IT WORKS (#how-it-works)
-      ScrollTrigger.create({
-        trigger: "#how-it-works",
-        start: "top 95%",
-        end: "bottom 15%",
-        scrub: 0.6,
-        onEnter: () => {
-          scrollCarRef.current?.setVariant("sedan")
-          scrollCarRef.current?.setVisible(true)
-        },
-        onEnterBack: () => {
-          scrollCarRef.current?.setVariant("sedan")
-          scrollCarRef.current?.setVisible(true)
-        },
-        onUpdate: (self) => {
-          const p = self.progress
-          scrollCarRef.current?.setVariant("sedan")
-          scrollCarRef.current?.setVisible(true)
-
-          if (p < 0.22) {
-            const inP = p / 0.22
-            scrollCarRef.current?.setX(-35 + inP * 51)
-          } else if (p < 0.82) {
-            const midP = (p - 0.22) / 0.6
-            scrollCarRef.current?.setX(16 + midP * 58)
-          } else {
-            const outP = (p - 0.82) / 0.18
-            scrollCarRef.current?.setX(74 + outP * 46)
-          }
-        },
-      })
-
-      const stepPanels = gsap.utils.toArray<HTMLElement>(".step-panel")
-      if (stepPanels.length > 0) {
-        const flipTimeline = gsap.timeline({
+        // Welcome Gantry: consolidated animation
+        const welcomeGantryTl = gsap.timeline({
           scrollTrigger: {
-            trigger: "#how-it-works",
-            start: "top 45%",
-            toggleActions: "play none none reverse",
+            trigger: "#welcome",
+            start: "top 75%",
+            end: "center center",
+            scrub: true,
           },
         })
-        stepPanels.forEach((panel) => {
-          flipTimeline.fromTo(
-            panel,
-            { rotationY: 180, opacity: 0 },
-            {
-              rotationY: 0,
-              opacity: 1,
-              duration: 0.65,
-              ease: "power2.inOut",
-            }
-          )
-        })
-      }
+        welcomeGantryTl.fromTo(
+          ".gantry",
+          { y: 28, opacity: 0.35 },
+          { y: 0, opacity: 1, duration: 1, ease: "power2.out" }
+        )
 
-      // SCENE 4: WHY GOLDEN TRIP (#why-golden-trip)
-      ScrollTrigger.create({
-        trigger: "#why-golden-trip",
-        start: "top 95%",
-        end: "bottom 15%",
-        scrub: 0.6,
-        onEnter: () => {
-          scrollCarRef.current?.setVariant("van")
-          scrollCarRef.current?.setVisible(true)
-        },
-        onEnterBack: () => {
-          scrollCarRef.current?.setVariant("van")
-          scrollCarRef.current?.setVisible(true)
-        },
-        onUpdate: (self) => {
-          const p = self.progress
-          scrollCarRef.current?.setVariant("van")
-          scrollCarRef.current?.setVisible(true)
-
-          if (p < 0.22) {
-            const inP = p / 0.22
-            scrollCarRef.current?.setX(-35 + inP * 51)
-          } else if (p < 0.82) {
-            const midP = (p - 0.22) / 0.6
-            scrollCarRef.current?.setX(16 + midP * 58)
-          } else {
-            const outP = (p - 0.82) / 0.18
-            scrollCarRef.current?.setX(74 + outP * 46)
-          }
-        },
-      })
-
-      const benefitItems = gsap.utils.toArray<HTMLElement>(".benefit")
-      if (benefitItems.length > 0) {
-        const litTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: "#why-golden-trip",
-            start: "top 45%",
-            toggleActions: "play none none reverse",
+        // SCENE 2: MAP SECTION / DESTINATIONS (#destinations)
+        ScrollTrigger.create({
+          trigger: "#destinations",
+          start: "top 95%",
+          end: "bottom top",
+          onEnter: () => {
+            scrollCarRef.current?.setVisible(false)
+          },
+          onEnterBack: () => {
+            scrollCarRef.current?.setVisible(false)
+          },
+          onLeave: () => {
+            scrollCarRef.current?.setVisible(false)
+          },
+          onLeaveBack: () => {
+            scrollCarRef.current?.setVariant("sedan")
+            scrollCarRef.current?.setVisible(true)
           },
         })
-        benefitItems.forEach((benefit) => {
-          litTimeline.fromTo(
-            benefit,
-            { opacity: 0.2 },
-            {
-              opacity: 1,
-              duration: 0.6,
-              ease: "power3.out",
+
+        // SCENE 3: HOW IT WORKS (#how-it-works)
+        ScrollTrigger.create({
+          trigger: "#how-it-works",
+          start: "top 95%",
+          end: "bottom 15%",
+          scrub: 0.6,
+          onEnter: () => {
+            scrollCarRef.current?.setVariant("sedan")
+            scrollCarRef.current?.setVisible(true)
+          },
+          onEnterBack: () => {
+            scrollCarRef.current?.setVariant("sedan")
+            scrollCarRef.current?.setVisible(true)
+          },
+          onUpdate: (self) => {
+            const p = self.progress
+            scrollCarRef.current?.setVariant("sedan")
+            scrollCarRef.current?.setVisible(true)
+
+            if (p < 0.22) {
+              const inP = p / 0.22
+              scrollCarRef.current?.setX(-35 + inP * 51)
+            } else if (p < 0.82) {
+              const midP = (p - 0.22) / 0.6
+              scrollCarRef.current?.setX(16 + midP * 58)
+            } else {
+              const outP = (p - 0.82) / 0.18
+              scrollCarRef.current?.setX(74 + outP * 46)
             }
-          )
-          const shine = benefit.querySelector(".benefit-shine")
-          if (shine) {
-            litTimeline.fromTo(
-              shine,
-              { x: 0 },
+          },
+        })
+
+        const stepPanels = gsap.utils.toArray<HTMLElement>(".step-panel")
+        if (stepPanels.length > 0) {
+          const flipTimeline = gsap.timeline({
+            scrollTrigger: {
+              trigger: "#how-it-works",
+              start: "top 45%",
+              toggleActions: "play none none reverse",
+            },
+          })
+          stepPanels.forEach((panel) => {
+            flipTimeline.fromTo(
+              panel,
+              { rotationY: 180, opacity: 0 },
               {
-                x: 350,
-                duration: 0.45,
+                rotationY: 0,
+                opacity: 1,
+                duration: 0.65,
                 ease: "power2.inOut",
-              },
-              "<0.1"
+              }
             )
-          }
+          })
+        }
+
+        // SCENE 4: WHY GOLDEN TRIP (#why-golden-trip)
+        ScrollTrigger.create({
+          trigger: "#why-golden-trip",
+          start: "top 95%",
+          end: "bottom 15%",
+          scrub: 0.6,
+          onEnter: () => {
+            scrollCarRef.current?.setVariant("van")
+            scrollCarRef.current?.setVisible(true)
+          },
+          onEnterBack: () => {
+            scrollCarRef.current?.setVariant("van")
+            scrollCarRef.current?.setVisible(true)
+          },
+          onUpdate: (self) => {
+            const p = self.progress
+            scrollCarRef.current?.setVariant("van")
+            scrollCarRef.current?.setVisible(true)
+
+            if (p < 0.22) {
+              const inP = p / 0.22
+              scrollCarRef.current?.setX(-35 + inP * 51)
+            } else if (p < 0.82) {
+              const midP = (p - 0.22) / 0.6
+              scrollCarRef.current?.setX(16 + midP * 58)
+            } else {
+              const outP = (p - 0.82) / 0.18
+              scrollCarRef.current?.setX(74 + outP * 46)
+            }
+          },
         })
-      }
 
-      // SCENE 5: FINAL CTA (#ready)
-      ScrollTrigger.create({
-        trigger: "#ready",
-        start: "top 85%",
-        end: "bottom bottom",
-        scrub: 0.6,
-        onEnter: () => {
-          scrollCarRef.current?.setVariant("fleet")
-          scrollCarRef.current?.setVisible(true)
-        },
-        onEnterBack: () => {
-          scrollCarRef.current?.setVariant("fleet")
-          scrollCarRef.current?.setVisible(true)
-        },
-        onUpdate: (self) => {
-          const p = self.progress
-          scrollCarRef.current?.setVariant("fleet")
-          scrollCarRef.current?.setVisible(true)
+        const benefitItems = gsap.utils.toArray<HTMLElement>(".benefit")
+        if (benefitItems.length > 0) {
+          const litTimeline = gsap.timeline({
+            scrollTrigger: {
+              trigger: "#why-golden-trip",
+              start: "top 45%",
+              toggleActions: "play none none reverse",
+            },
+          })
+          benefitItems.forEach((benefit) => {
+            litTimeline.fromTo(
+              benefit,
+              { opacity: 0.2 },
+              {
+                opacity: 1,
+                duration: 0.6,
+                ease: "power3.out",
+              }
+            )
+            const shine = benefit.querySelector(".benefit-shine")
+            if (shine) {
+              litTimeline.fromTo(
+                shine,
+                { x: 0 },
+                {
+                  x: 350,
+                  duration: 0.45,
+                  ease: "power2.inOut",
+                },
+                "<0.1"
+              )
+            }
+          })
+        }
 
-          if (p < 0.3) {
-            const inP = p / 0.3
-            scrollCarRef.current?.setX(-25 + inP * 33)
-          } else {
-            scrollCarRef.current?.setX(8)
-          }
-        },
-      })
-
-      // Final Gantry arrives from top
-      gsap.from(".final-gantry", {
-        y: -120,
-        opacity: 0.4,
-        ease: "expo.out",
-        duration: 0.8,
-        scrollTrigger: {
+        // SCENE 5: FINAL CTA (#ready)
+        ScrollTrigger.create({
           trigger: "#ready",
-          start: "top 60%",
-          toggleActions: "play none none reverse",
-        },
-      })
-
-      // Continuous highway lane dashes travel with distance
-      gsap.to(".travel-lane", {
-        x: -3600,
-        ease: "none",
-        scrollTrigger: {
-          trigger: root.current,
-          start: "top top",
+          start: "top 85%",
           end: "bottom bottom",
+          scrub: 0.6,
+          onEnter: () => {
+            scrollCarRef.current?.setVariant("fleet")
+            scrollCarRef.current?.setVisible(true)
+          },
+          onEnterBack: () => {
+            scrollCarRef.current?.setVariant("fleet")
+            scrollCarRef.current?.setVisible(true)
+          },
+          onUpdate: (self) => {
+            const p = self.progress
+            scrollCarRef.current?.setVariant("fleet")
+            scrollCarRef.current?.setVisible(true)
+
+            if (p < 0.3) {
+              const inP = p / 0.3
+              scrollCarRef.current?.setX(-25 + inP * 33)
+            } else {
+              scrollCarRef.current?.setX(8)
+            }
+          },
+        })
+
+        // Final Gantry arrives from top
+        gsap.from(".final-gantry", {
+          y: -120,
+          opacity: 0.4,
+          ease: "expo.out",
+          duration: 0.8,
+          scrollTrigger: {
+            trigger: "#ready",
+            start: "top 60%",
+            toggleActions: "play none none reverse",
+          },
+        })
+
+        // Continuous highway lane dashes travel with distance
+        gsap.to(".travel-lane", {
+          x: -3600,
+          ease: "none",
+          scrollTrigger: {
+            trigger: root.current,
+            start: "top top",
+            end: "bottom bottom",
+            scrub: true,
+          },
+        })
+
+        // Dim parked vehicle into footer cleanly
+        ScrollTrigger.create({
+          trigger: "#footer",
+          start: "top 85%",
+          end: "top 55%",
           scrub: true,
-        },
-      })
+          onUpdate: (self) => {
+            scrollCarRef.current?.setOpacity(1 - self.progress)
+          },
+        })
 
-      // Dim parked vehicle into footer cleanly
-      ScrollTrigger.create({
-        trigger: "#footer",
-        start: "top 85%",
-        end: "top 55%",
-        scrub: true,
-        onUpdate: (self) => {
-          scrollCarRef.current?.setOpacity(1 - self.progress)
-        },
+        // Sort and refresh triggers to reconcile any dynamically created pin-spacers across scenes
+        ScrollTrigger.sort()
+        ScrollTrigger.refresh()
       })
-
-      // Sort and refresh triggers to reconcile any dynamically created pin-spacers across scenes
-      ScrollTrigger.sort()
-      ScrollTrigger.refresh()
     },
     { scope: root, dependencies: [frames] }
   )
@@ -587,7 +590,7 @@ export default function Drive({
       {/* Fixed Road Zone Strip */}
       {!frames && (
         <div
-          className="road-zone fixed inset-x-0 bottom-0 z-30 h-[24vh] pointer-events-none overflow-hidden select-none"
+          className="road-zone fixed inset-x-0 bottom-0 z-30 h-[24vh] pointer-events-none overflow-hidden select-none hidden lg:block"
           aria-hidden="true"
         >
           <DustTrail ref={dustRef} reducedMotion={reducedMotion} />

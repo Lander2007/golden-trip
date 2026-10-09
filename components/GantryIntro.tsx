@@ -61,7 +61,7 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
             Alexandria–Cairo interchange
           </p>
 
-          <h2 className="mx-auto mt-4 max-w-2xl font-display text-3xl font-extrabold leading-[1.12] tracking-[-0.04em] text-[#F4F2EC] sm:text-4xl md:text-5xl">
+          <h2 className="mx-auto mt-4 max-w-2xl font-display text-[clamp(1.75rem,4vw+0.5rem,3.5rem)] font-extrabold leading-[1.12] tracking-[-0.04em] text-[#F4F2EC] text-balance">
             <span className="intro-word inline-block">One</span>{" "}
             <span className="intro-word inline-block">account.</span>{" "}
             <span className="intro-word inline-block">Every</span>{" "}
@@ -75,8 +75,8 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
             Book from any branch in Egypt, then manage the trip from one profile.
           </p>
 
-          <div className="mt-8 grid grid-cols-3 gap-2 border-t border-[#2A2B2E] pt-6 sm:gap-4">
-            <div className="rounded-sm border border-[#2A2B2E] bg-[#0B0A09] px-2 py-3 sm:p-4">
+          <div className="mt-8 flex flex-col md:grid md:grid-cols-3 gap-0 md:gap-4 border-t border-[#2A2B2E] pt-6 md:pt-6 divide-y divide-[#2A2B2E] md:divide-y-0">
+            <div className="md:rounded-sm md:border border-[#2A2B2E] md:bg-[#0B0A09] py-4 md:px-2 md:py-3 md:sm:p-4">
               <div
                 ref={destCountRef}
                 className="font-display text-3xl font-extrabold tabular-nums text-[#F4F2EC] sm:text-4xl"
@@ -85,7 +85,7 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
               </div>
               <div className="mt-1 text-[11px] font-semibold text-[#C9A227] sm:text-sm">Cities</div>
             </div>
-            <div className="rounded-sm border border-[#2A2B2E] bg-[#0B0A09] px-2 py-3 sm:p-4">
+            <div className="md:rounded-sm md:border border-[#2A2B2E] md:bg-[#0B0A09] py-4 md:px-2 md:py-3 md:sm:p-4">
               <div
                 ref={hoursCountRef}
                 className="font-display text-3xl font-extrabold tabular-nums text-[#F4F2EC] sm:text-4xl"
@@ -95,7 +95,7 @@ export default function GantryIntro({ frames = false }: { frames?: boolean }) {
               </div>
               <div className="mt-1 text-[11px] font-semibold text-[#C9A227] sm:text-sm">Service</div>
             </div>
-            <div className="rounded-sm border border-[#2A2B2E] bg-[#0B0A09] px-2 py-3 sm:p-4">
+            <div className="md:rounded-sm md:border border-[#2A2B2E] md:bg-[#0B0A09] py-4 md:px-2 md:py-3 md:sm:p-4">
               <div
                 ref={classCountRef}
                 className="font-display text-3xl font-extrabold tabular-nums text-[#F4F2EC] sm:text-4xl"

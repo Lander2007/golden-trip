@@ -84,7 +84,7 @@ export default function PerfLab() {
 
   return (
     <div
-      className="fixed bottom-3 right-3 z-[9999] w-[220px] rounded-md border border-[#2A2B2E] bg-[#0B0A09]/90 p-3 font-mono text-[11px] text-[#F4F2EC] pointer-events-auto select-none"
+      className="hidden md:block fixed bottom-3 right-3 z-[9999] w-[220px] rounded-md border border-[#2A2B2E] bg-[#0B0A09]/90 p-3 font-mono text-[11px] text-[#F4F2EC] pointer-events-auto select-none"
       role="region"
       aria-label="Performance lab"
     >

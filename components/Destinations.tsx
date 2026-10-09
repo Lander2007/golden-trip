@@ -88,39 +88,7 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
       })
 
       // Mobile: Responsive pinned sequence with adjusted scroll distance
-      mm.add("(max-width: 767px)", () => {
-        const trigger = ScrollTrigger.create({
-          trigger: sceneRef.current,
-          start: "top top",
-          end: "+=190%",
-          pin: true,
-          scrub: 0.6,
-          anticipatePin: 1,
-          onUpdate: (self) => {
-            const p = self.progress
-            setScrollProgressVal(p)
-            routeMapRef.current?.setProgress(p)
-
-            if (manualCityRef.current) {
-              setManualCity(null)
-            }
-
-            let nextIndex = 0
-            if (p >= 0.917) nextIndex = 5
-            else if (p >= 0.737) nextIndex = 4
-            else if (p >= 0.587) nextIndex = 3
-            else if (p >= 0.354) nextIndex = 2
-            else if (p >= 0.086) nextIndex = 1
-
-            if (nextIndex !== cityIndexRef.current) {
-              cityIndexRef.current = nextIndex
-              setActiveCityIndex(nextIndex)
-            }
-          },
-        })
-        stRef.current = trigger
-        return () => trigger.kill()
-      })
+      // REMOVED for mobile to make it simpler and easier to reach.
 
       // Reconcile trigger order and pin-spacer offsets across document
       ScrollTrigger.sort()
@@ -169,8 +137,8 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
                 <span className="font-mono text-xs font-semibold text-[#FFD54F]">
                   Highway network · 14 cities
                 </span>
-                <span className="inline-block h-1 w-1 rounded-full bg-[#C9A227]" />
-                <span className="font-mono text-[11px] text-[#B9B7B0]/80">
+                <span className="hidden md:inline-block h-1 w-1 rounded-full bg-[#C9A227]" />
+                <span className="hidden md:inline-block font-mono text-[11px] text-[#B9B7B0]/80">
                   Scroll-Driven Navigation
                 </span>
               </div>
@@ -181,7 +149,7 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
             </div>
 
             {/* Dynamic Driver Guidance Prompt */}
-            <div className="flex items-center gap-2 self-start sm:self-auto rounded-full border border-[#C9A227]/25 bg-[#0B0A09]/80 px-3 py-1 font-mono text-[11px] backdrop-blur-md">
+            <div className="hidden md:flex items-center gap-2 self-start sm:self-auto rounded-full border border-[#C9A227]/25 bg-[#0B0A09]/80 px-3 py-1 font-mono text-[11px] backdrop-blur-md">
               <Compass
                 className="h-3.5 w-3.5 text-[#C9A227] animate-spin"
                 style={{ animationDuration: "10s" }}
@@ -198,9 +166,9 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
           </div>
 
           {/* Interactive Grid: Map & Luxury Telemetry Panel */}
-          <div className="grid grid-cols-1 items-stretch gap-3 sm:gap-4 lg:grid-cols-12 lg:gap-5">
+          <div className="flex flex-col md:grid grid-cols-1 md:grid-cols-12 items-stretch gap-3 sm:gap-4 lg:gap-5">
             {/* Left: Cartographic Route Map (Expanded height) */}
-            <div className="h-[360px] sm:h-[440px] lg:h-[min(56vh,540px)] w-full lg:col-span-7">
+            <div className="w-full aspect-square md:aspect-[4/3] lg:aspect-auto lg:h-[min(56vh,540px)] md:col-span-12 lg:col-span-7">
               <RouteMap
                 ref={routeMapRef}
                 activeCity={currentCity}
@@ -209,7 +177,7 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
             </div>
 
             {/* Right: City Panel with Interactive Waypoint Stepper */}
-            <div className="h-[400px] sm:h-[460px] lg:h-[min(56vh,540px)] w-full lg:col-span-5">
+            <div className="w-full h-auto min-h-[400px] lg:h-[min(56vh,540px)] md:col-span-12 lg:col-span-5">
               <CityPanel
                 city={currentCity}
                 cityIndex={activeCityIndex}
@@ -223,7 +191,7 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
       </Scene>
 
       {/* Full 14 Destinations Directory Grid below Pinned Section */}
-      <section className="relative z-10 bg-[#0B0A09] px-6 pb-[22vh] pt-4 sm:px-8 lg:px-12">
+      <section className="relative z-10 bg-[#0B0A09] px-6 pb-[12vh] md:pb-[22vh] pt-8 md:pt-4 sm:px-8 lg:px-12">
         <div className="mx-auto w-full max-w-[1200px]">
           <DestinationsList />
         </div>

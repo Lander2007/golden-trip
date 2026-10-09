@@ -23,7 +23,7 @@ export default function HowItWorks({ frames = false }: { frames?: boolean }) {
     <Scene index={3} id="how-it-works" light frames={frames}>
       {/* Title strictly following user copy: 'Three steps. Then you're off.' */}
       <div className="mb-12">
-        <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.04em] text-[#0B0A09]">
+        <h2 className="font-display text-[clamp(1.75rem,4vw+0.5rem,3.5rem)] font-extrabold tracking-[-0.04em] text-[#0B0A09] text-balance">
           Three steps. Then you’re{" "}
           <span className="font-accent italic font-normal text-[#C9A227]">
             off
@@ -35,29 +35,34 @@ export default function HowItWorks({ frames = false }: { frames?: boolean }) {
         </p>
       </div>
 
-      {/* 3 Steps with 180-degree flip km markers */}
-      <div className="flex overflow-x-auto snap-x snap-mandatory gap-5 pb-3 -mx-2 px-2 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:gap-8 lg:gap-12 items-start no-scrollbar">
+      {/* 3 Steps with vertical mobile line or horizontal grid */}
+      <div className="flex flex-col relative pl-6 gap-8 md:pl-0 md:grid md:grid-cols-3 md:gap-4 lg:gap-8 items-start">
+        {/* Mobile Connecting Gold Line */}
+        <div className="absolute left-[3px] top-[28px] bottom-[28px] w-px bg-[#C9A227] md:hidden" aria-hidden="true" />
         {steps.map((step) => (
-          <div key={step.num} className="step-post relative flex flex-col w-[84vw] max-w-[340px] shrink-0 snap-center md:w-auto md:max-w-none">
+          <div key={step.num} className="step-post relative flex flex-col w-full shrink-0 md:w-auto">
+            {/* Horizontal connection line for mobile */}
+            <div className="absolute -left-6 top-[28px] w-[21px] h-px bg-[#C9A227] md:hidden" aria-hidden="true" />
+            
             {/* Physical Km Marker Signpost */}
-            <div className="mb-5 inline-flex w-fit items-center border-2 border-[#2A2B2E] bg-white shadow-sm">
-              <span className="bg-[#2A2B2E] px-3.5 py-2 font-mono text-xs font-bold text-[#F4F2EC]">
+            <div className="mb-5 inline-flex w-fit items-center border-2 border-[#2A2B2E] bg-white shadow-sm relative z-10">
+              <span className="bg-[#2A2B2E] px-3.5 py-2 font-mono text-[10px] md:text-xs font-bold text-[#F4F2EC]">
                 km
               </span>
-              <span className="px-4 py-1.5 font-display text-3xl font-extrabold tabular-nums text-[#0E0E10]">
+              <span className="px-4 py-1.5 font-display text-2xl md:text-3xl font-extrabold tabular-nums text-[#0E0E10]">
                 {step.num}
               </span>
             </div>
 
             {/* Step Panel that flips 180 degrees physically on scroll */}
             <div
-              className="step-panel origin-center rounded-sm border border-[#2A2B2E]/20 bg-white p-6 shadow-sm"
+              className="step-panel origin-center rounded-sm border border-[#2A2B2E]/20 bg-white p-5 md:p-6 shadow-sm"
               style={{ perspective: "1000px" }}
             >
-              <h3 className="font-display text-xl sm:text-2xl font-bold text-[#0E0E10]">
+              <h3 className="font-display text-[clamp(1.125rem,2vw+0.5rem,1.5rem)] font-bold text-[#0E0E10]">
                 {step.title}
               </h3>
-              <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-[#4A4B4E]">
+              <p className="mt-2 text-[clamp(0.875rem,1vw+0.5rem,1rem)] leading-relaxed text-[#4A4B4E]">
                 {step.copy}
               </p>
             </div>

@@ -23,10 +23,11 @@ export interface ScrollCarHandle {
 interface ScrollCarProps {
   initialVariant?: VehicleVariant
   reducedMotion?: boolean
+  className?: string
 }
 
 const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
-  function ScrollCar({ initialVariant = "suv", reducedMotion = false }, ref) {
+  function ScrollCar({ initialVariant = "suv", reducedMotion = false, className = "" }, ref) {
     const [variant, setVariantState] = useState<VehicleVariant>(initialVariant)
     const [visible, setVisibleState] = useState(true)
 
@@ -121,13 +122,13 @@ const ScrollCar = forwardRef<ScrollCarHandle, ScrollCarProps>(
     return (
       <div
         ref={rootRef}
-        className="road-zone-car absolute bottom-[4.5vh] select-none pointer-events-none"
+        className={`road-zone-car absolute bottom-[4.5vh] select-none pointer-events-none ${className}`}
         style={{
           left: 0,
           opacity: visible ? 1 : 0,
-          width: isFleet
+          width: className.includes('w-') ? undefined : (isFleet
             ? "clamp(320px, 48vw, 680px)"
-            : "clamp(260px, 32vw, 460px)",
+            : "clamp(260px, 32vw, 460px)"),
         }}
         aria-hidden="true"
       >

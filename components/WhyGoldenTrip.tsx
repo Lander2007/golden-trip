@@ -34,7 +34,7 @@ export default function WhyGoldenTrip({
   return (
     <Scene index={4} id="why-golden-trip" frames={frames}>
       <div className="mb-10">
-        <h2 className="font-display text-3xl font-extrabold tracking-[-0.04em] text-[#F4F2EC] sm:text-4xl md:text-5xl">
+        <h2 className="font-display text-[clamp(1.75rem,4vw+0.5rem,3.5rem)] font-extrabold tracking-[-0.04em] text-[#F4F2EC] text-balance">
           Why Golden{" "}
           <span className="font-accent italic font-normal text-[#C9A227]">
             Trip
@@ -46,23 +46,25 @@ export default function WhyGoldenTrip({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 sm:gap-5">
         {items.map((item) => {
           const Pictogram = item.component
           return (
             <div
               key={item.id}
-              className="benefit flex flex-col rounded-sm border border-[#2A2B2E] bg-[#141518] p-6"
+              className="benefit flex flex-row md:flex-col items-center md:items-start rounded-sm border border-[#2A2B2E] bg-[#141518] p-4 md:p-6 gap-4 md:gap-0"
             >
-              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-sm border border-[#2A2B2E] bg-[#0B0A09]">
+              <div className="mb-0 md:mb-5 shrink-0 flex h-[72px] w-[72px] md:h-14 md:w-14 items-center justify-center rounded-sm border border-[#2A2B2E] bg-[#0B0A09]">
                 <Pictogram />
               </div>
-              <h3 className="font-display text-xl font-bold text-[#F4F2EC]">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#B9B7B0]">
-                {item.copy}
-              </p>
+              <div>
+                <h3 className="font-display text-[clamp(1.125rem,2vw+0.5rem,1.5rem)] font-bold text-[#F4F2EC]">
+                  {item.title}
+                </h3>
+                <p className="mt-1 md:mt-2 text-[clamp(0.875rem,1vw+0.5rem,1rem)] leading-relaxed text-[#B9B7B0]">
+                  {item.copy}
+                </p>
+              </div>
             </div>
           )
         })}

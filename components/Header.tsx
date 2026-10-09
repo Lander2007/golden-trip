@@ -171,9 +171,21 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
     window.addEventListener("keydown", handleKeyDown)
     document.body.style.overflow = "hidden"
 
+    // Push state to enable back button to close menu
+    window.history.pushState({ menu: true }, "")
+    const handlePopState = () => {
+      setMobileOpen(false)
+    }
+    window.addEventListener("popstate", handlePopState)
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("popstate", handlePopState)
       document.body.style.overflow = ""
+      // If menu was closed programmatically (not by back button), pop the state
+      if (window.history.state?.menu) {
+        window.history.back()
+      }
     }
   }, [mobileOpen])
   const handleAnchorClick = (
@@ -224,11 +236,13 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 px-6 sm:px-10 lg:px-12 pointer-events-none transition-all duration-300 ${
-          condensed ? "pt-2 sm:pt-3" : "pt-6 sm:pt-7 lg:pt-8"
+        className={`fixed inset-x-0 top-0 z-50 px-5 md:px-8 lg:px-12 pointer-events-none transition-all duration-300 ${
+          condensed 
+            ? "pt-[calc(env(safe-area-inset-top,0px)+0.5rem)] sm:pt-[calc(env(safe-area-inset-top,0px)+0.75rem)]" 
+            : "pt-[calc(env(safe-area-inset-top,0px)+1.5rem)] sm:pt-[calc(env(safe-area-inset-top,0px)+1.75rem)] lg:pt-[calc(env(safe-area-inset-top,0px)+2rem)]"
         }`}
       >
-        <div className="mx-auto flex max-w-[1360px] items-center justify-between">
+        <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between">
           {}
           <div className="pointer-events-auto shrink-0">
             <Link
@@ -299,9 +313,9 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
               onClick={() => setMobileOpen(true)}
               aria-label="Open navigation menu"
               aria-expanded={mobileOpen}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#EADFC8]/20 bg-[#141518] text-[#F4F2EC] hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-[#EADFC8]/20 bg-[#141518] text-[#F4F2EC] hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
             >
-              <Menu className="h-5 w-5 stroke-[2.2]" />
+              <Menu className="h-6 w-6 stroke-[2.2]" />
             </button>
           </div>
         </div>
@@ -310,7 +324,7 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
       {/* Docked Route Progress Line: visible once user scrolls past the hero frame */}
       {pathname === "/" && (
         <div
-          className={`transition-opacity duration-300 ${
+          className={`hidden md:block transition-opacity duration-300 ${
             condensed
               ? "opacity-100 pointer-events-auto"
               : "opacity-0 pointer-events-none"
@@ -336,9 +350,9 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
               type="button"
               onClick={() => setMobileOpen(false)}
               aria-label="Close navigation menu"
-              className="flex h-10 w-10 items-center justify-center rounded-sm border border-[#2A2B2E] text-[#F4F2EC] hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
+              className="flex h-12 w-12 items-center justify-center rounded-sm border border-[#2A2B2E] text-[#F4F2EC] hover:text-[#C9A227] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
             >
-              <X className="h-6 w-6 stroke-[2.2]" />
+              <X className="h-7 w-7 stroke-[2.2]" />
             </button>
           </div>
 

@@ -8,6 +8,7 @@ import BookingBar from "./BookingBar"
 import FitText from "./FitText"
 import CelestialBody, { HeroSun, HeroMoon } from "./CelestialBody"
 import GizaPyramids from "./landscape/GizaPyramids"
+import ScrollCar from "./ScrollCar"
 
 // 28 deterministic stars generated with fixed seed, placed strictly in top 40% (at most 12 animated per budget)
 const HERO_STARS = Array.from({ length: 28 }).map((_, i) => {
@@ -117,13 +118,13 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
       id="alexandria"
       data-scene={0}
       ref={heroRef}
-      className="scene relative min-h-[620px] h-[100svh] w-full p-2.5 sm:p-4 flex flex-col justify-between overflow-hidden"
+      className="scene relative min-h-[620px] h-[100svh] w-full p-2 lg:p-4 flex flex-col justify-between overflow-hidden"
       style={{ backgroundColor: "var(--sky, #0B0A09)" }}
     >
       {/* ============================================================== */}
-      {/* INSET FRAME: 16px margin, 28px radius, min-height 600px        */}
+      {/* INSET FRAME: 16px margin on lg+, 8px on phones, radius scales 28px to 20px, min-height 100svh        */}
       {/* ============================================================== */}
-      <div className="relative h-full min-h-[600px] w-full rounded-[24px] sm:rounded-[28px] overflow-hidden border border-[#EADFC8]/12 bg-[#0B0A09] flex flex-col justify-between">
+      <div className="relative h-full min-h-0 lg:min-h-[600px] w-full rounded-[20px] lg:rounded-[28px] overflow-hidden border border-[#EADFC8]/12 bg-[#0B0A09] flex flex-col justify-between landscape-phone:min-h-[400px]">
         {/* ------------------------------------------------------------ */}
         {/* Z-1: PHOTO BACKDROP (/images/hero-giza-dawn.jpg)             */}
         {/* ------------------------------------------------------------ */}
@@ -238,10 +239,10 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         >
           {/* Sun starts at SUN_START: x=72%, y=30% */}
           <div
-            className="hero-sun-wrapper absolute"
+            className="hero-sun-wrapper absolute w-[min(14vw,72px)] lg:w-auto h-[min(14vw,72px)] lg:h-auto"
             style={{
               left: "72%",
-              top: "30%",
+              top: "22%",
               transform: "translate(-50%, -50%)",
             }}
           >
@@ -259,10 +260,10 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
           aria-hidden="true"
         >
           <div
-            className="hero-moon-wrapper absolute opacity-0"
+            className="hero-moon-wrapper absolute opacity-0 w-[min(14vw,72px)] lg:w-auto h-[min(14vw,72px)] lg:h-auto"
             style={{
               left: "84%",
-              top: "24%",
+              top: "18%",
               transform: "translate(-50%, -50%)",
             }}
           >
@@ -329,53 +330,65 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         </div>
 
         {/* ------------------------------------------------------------ */}
-        {/* Z-7: WORDMARK FIT (GOLDEN TRIP fitted, baseline above road)   */}
-        {/* ------------------------------------------------------------ */}
-        <div className="absolute inset-x-0 bottom-[14.5vh] sm:bottom-[16vh] z-[7] pointer-events-none">
-          <FitText />
-        </div>
-
-        {/* ------------------------------------------------------------ */}
         {/* Z-8: CONTENT BLOCK (Top padding = navbar height + 24px)       */}
         {/* ------------------------------------------------------------ */}
-        <div className="relative z-[8] w-full max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-14 pt-[clamp(76px,10vh,92px)] flex-1 flex flex-col justify-start">
-          <div className="grid grid-cols-1 lg:grid-cols-12 w-full">
-            <div className="lg:col-span-7">
-              {/* Headline: clamp(40px, min(6.4vw, 10.5vh), 104px) */}
-              <h1 className="font-display text-[clamp(40px,min(6.4vw,10.5vh),104px)] font-bold tracking-[-0.04em] text-[#EADFC8] leading-[1.02]">
-                <span className="block overflow-hidden">
-                  <span className="hero-headline-line block">
-                    Your trip starts
-                  </span>
-                </span>
-                <span className="block overflow-hidden mt-1">
-                  <span className="hero-headline-line block">
-                    at your{" "}
-                    <span className="font-accent italic font-normal text-[#C9A227]">
-                      door.
+        <div className="relative z-[8] w-full content-container pt-[calc(env(safe-area-inset-top,0px)+80px)] lg:pt-[clamp(76px,10vh,92px)] flex-1 flex flex-col justify-start pb-4 lg:pb-0">
+          <div className="flex-1 flex flex-col justify-between lg:block h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-12 w-full lg:mb-[15vh]">
+              <div className="lg:col-span-7 flex flex-col h-full lg:block landscape-phone:justify-center">
+                <h1 className="font-display text-[clamp(2.125rem,7vw+0.5rem,6.5rem)] landscape-phone:text-[clamp(1.5rem,5vw,2rem)] lg:text-[clamp(40px,min(6.4vw,10.5vh),104px)] font-bold tracking-[-0.04em] text-[#EADFC8] leading-[1.02] text-balance">
+                  <span className="block overflow-hidden">
+                    <span className="hero-headline-line block">
+                      Your trip starts
                     </span>
                   </span>
-                </span>
-              </h1>
+                  <span className="block overflow-hidden mt-1">
+                    <span className="hero-headline-line block">
+                      at your{" "}
+                      <span className="font-accent italic font-normal text-[#C9A227]">
+                        door.
+                      </span>
+                    </span>
+                  </span>
+                </h1>
 
-              {/* Subline: vh-aware scaling */}
-              <p className="mt-[clamp(10px,1.8vh,22px)] text-[clamp(14px,min(1.2vw,1.9vh),17px)] leading-relaxed text-[#EADFC8]/85 max-w-[46ch]">
-                Airport transfers, resort runs, and city-to-city trips across Egypt.
-              </p>
+                {/* Subline: vh-aware scaling */}
+                <p className="mt-3 lg:mt-[clamp(10px,1.8vh,22px)] text-base lg:text-[clamp(14px,min(1.2vw,1.9vh),17px)] leading-relaxed text-[#EADFC8]/85 max-w-[46ch]">
+                  Airport transfers, resort runs, and city-to-city trips across Egypt.
+                </p>
 
-              {/* Booking Bar: vh-aware spacing */}
-              <div className="hero-booking-bar mt-[clamp(14px,2.2vh,28px)]">
-                <BookingBar />
+                {/* Booking Bar: vh-aware spacing */}
+                <div className="hero-booking-bar mt-6 lg:mt-[clamp(14px,2.2vh,28px)]">
+                  <BookingBar />
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile bottom flow: Wordmark, Vehicle, Scroll Cue (Hidden on landscape-phone) */}
+            <div className="mt-auto flex flex-col justify-end lg:hidden landscape-phone:hidden w-full overflow-hidden">
+              <FitText />
+              <div className="relative h-20 sm:h-32 mt-4 -mx-2 flex items-end">
+                <ScrollCar 
+                  initialVariant="suv" 
+                  reducedMotion={false} 
+                />
+              </div>
+              <div className="mt-4 flex items-center justify-center gap-3 text-xs text-[#EADFC8]/70 pointer-events-auto">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#C9A227]" />
+                <span className="font-medium">Alexandria to Anywhere</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* ------------------------------------------------------------ */}
-        {/* BOTTOM ROW INSIDE FRAME: Scroll cue & Route chip             */}
+        {/* Desktop Absolute Wordmark & Bottom Row */}
         {/* ------------------------------------------------------------ */}
-        <div className="relative z-[8] w-full max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-14 pb-4 sm:pb-5 flex items-center justify-end pointer-events-none">
-          <div className="hidden sm:flex items-center gap-3 text-xs text-[#EADFC8]/70 pointer-events-auto">
+        <div className="hidden lg:block absolute inset-x-0 bottom-[14.5vh] z-[7] pointer-events-none">
+          <FitText />
+        </div>
+        <div className="hidden lg:flex relative z-[8] w-full content-container pb-5 items-center justify-end pointer-events-none">
+          <div className="flex items-center gap-3 text-xs text-[#EADFC8]/70 pointer-events-auto">
             <span className="h-1.5 w-1.5 rounded-full bg-[#C9A227]" />
             <span className="font-medium">Alexandria to Anywhere</span>
           </div>

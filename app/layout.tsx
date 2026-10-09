@@ -59,6 +59,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${anybody.variable} ${instrumentSerif.variable} ${sourceSans.variable}`}
+      suppressHydrationWarning
     >
       <head>
         {process.env.FIGMA && process.env.NODE_ENV === "development" && (
