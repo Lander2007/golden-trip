@@ -1,27 +1,19 @@
 "use client"
 
-interface CelestialBodyProps {
+interface CelestialProps {
   className?: string
   reducedMotion?: boolean
 }
 
 /**
- * CelestialBody
- * Inline SVG rendering the Sun/Moon in the hero sky.
+ * HeroSun
+ * Inline SVG rendering the warm Egyptian sun that sinks behind the horizon.
  * Diameter: clamp(68px, 9vw, 120px).
- *
- * Back layer: Soft glow (radial falloff with isolated mix-blend-mode: screen).
- * Disc: Starts in --ember (#E07A2F), transitioning to pale gold (#E3C46A) and --sand (#EADFC8).
- * Mask: SVG <mask id="crescentMask"> containing a base circle (r=45) and a cutter circle (r=45).
- * The cutter circle starts at x=120px (full sun) and slides in on scroll to x=26px, carving a crescent moon.
  */
-export default function CelestialBody({
-  className = "",
-  reducedMotion = false,
-}: CelestialBodyProps) {
+export function HeroSun({ className = "" }: CelestialProps) {
   return (
     <div
-      className={`celestial-body relative pointer-events-none select-none ${className}`}
+      className={`hero-sun relative pointer-events-none select-none ${className}`}
       style={{
         width: "clamp(68px, 9vw, 120px)",
         height: "clamp(68px, 9vw, 120px)",
@@ -35,55 +27,34 @@ export default function CelestialBody({
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Radial falloff glow */}
-          <radialGradient id="celestialGlowGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#E07A2F" stopOpacity="0.85" />
-            <stop offset="35%" stopColor="#E07A2F" stopOpacity="0.38" />
-            <stop offset="70%" stopColor="#E07A2F" stopOpacity="0.12" />
+          <radialGradient id="sunGlowGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#E07A2F" stopOpacity="0.88" />
+            <stop offset="35%" stopColor="#E07A2F" stopOpacity="0.45" />
+            <stop offset="70%" stopColor="#E07A2F" stopOpacity="0.14" />
             <stop offset="100%" stopColor="#E07A2F" stopOpacity="0" />
           </radialGradient>
-
-          {/* Crescent Mask: white base disc + black sliding cutter circle */}
-          <mask id="crescentMask">
-            <rect x="0" y="0" width="200" height="200" fill="black" />
-            {/* White base circle */}
-            <circle cx="100" cy="100" r="45" fill="white" />
-            {/* Black cutter circle of same size: transform-animated for GPU acceleration */}
-            <circle
-              id="crescentCutter"
-              className="crescent-cutter will-change-transform"
-              cx="100"
-              cy="100"
-              r="45"
-              fill="black"
-              style={{
-                transform: reducedMotion ? "translate3d(120px, 0, 0)" : "translate3d(120px, 0, 0)",
-              }}
-            />
-          </mask>
         </defs>
 
-        {/* Soft Glow behind disc (isolated mix-blend-mode: screen) */}
+        {/* Soft Radial Sun Glow */}
         <circle
-          className="celestial-glow"
+          className="hero-sun-glow celestial-glow will-change-transform"
           cx="100"
           cy="100"
           r="95"
-          fill="url(#celestialGlowGrad)"
+          fill="url(#sunGlowGrad)"
           style={{
             mixBlendMode: "screen",
             transformOrigin: "100px 100px",
           }}
         />
 
-        {/* Celestial Disc with crescentMask */}
+        {/* Sun Disc */}
         <circle
-          className="celestial-disc"
+          className="hero-sun-disc celestial-disc"
           cx="100"
           cy="100"
           r="45"
           fill="#E07A2F"
-          mask="url(#crescentMask)"
           style={{
             transformOrigin: "100px 100px",
           }}
@@ -91,4 +62,75 @@ export default function CelestialBody({
       </svg>
     </div>
   )
+}
+
+/**
+ * HeroMoon
+ * Inline SVG rendering the crescent moon in the western night sky.
+ * Diameter: 0.8 x SUN_DIAMETER = clamp(54px, 7.2vw, 96px).
+ */
+export function HeroMoon({ className = "" }: CelestialProps) {
+  return (
+    <div
+      className={`hero-moon relative pointer-events-none select-none ${className}`}
+      style={{
+        width: "clamp(54px, 7.2vw, 96px)",
+        height: "clamp(54px, 7.2vw, 96px)",
+        isolation: "isolate",
+      }}
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 200 200"
+        className="w-full h-full overflow-visible"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          {/* Pale Silver-Sand Halo Glow */}
+          <radialGradient id="heroMoonGlowGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#EADFC8" stopOpacity="0.45" />
+            <stop offset="40%" stopColor="#EADFC8" stopOpacity="0.22" />
+            <stop offset="75%" stopColor="#EADFC8" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#EADFC8" stopOpacity="0" />
+          </radialGradient>
+
+          {/* Crescent Moon Mask: white base disc + black cutter circle */}
+          <mask id="heroCrescentMoonMask">
+            <rect x="0" y="0" width="200" height="200" fill="black" />
+            {/* White base circle */}
+            <circle cx="100" cy="100" r="45" fill="white" />
+            {/* Cutter offset to carve a clean ~30% crescent moon */}
+            <circle cx="124" cy="94" r="42" fill="black" />
+          </mask>
+        </defs>
+
+        {/* Soft Pale Glow */}
+        <circle
+          className="hero-moon-glow"
+          cx="100"
+          cy="100"
+          r="95"
+          fill="url(#heroMoonGlowGrad)"
+          style={{
+            mixBlendMode: "screen",
+            transformOrigin: "100px 100px",
+          }}
+        />
+
+        {/* Crescent Moon Disc */}
+        <circle
+          className="hero-moon-disc"
+          cx="100"
+          cy="100"
+          r="45"
+          fill="#EADFC8"
+          mask="url(#heroCrescentMoonMask)"
+        />
+      </svg>
+    </div>
+  )
+}
+
+export default function CelestialBody(props: CelestialProps) {
+  return <HeroSun {...props} />
 }

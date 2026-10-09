@@ -7,7 +7,7 @@ import { useGSAP } from "@gsap/react"
 import { ArrowDown } from "lucide-react"
 import BookingBar from "./BookingBar"
 import FitText from "./FitText"
-import CelestialBody from "./CelestialBody"
+import CelestialBody, { HeroSun, HeroMoon } from "./CelestialBody"
 import GizaPyramids from "./landscape/GizaPyramids"
 
 // 28 deterministic stars generated with fixed seed, placed strictly in top 40% (at most 12 animated per budget)
@@ -35,10 +35,10 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
       // Initial Load Entrance Animation (1.6s total)
       const tl = gsap.timeline({ defaults: { ease: "power2.out" } })
 
-      // 1. Celestial body rises into start dawn position
+      // 1. Sun rises smoothly into start dawn position
       tl.fromTo(
-        ".celestial-wrapper",
-        { y: 60, opacity: 0 },
+        ".hero-sun-wrapper",
+        { y: 50, opacity: 0 },
         { y: 0, opacity: 1, duration: 1.4, ease: "power2.out" },
         0
       )
@@ -162,20 +162,32 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         {/* Z-2: DAWN WARM OVERLAY (Opacity 1 -> 0 on scroll)            */}
         {/* ------------------------------------------------------------ */}
         <div
-          className="hero-dawn-overlay pointer-events-none absolute inset-0 z-[2] transition-opacity duration-150"
+          className="hero-dawn-overlay pointer-events-none absolute inset-0 z-[2]"
           style={{
             background:
-              "linear-gradient(to top, rgba(224, 122, 47, 0.38) 0%, rgba(224, 122, 47, 0.14) 40%, rgba(11, 10, 9, 0) 75%)",
+              "linear-gradient(to top, rgba(224, 122, 47, 0.42) 0%, rgba(224, 122, 47, 0.16) 40%, rgba(11, 10, 9, 0) 75%)",
             opacity: 1,
           }}
           aria-hidden="true"
         />
 
         {/* ------------------------------------------------------------ */}
-        {/* Z-3: NIGHT OVERLAY (--night #0C1A2B, Opacity 0 -> 0.65)      */}
+        {/* Z-2b: DUSK HORIZON HAZE (peaks at p=0.40, then fades)        */}
         {/* ------------------------------------------------------------ */}
         <div
-          className="hero-night-overlay pointer-events-none absolute inset-0 z-[3] transition-opacity duration-150"
+          className="hero-dusk-haze pointer-events-none absolute inset-x-0 bottom-[22%] z-[2] h-[38%] opacity-0 will-change-[opacity]"
+          style={{
+            background:
+              "radial-gradient(ellipse 85% 65% at 88% 90%, rgba(201, 61, 27, 0.72) 0%, rgba(232, 116, 42, 0.38) 45%, transparent 80%)",
+          }}
+          aria-hidden="true"
+        />
+
+        {/* ------------------------------------------------------------ */}
+        {/* Z-3: NIGHT OVERLAY (--night #0C1A2B, Opacity 0 -> 0.72)      */}
+        {/* ------------------------------------------------------------ */}
+        <div
+          className="hero-night-overlay pointer-events-none absolute inset-0 z-[3]"
           style={{
             background:
               "linear-gradient(to top, rgba(12, 26, 43, 0.95) 0%, rgba(12, 26, 43, 0.7) 60%, rgba(12, 26, 43, 0.4) 100%)",
@@ -188,7 +200,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         {/* Z-4: STARS (28 tiny dots in top 40% of frame, at most 12 twinkle) */}
         {/* ------------------------------------------------------------ */}
         <div
-          className="hero-stars pointer-events-none absolute inset-0 z-[4] opacity-0"
+          className="hero-stars pointer-events-none absolute inset-0 z-[4] opacity-0 will-change-[opacity]"
           aria-hidden="true"
         >
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -213,25 +225,69 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         </div>
 
         {/* ------------------------------------------------------------ */}
-        {/* Z-5: CELESTIAL BODY (Sun to Moon, sits strictly in sky)      */}
-        {/* Container with container query for responsive 22cqw / -16cqh */}
+        {/* Z-5: SUN CONTAINER (Clipped at Horizon Y = 74%)              */}
+        {/* Container has height = 74% and overflow: hidden.             */}
+        {/* As sun moves to y: 81%, it is cleanly clipped at horizon!    */}
         {/* ------------------------------------------------------------ */}
         <div
-          className="hero-celestial-track absolute inset-0 z-[5] pointer-events-none overflow-hidden"
-          style={{ containerType: "size" }}
+          className="hero-sun-sky-track absolute inset-x-0 top-0 z-[5] pointer-events-none overflow-hidden"
+          style={{
+            height: "74%",
+            containerType: "size",
+          }}
           aria-hidden="true"
         >
-          {/* Base position: x=68% of width, y=40% of height in open sky */}
+          {/* Sun starts at SUN_START: x=72%, y=30% */}
           <div
-            className="celestial-wrapper absolute will-change-transform"
+            className="hero-sun-wrapper absolute will-change-transform"
             style={{
-              left: "68%",
-              top: "40%",
+              left: "72%",
+              top: "30%",
               transform: "translate(-50%, -50%)",
             }}
           >
-            <CelestialBody />
+            <HeroSun />
           </div>
+        </div>
+
+        {/* ------------------------------------------------------------ */}
+        {/* Z-5b: CRESCENT MOON (Upper western sky, outside sun clip)    */}
+        {/* Positioned at MOON_POS: x=84%, y=24% (mobile: x=80%, y=14%)  */}
+        {/* ------------------------------------------------------------ */}
+        <div
+          className="hero-moon-track absolute inset-0 z-[5] pointer-events-none overflow-hidden"
+          style={{ containerType: "size" }}
+          aria-hidden="true"
+        >
+          <div
+            className="hero-moon-wrapper absolute opacity-0 will-change-transform will-change-[opacity]"
+            style={{
+              left: "84%",
+              top: "24%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <HeroMoon />
+          </div>
+        </div>
+
+        {/* ------------------------------------------------------------ */}
+        {/* Z-5c: DUNE RIDGE SILHOUETTE (Masks horizon line along 74%)   */}
+        {/* ------------------------------------------------------------ */}
+        <div
+          className="hero-dune-ridge pointer-events-none absolute inset-x-0 top-[73.6%] z-[5] h-[7%] overflow-hidden"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 1440 100"
+            preserveAspectRatio="none"
+            className="w-full h-full"
+          >
+            <path
+              d="M0 55 Q 240 28 480 50 T 960 32 T 1440 48 L 1440 100 L 0 100 Z"
+              fill="#0B0A09"
+            />
+          </svg>
         </div>
 
         {/* ------------------------------------------------------------ */}

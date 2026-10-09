@@ -206,71 +206,98 @@ export default function Drive({
       })
       heroTimeline.to(".travel-lane", { x: "-=480", ease: "none" }, 0)
 
-      // Celestial position: x moves 68% -> 90%, y moves 40% -> 24%
+      // ----------------------------------------------------------------------
+      // PHASE 7c: SUNSET TO MOON CHOREOGRAPHY
+      // Sun drifts right (west), sinks behind horizon at p=0.55,
+      // dusk haze peaks at p=0.40, night overlay and stars appear,
+      // crescent moon emerges in the western sky from p=0.55 to 0.90.
+      // Reverses cleanly on scroll up.
+      // ----------------------------------------------------------------------
+
+      // 1. Sun Movement: drifts west (x: 0 -> 18cqw) & sinks (y: 0 -> 85cqh)
+      // Clamped container height is 74%, so at 85cqh it is fully sunken below the horizon & dunes
       heroTimeline.to(
-        ".celestial-wrapper",
-        { x: "22cqw", y: "-16cqh", duration: 1, ease: "power1.out" },
+        ".hero-sun-wrapper",
+        {
+          x: "18cqw",
+          y: "85cqh",
+          opacity: 0,
+          duration: 0.55,
+          ease: "power1.in",
+        },
         0
       )
 
-      // Celestial color transition
+      // 2. Sun Color: gold (#E07A2F) -> deep sunset orange (#E8742A) -> crimson red (#C93D1B)
       heroTimeline.to(
-        ".celestial-disc",
-        { fill: "#E3C46A", duration: 0.3, ease: "none" },
-        0.35
+        ".hero-sun-disc",
+        { fill: "#E8742A", duration: 0.30, ease: "none" },
+        0
       )
       heroTimeline.to(
-        ".celestial-disc",
-        { fill: "#EADFC8", duration: 0.35, ease: "none" },
-        0.65
+        ".hero-sun-disc",
+        { fill: "#C93D1B", duration: 0.25, ease: "power1.in" },
+        0.30
       )
 
-      // Celestial glow: scale down smoothly
+      // 3. Sun Glow: shrinks and dims as it sets
       heroTimeline.to(
-        ".celestial-glow",
-        { scale: 0.4, opacity: 0.5, duration: 0.7, ease: "power1.out" },
+        ".hero-sun-glow",
+        { scale: 0.52, opacity: 0.2, duration: 0.55, ease: "power1.in" },
         0
       )
 
-      // Crescent mask cutter circle: slides in from p 0.55 to 1.0 (transform x: 120 -> 26)
-      heroTimeline.fromTo(
-        "#crescentCutter",
-        { x: 120 },
-        { x: 26, duration: 0.45, ease: "power1.inOut" },
-        0.55
+      // 4. Dusk-red Horizon Haze: peaks at p=0.38 - 0.42, fades by p=0.65
+      heroTimeline.to(
+        ".hero-dusk-haze",
+        { opacity: 0.95, duration: 0.36, ease: "power1.out" },
+        0.05
+      )
+      heroTimeline.to(
+        ".hero-dusk-haze",
+        { opacity: 0, duration: 0.25, ease: "power1.in" },
+        0.41
       )
 
-      // Sky overlays
+      // 5. Sky Overlays: Dawn fades out, Night fades in
       heroTimeline.to(
         ".hero-dawn-overlay",
-        { opacity: 0, duration: 0.6, ease: "none" },
+        { opacity: 0, duration: 0.45, ease: "none" },
         0
       )
       heroTimeline.to(
         ".hero-night-overlay",
-        { opacity: 0.65, duration: 0.8, ease: "none" },
-        0.2
+        { opacity: 0.72, duration: 0.60, ease: "power1.inOut" },
+        0.25
       )
 
-      // Photo darkening via opacity overlay div (avoid full-screen CSS filter recalculations)
-      heroTimeline.to(
-        ".hero-bg-photo-overlay",
-        { opacity: 0.4, duration: 1, ease: "none" },
-        0
-      )
-
-      // Stars
+      // 6. Stars fade in
       heroTimeline.to(
         ".hero-stars",
-        { opacity: 1, duration: 0.5, ease: "none" },
-        0.5
+        { opacity: 1, duration: 0.40, ease: "power1.inOut" },
+        0.45
       )
 
-      // Headlight beam
+      // 7. Crescent Moon emerges in western night sky (p: 0.55 -> 0.90)
+      heroTimeline.fromTo(
+        ".hero-moon-wrapper",
+        { opacity: 0, scale: 0.82 },
+        { opacity: 1, scale: 1, duration: 0.38, ease: "power1.out" },
+        0.55
+      )
+
+      // 8. Photo Darkening via opacity overlay
+      heroTimeline.to(
+        ".hero-bg-photo-overlay",
+        { opacity: 0.45, duration: 1, ease: "none" },
+        0
+      )
+
+      // 9. Headlight beam brightens across p: 0.40 -> 0.85
       heroTimeline.to(
         ".headlight-beam",
-        { opacity: 1, duration: 1, ease: "none" },
-        0
+        { opacity: 1, duration: 0.45, ease: "none" },
+        0.40
       )
 
       // SCENE 1: GANTRY INTRO (#welcome)
