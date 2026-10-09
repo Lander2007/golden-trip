@@ -52,7 +52,7 @@ export default function CityPanel({
       : `Book from ${displayedCity.city}`
 
   return (
-    <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-[#C9A227]/25 bg-gradient-to-b from-[#0F1722] via-[#0A1018] to-[#070B10] p-4 shadow-2xl backdrop-blur-xl sm:p-6">
+    <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-[#C9A227]/25 bg-gradient-to-b from-[#0F1722] via-[#0A1018] to-[#070B10] p-3.5 shadow-2xl backdrop-blur-xl sm:p-5">
       {/* Top Gold Shimmer Edge */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#C9A227] to-transparent opacity-80"
@@ -61,7 +61,7 @@ export default function CityPanel({
 
       {/* Background Watermark Short Code */}
       <div
-        className="pointer-events-none absolute right-4 top-8 select-none font-mono text-[72px] font-black tracking-tighter text-white/[0.03]"
+        className="pointer-events-none absolute right-4 top-8 select-none font-mono text-[64px] font-black tracking-tighter text-white/[0.03]"
         aria-hidden="true"
       >
         {shortCode}
@@ -69,7 +69,7 @@ export default function CityPanel({
 
       {/* Top Header & Status Telemetry */}
       <div>
-        <div className="flex items-center justify-between gap-2 border-b border-[#2A2B2E]/60 pb-3">
+        <div className="flex items-center justify-between gap-2 border-b border-[#2A2B2E]/60 pb-2.5">
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs font-bold text-[#FFD54F]">
               {displayedCity.isHq
@@ -215,7 +215,7 @@ export default function CityPanel({
         {/* Primary Booking CTA Button */}
         <Link
           href={`/signup?branch=${encodeURIComponent(displayedCity.city)}`}
-          className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-md bg-[#C9A227] px-4 py-3 font-display text-sm font-bold text-[#080D15] shadow-lg transition-all duration-200 hover:bg-[#FFD54F] hover:shadow-[0_0_20px_rgba(201,162,39,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
+          className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-md bg-[#C9A227] px-4 py-2.5 sm:py-3 font-display text-sm font-bold text-[#080D15] shadow-lg transition-all duration-200 hover:bg-[#FFD54F] hover:shadow-[0_0_20px_rgba(201,162,39,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
         >
           <span>{bookLabel}</span>
           <ArrowRight
@@ -225,7 +225,7 @@ export default function CityPanel({
         </Link>
 
         {/* Trust & Guarantee Subtitle */}
-        <div className="mt-2 flex items-center justify-center gap-1.5 font-mono text-[10px] text-[#B9B7B0]/60">
+        <div className="mt-1.5 flex items-center justify-center gap-1.5 font-mono text-[10px] text-[#B9B7B0]/60">
           <ShieldCheck className="h-3 w-3 text-[#C9A227]/80" aria-hidden="true" />
           <span>24/7 private chauffeur · Fixed highway pricing</span>
         </div>

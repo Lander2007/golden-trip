@@ -50,6 +50,10 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
 
     measureSections()
 
+    if (typeof window !== "undefined" && (window as any).ScrollTrigger) {
+      ;(window as any).ScrollTrigger.addEventListener("refresh", measureSections)
+    }
+
     let resizeTimer: NodeJS.Timeout
     const handleResize = () => {
       clearTimeout(resizeTimer)

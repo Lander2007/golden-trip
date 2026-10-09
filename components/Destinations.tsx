@@ -35,7 +35,7 @@ const CITY_TARGET_PROGRESS: Record<string, number> = {
 }
 
 export default function Destinations({ frames = false }: { frames?: boolean }) {
-  const sectionRef = useRef<HTMLDivElement>(null)
+  const sceneRef = useRef<HTMLElement>(null)
   const routeMapRef = useRef<RouteMapHandle>(null)
   const stRef = useRef<ScrollTrigger | null>(null)
   const [activeCityIndex, setActiveCityIndex] = useState(0)
@@ -47,14 +47,14 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
 
   useGSAP(
     () => {
-      if (frames) return
+      if (frames || !sceneRef.current) return
 
       const mm = gsap.matchMedia()
 
       // Desktop & Tablet: Pinned scroll-driven journey
       mm.add("(min-width: 768px)", () => {
         const trigger = ScrollTrigger.create({
-          trigger: "#destinations",
+          trigger: sceneRef.current,
           start: "top top",
           end: "+=260%",
           pin: true,
@@ -90,7 +90,7 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
       // Mobile: Responsive pinned sequence with adjusted scroll distance
       mm.add("(max-width: 767px)", () => {
         const trigger = ScrollTrigger.create({
-          trigger: "#destinations",
+          trigger: sceneRef.current,
           start: "top top",
           end: "+=190%",
           pin: true,
@@ -122,9 +122,13 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
         return () => trigger.kill()
       })
 
+      // Reconcile trigger order and pin-spacer offsets across document
+      ScrollTrigger.sort()
+      ScrollTrigger.refresh()
+
       return () => mm.revert()
     },
-    { scope: sectionRef, dependencies: [frames] }
+    { scope: sceneRef, dependencies: [frames] }
   )
 
   const currentCity = manualCity || ROUTE_CITIES[activeCityIndex] || ROUTE_CITIES[0]
@@ -156,8 +160,8 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
 
   return (
     <>
-      <Scene index={2} id="destinations" frames={frames}>
-        <div ref={sectionRef} className="flex w-full flex-col">
+      <Scene sceneRef={sceneRef} index={2} id="destinations" frames={frames}>
+        <div className="flex w-full flex-col">
           {/* Section Header with Live Scroll Driver Telemetry */}
           <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>

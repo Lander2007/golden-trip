@@ -15,6 +15,7 @@ import { LITE, off } from "@/lib/perf"
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger)
+  ;(window as any).ScrollTrigger = ScrollTrigger
 }
 
 export default function Drive({
@@ -319,10 +320,17 @@ export default function Drive({
           scrollCarRef.current?.setVariant("sedan")
           scrollCarRef.current?.setVisible(true)
         },
+        onLeave: () => {
+          scrollCarRef.current?.setVisible(false)
+        },
+        onLeaveBack: () => {
+          scrollCarRef.current?.setVariant("suv")
+          scrollCarRef.current?.setVisible(true)
+        },
         onUpdate: (self) => {
           const p = self.progress
           scrollCarRef.current?.setVariant("sedan")
-          scrollCarRef.current?.setVisible(true)
+          scrollCarRef.current?.setVisible(p < 0.98)
 
           if (p < 0.22) {
             const inP = p / 0.22
@@ -355,8 +363,8 @@ export default function Drive({
       // SCENE 2: MAP SECTION / DESTINATIONS (#destinations)
       ScrollTrigger.create({
         trigger: "#destinations",
-        start: "top 80%",
-        end: "bottom 20%",
+        start: "top 95%",
+        end: "bottom top",
         onEnter: () => {
           scrollCarRef.current?.setVisible(false)
         },
@@ -364,9 +372,10 @@ export default function Drive({
           scrollCarRef.current?.setVisible(false)
         },
         onLeave: () => {
-          scrollCarRef.current?.setVisible(true)
+          scrollCarRef.current?.setVisible(false)
         },
         onLeaveBack: () => {
+          scrollCarRef.current?.setVariant("sedan")
           scrollCarRef.current?.setVisible(true)
         },
       })
@@ -556,6 +565,10 @@ export default function Drive({
           scrollCarRef.current?.setOpacity(1 - self.progress)
         },
       })
+
+      // Sort and refresh triggers to reconcile any dynamically created pin-spacers across scenes
+      ScrollTrigger.sort()
+      ScrollTrigger.refresh()
     },
     { scope: root, dependencies: [frames] }
   )

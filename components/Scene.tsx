@@ -1,10 +1,6 @@
-"use client" /* 
-          CONTENT ZONE:
-          Starts below the 72px navbar and finishes strictly above the 24vh road zone.
-          Nothing in this container can ever touch or sit beneath the road zone.
-        */ /* Decorative landscape layer (Pyramids, Palms) behind content at low contrast */
+"use client"
 
-import type { ReactNode } from "react"
+import type { ReactNode, Ref } from "react"
 import Landscape from "./Landscape"
 
 const motionNotes = [
@@ -42,30 +38,42 @@ export function MotionNote({ index }: { index: number }) {
   )
 }
 
+export interface SceneProps {
+  index: number
+  id: string
+  children: ReactNode
+  light?: boolean
+  frames?: boolean
+  className?: string
+  ref?: Ref<HTMLElement>
+  sceneRef?: Ref<HTMLElement>
+}
+
 export default function Scene({
   index,
   id,
   children,
   light = false,
   frames = false,
-}: {
-  index: number
-  id: string
-  children: ReactNode
-  light?: boolean
-  frames?: boolean
-}) {
+  className = "",
+  ref,
+  sceneRef,
+}: SceneProps) {
+  const targetRef = ref || sceneRef
+
   return (
     <>
       <section
+        ref={targetRef}
         id={id}
         data-scene={index}
         style={{
-          backgroundColor: index === 1 || index === 2 ? "#0B0A09" : "var(--sky, #0B0A09)",
+          backgroundColor:
+            index === 1 || index === 2 ? "#0B0A09" : "var(--sky, #0B0A09)",
         }}
         className={`scene relative z-10 min-h-[100svh] w-full overflow-hidden flex flex-col justify-between ${
           light ? "text-[#0B0A09]" : "text-[#F4F2EC]"
-        }`}
+        } ${className}`.trim()}
       >
         <div
           className={`content-zone relative z-10 mx-auto w-full max-w-[1240px] flex-1 flex flex-col justify-center px-4 sm:px-8 lg:px-12 pt-[76px] sm:pt-[84px] ${
@@ -75,7 +83,6 @@ export default function Scene({
           {children}
         </div>
 
-        {}
         <Landscape phase={index} light={light} className="z-[2]" />
       </section>
       {frames && <MotionNote index={index} />}
