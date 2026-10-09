@@ -10,10 +10,10 @@ interface CelestialBodyProps {
  * Inline SVG rendering the Sun/Moon in the hero sky.
  * Diameter: clamp(68px, 9vw, 120px).
  *
- * Back layer: Soft glow (radial falloff with mix-blend-mode: screen).
+ * Back layer: Soft glow (radial falloff with isolated mix-blend-mode: screen).
  * Disc: Starts in --ember (#E07A2F), transitioning to pale gold (#E3C46A) and --sand (#EADFC8).
- * Mask: SVG <mask id="crescentMask"> containing a white circle (r=45) and a black circle (r=45).
- * The black circle starts at cx=220 (full sun) and slides in on scroll to cx=126, carving a crescent moon.
+ * Mask: SVG <mask id="crescentMask"> containing a base circle (r=45) and a cutter circle (r=45).
+ * The cutter circle starts at x=120px (full sun) and slides in on scroll to x=26px, carving a crescent moon.
  */
 export default function CelestialBody({
   className = "",
@@ -25,6 +25,7 @@ export default function CelestialBody({
       style={{
         width: "clamp(68px, 9vw, 120px)",
         height: "clamp(68px, 9vw, 120px)",
+        isolation: "isolate",
       }}
       aria-hidden="true"
     >
@@ -47,21 +48,24 @@ export default function CelestialBody({
             <rect x="0" y="0" width="200" height="200" fill="black" />
             {/* White base circle */}
             <circle cx="100" cy="100" r="45" fill="white" />
-            {/* Black cutter circle of same size: starts far away at cx=220 */}
+            {/* Black cutter circle of same size: transform-animated for GPU acceleration */}
             <circle
               id="crescentCutter"
-              className="crescent-cutter"
-              cx={reducedMotion ? "220" : "220"}
+              className="crescent-cutter will-change-transform"
+              cx="100"
               cy="100"
               r="45"
               fill="black"
+              style={{
+                transform: reducedMotion ? "translate3d(120px, 0, 0)" : "translate3d(120px, 0, 0)",
+              }}
             />
           </mask>
         </defs>
 
-        {/* Soft Glow behind disc (mix-blend-mode: screen) */}
+        {/* Soft Glow behind disc (isolated mix-blend-mode: screen) */}
         <circle
-          className="celestial-glow will-change-transform"
+          className="celestial-glow"
           cx="100"
           cy="100"
           r="95"
@@ -74,7 +78,7 @@ export default function CelestialBody({
 
         {/* Celestial Disc with crescentMask */}
         <circle
-          className="celestial-disc will-change-transform"
+          className="celestial-disc"
           cx="100"
           cy="100"
           r="45"

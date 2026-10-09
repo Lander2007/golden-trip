@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { ArrowDown } from "lucide-react"
@@ -9,7 +9,7 @@ import FitText from "./FitText"
 import CelestialBody from "./CelestialBody"
 import GizaPyramids from "./landscape/GizaPyramids"
 
-// 28 deterministic stars generated with fixed seed, placed strictly in top 40%
+// 28 deterministic stars generated with fixed seed, placed strictly in top 40% (at most 12 animated per budget)
 const HERO_STARS = Array.from({ length: 28 }).map((_, i) => {
   const seed = (i * 9301 + 49297) % 233280
   const x = ((seed % 92) + 4).toFixed(1) // 4% to 96% of frame width
@@ -18,7 +18,8 @@ const HERO_STARS = Array.from({ length: 28 }).map((_, i) => {
   const color = i % 2 === 0 ? "#C9A227" : "#EADFC8"
   const duration = (3.2 + (i % 5) * 0.7).toFixed(1) // 3.2s to 6.0s loops
   const delay = ((i % 7) * 0.5).toFixed(1)
-  return { id: i, x, y, size, color, duration, delay }
+  const isTwinkling = i < 12 // Cap animated stars to at most 12
+  return { id: i, x, y, size, color, duration, delay, isTwinkling }
 })
 
 export default function Hero({ frames = false }: { frames?: boolean }) {
@@ -93,6 +94,24 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
     { scope: heroRef, dependencies: [frames] }
   )
 
+  useEffect(() => {
+    if (!heroRef.current) return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (heroRef.current) {
+          if (entry.isIntersecting) {
+            heroRef.current.classList.remove("hero-offscreen")
+          } else {
+            heroRef.current.classList.add("hero-offscreen")
+          }
+        }
+      },
+      { threshold: 0 }
+    )
+    io.observe(heroRef.current)
+    return () => io.disconnect()
+  }, [])
+
   return (
     <section
       id="alexandria"
@@ -161,10 +180,10 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         />
 
         {/* ------------------------------------------------------------ */}
-        {/* Z-4: STARS (28 tiny dots in top 40% of frame, fade 0.5 to 1)  */}
+        {/* Z-4: STARS (28 tiny dots in top 40% of frame, at most 12 twinkle) */}
         {/* ------------------------------------------------------------ */}
         <div
-          className="hero-stars pointer-events-none absolute inset-0 z-[4] opacity-0 will-change-transform"
+          className="hero-stars pointer-events-none absolute inset-0 z-[4] opacity-0"
           aria-hidden="true"
         >
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -175,10 +194,14 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
                 cy={`${star.y}%`}
                 r={star.size}
                 fill={star.color}
-                className="hero-star-dot"
-                style={{
-                  animation: `heroTwinkle ${star.duration}s ease-in-out ${star.delay}s infinite`,
-                }}
+                className={star.isTwinkling ? "hero-star-dot" : undefined}
+                style={
+                  star.isTwinkling
+                    ? {
+                        animation: `heroTwinkle ${star.duration}s ease-in-out ${star.delay}s infinite`,
+                      }
+                    : { opacity: 0.7 }
+                }
               />
             ))}
           </svg>

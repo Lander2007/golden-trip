@@ -66,14 +66,15 @@
   letter-spacing: -0.01em;
 }
 
-/* Subtle Film Grain (strictly 4% opacity) */
+/* Subtle Film Grain (strictly 4% opacity, static pre-rendered tiling noise PNG) */
 .film-grain {
   position: fixed;
   inset: 0;
   pointer-events: none;
   opacity: 0.04;
   z-index: 38;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cpath fill='%23F4F2EC' filter='url(%23n)' opacity='.5' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+  background-image: url("/noise.png");
+  background-repeat: repeat;
 }
 
 /* Soft Vignette */
@@ -93,6 +94,31 @@
   50% {
     opacity: 1;
   }
+}
+
+/* Pause offscreen star animations */
+.hero-offscreen .hero-star-dot {
+  animation-play-state: paused !important;
+}
+
+/* Mobile & Low-Power Optimizations */
+@media (max-width: 768px) {
+  .film-grain {
+    display: none !important;
+  }
+  .hero-star-dot {
+    animation: none !important;
+    opacity: 0.75 !important;
+  }
+}
+
+.low-power .film-grain {
+  display: none !important;
+}
+
+.low-power .hero-star-dot {
+  animation: none !important;
+  opacity: 0.75 !important;
 }
 
 /* Reduced Motion Support */

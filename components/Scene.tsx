@@ -62,6 +62,7 @@ export default function Scene({
         data-scene={index}
         style={{
           backgroundColor: "var(--sky, #0B0A09)",
+          contain: index === 2 ? "none" : "layout paint",
         }}
         className={`scene relative min-h-[100svh] w-full overflow-hidden flex flex-col justify-between transition-colors duration-150 ${
           light ? "text-[#0B0A09]" : "text-[#F4F2EC]"

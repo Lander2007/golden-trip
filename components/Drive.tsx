@@ -39,6 +39,15 @@ export default function Drive({
     const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     setReducedMotion(isReduced)
 
+    const isLowPower =
+      window.innerWidth < 768 ||
+      (typeof navigator !== "undefined" &&
+        navigator.hardwareConcurrency != null &&
+        navigator.hardwareConcurrency <= 4)
+    if (isLowPower) {
+      document.documentElement.classList.add("low-power")
+    }
+
     const lenis = new Lenis({
       autoRaf: false,
       duration: 1.05,
@@ -190,10 +199,17 @@ export default function Drive({
         },
       })
 
-      // Parallax layers (hardware accelerated transform only)
-      heroTimeline.to(".hero-parallax-far", { x: -60, ease: "none" }, 0)
-      heroTimeline.to(".hero-parallax-mid", { x: -160, ease: "none" }, 0)
-      heroTimeline.to(".hero-parallax-fg", { x: -520, ease: "none" }, 0)
+      // Parallax layers (responsive: desktop 3 layers, mobile <= 2 layers per Step 2 budget)
+      const mm = gsap.matchMedia()
+      mm.add("(min-width: 769px)", () => {
+        heroTimeline.to(".hero-parallax-far", { x: -60, ease: "none" }, 0)
+        heroTimeline.to(".hero-parallax-mid", { x: -160, ease: "none" }, 0)
+        heroTimeline.to(".hero-parallax-fg", { x: -520, ease: "none" }, 0)
+      })
+      mm.add("(max-width: 768px)", () => {
+        heroTimeline.to(".hero-parallax-far", { x: -40, ease: "none" }, 0)
+        heroTimeline.to(".hero-parallax-mid", { x: -100, ease: "none" }, 0)
+      })
       heroTimeline.to(".travel-lane", { x: "-=480", ease: "none" }, 0)
 
       // Celestial position: x moves 68% -> 90%, y moves 40% -> 24%
@@ -222,10 +238,11 @@ export default function Drive({
         0
       )
 
-      // Crescent mask cutter circle
-      heroTimeline.to(
+      // Crescent mask cutter circle: slides in from p 0.55 to 1.0 (transform x: 120 -> 26)
+      heroTimeline.fromTo(
         "#crescentCutter",
-        { attr: { cx: 126 }, duration: 0.45, ease: "power1.inOut" },
+        { x: 120 },
+        { x: 26, duration: 0.45, ease: "power1.inOut" },
         0.55
       )
 
