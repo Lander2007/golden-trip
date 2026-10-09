@@ -4,10 +4,6 @@ import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger)
-}
-
 /**
  * ReviewsPictogram
  * Built ONLY from primitives: triangles (polygons with 3 points).

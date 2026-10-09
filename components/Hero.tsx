@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import Image from "next/image"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { ArrowDown } from "lucide-react"
@@ -128,10 +129,14 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         {/* Z-1: PHOTO BACKDROP (/images/hero-giza-dawn.jpg)             */}
         {/* ------------------------------------------------------------ */}
         {!imgFailed ? (
-          <img
-            src="/images/hero-giza-dawn.jpg"
-            alt=""
-            role="presentation"
+          <Image
+            src="/images/hero-giza-dawn.webp"
+            alt="Giza pyramids at dawn"
+            fill
+            priority
+            sizes="100vw"
+            placeholder="blur"
+            blurDataURL="data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADQAQCdASoQAAkABUB8JaACdAEOun1YAAD+qhDOSCNS68/8eSnk6UbMlVOBsLCSzgGkK/8L/ZISgAAA"
             onError={() => setImgFailed(true)}
             className="hero-bg-photo hero-parallax-far absolute inset-0 h-full w-full object-cover object-center will-change-transform pointer-events-none z-[1]"
           />

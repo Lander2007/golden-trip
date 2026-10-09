@@ -9,6 +9,8 @@ const anybody = Anybody({
   subsets: ["latin"],
   variable: "--font-anybody",
   display: "swap",
+  axes: ["wdth"],
+  preload: true,
 })
 
 const instrumentSerif = Instrument_Serif({
@@ -17,12 +19,14 @@ const instrumentSerif = Instrument_Serif({
   style: ["normal", "italic"],
   variable: "--font-instrument-serif",
   display: "swap",
+  preload: false,
 })
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
   variable: "--font-source-sans",
   display: "swap",
+  preload: true,
 })
 
 export const metadata: Metadata = {

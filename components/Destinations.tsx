@@ -10,10 +10,6 @@ import CityPanel from "./map/CityPanel"
 import DestinationsList from "./map/DestinationsList"
 import { ROUTE_CITIES, ALL_CITIES, type CityData } from "./map/egyptMapData"
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger)
-}
-
 export interface DestinationExit {
   exit: string
   city: string

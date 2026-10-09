@@ -7,10 +7,6 @@ import { useGSAP } from "@gsap/react"
 import Scene from "./Scene"
 import Fleet from "./Fleet"
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger)
-}
-
 export default function GantryIntro({ frames = false }: { frames?: boolean }) {
   const introRef = useRef<HTMLDivElement>(null)
   const destCountRef = useRef<HTMLDivElement>(null)

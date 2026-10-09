@@ -1,10 +1,14 @@
+import dynamic from "next/dynamic"
 import Hero from "./Hero"
 import GantryIntro from "./GantryIntro"
-import Destinations from "./Destinations"
 import HowItWorks from "./HowItWorks"
-import WhyGoldenTrip from "./WhyGoldenTrip"
-import FinalCta from "./FinalCta"
 import Drive from "./Drive"
+
+// Code split heavy below-the-fold scenes with next/dynamic
+const Destinations = dynamic(() => import("./Destinations"), { ssr: true })
+const WhyGoldenTrip = dynamic(() => import("./WhyGoldenTrip"), { ssr: true })
+const FinalCta = dynamic(() => import("./FinalCta"), { ssr: true })
+
 export default function Journey({ frames = false }: { frames?: boolean }) {
   return (
     <Drive frames={frames}>
