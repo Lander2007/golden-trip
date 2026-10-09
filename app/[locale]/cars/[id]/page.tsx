@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import ProtectedRoute from "@/components/auth/ProtectedRoute"
 import { useApp } from "@/context/AppContext"
 import {
@@ -27,7 +28,6 @@ import {
   ChevronRight,
   ArrowRight,
   Sparkles,
-  Info,
   Clock,
   UserCheck,
   Shield,
@@ -35,6 +35,9 @@ import {
 } from "lucide-react"
 
 export default function CarDetailsPage() {
+  const t = useTranslations("carDetails")
+  const tCommon = useTranslations("common")
+
   const params = useParams()
   const router = useRouter()
   const carId = params.id as string
@@ -117,34 +120,19 @@ export default function CarDetailsPage() {
   if (!car) {
     return (
       <ProtectedRoute>
-        <div dir="rtl" className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
           <CarIcon className="w-16 h-16 text-[#C9A227] mb-4 opacity-50" />
-          <h2 className="text-2xl font-bold text-[#F4F2EC] mb-2">لم يتم العثور على السيارة</h2>
-          <p className="text-sm text-[#B9B7B0] mb-6">ربما تم تغيير المعرف أو لم تعد السيارة متاحة في النظام.</p>
+          <h2 className="text-2xl font-bold text-[#F4F2EC] mb-2">{t("notFoundTitle")}</h2>
+          <p className="text-sm text-[#B9B7B0] mb-6">{t("notFoundDesc")}</p>
           <Link
             href="/cars"
             className="px-6 py-2.5 rounded-md bg-[#C9A227] text-[#0B0A09] font-bold text-xs"
           >
-            العودة لأسطول السيارات
+            {t("backToFleet")}
           </Link>
         </div>
       </ProtectedRoute>
     )
-  }
-
-  const getExtraIcon = (iconName: string) => {
-    switch (iconName) {
-      case "UserCheck":
-        return <UserCheck className="w-4 h-4 text-[#C9A227]" />
-      case "Shield":
-        return <Shield className="w-4 h-4 text-[#C9A227]" />
-      case "Navigation":
-        return <Navigation className="w-4 h-4 text-[#C9A227]" />
-      case "ShieldCheck":
-        return <ShieldCheck className="w-4 h-4 text-[#C9A227]" />
-      default:
-        return <Sparkles className="w-4 h-4 text-[#C9A227]" />
-    }
   }
 
   return (
@@ -153,10 +141,10 @@ export default function CarDetailsPage() {
         {/* Breadcrumb Bar */}
         <div className="border-b border-[#2A2B2E] bg-[#141518]/60 py-3.5 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl flex items-center gap-2 text-xs text-[#B9B7B0]">
-            <Link href="/" className="hover:text-[#F4F2EC]">الرئيسية</Link>
-            <ChevronRight className="w-3.5 h-3.5 rotate-180 text-[#B9B7B0]/60" />
-            <Link href="/cars" className="hover:text-[#F4F2EC]">أسطول السيارات</Link>
-            <ChevronRight className="w-3.5 h-3.5 rotate-180 text-[#B9B7B0]/60" />
+            <Link href="/" className="hover:text-[#F4F2EC]">{t("breadcrumbHome")}</Link>
+            <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180 text-[#B9B7B0]/60" />
+            <Link href="/cars" className="hover:text-[#F4F2EC]">{t("breadcrumbFleet")}</Link>
+            <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180 text-[#B9B7B0]/60" />
             <span className="text-[#C9A227] font-semibold">{car.name}</span>
           </div>
         </div>
@@ -178,10 +166,10 @@ export default function CarDetailsPage() {
                   {/* Top Badges */}
                   <div className="absolute top-4 end-4 flex items-center gap-2">
                     <span className="rounded-md bg-[#0B0A09]/80 backdrop-blur-md px-3 py-1.5 text-xs font-bold text-[#C9A227] border border-[#C9A227]/30">
-                      فئة {car.type}
+                      {t("classBadge", { type: car.type })}
                     </span>
                     <span className="rounded-md bg-[#0B0A09]/80 backdrop-blur-md px-3 py-1.5 text-xs font-bold text-[#F4F2EC] border border-white/10 font-mono">
-                      موديل {car.year}
+                      {t("yearBadge", { year: car.year })}
                     </span>
                   </div>
 
@@ -193,7 +181,7 @@ export default function CarDetailsPage() {
                           : "bg-red-950/80 text-red-400 border-red-500/30"
                       }`}
                     >
-                      {car.available ? "متاح للحجز الفوري" : "غير متاح حالياً"}
+                      {car.available ? tCommon("statusConfirmed") : tCommon("statusCancelled")}
                     </span>
                   </div>
 
@@ -201,7 +189,7 @@ export default function CarDetailsPage() {
                   <div className="absolute bottom-4 end-4 flex items-center gap-2 rounded-lg bg-[#0B0A09]/80 backdrop-blur-md px-3.5 py-2 border border-[#2A2B2E]">
                     <MapPin className="w-4 h-4 text-[#C9A227]" />
                     <span className="text-xs font-semibold text-[#F4F2EC]">
-                      متواجد بـ {branchInfo.city} - {branchInfo.name}
+                      {t("locationInfo", { city: branchInfo.city, branch: branchInfo.name })}
                     </span>
                   </div>
                 </div>
@@ -215,7 +203,7 @@ export default function CarDetailsPage() {
                       {car.name}
                     </h1>
                     <p className="text-xs text-[#B9B7B0] mt-1">
-                      كود المركبة: <span className="font-mono text-[#C9A227]">{car.id.toUpperCase()}</span>
+                      {t("vehicleCode", { code: car.id.toUpperCase() })}
                     </p>
                   </div>
 
@@ -224,9 +212,11 @@ export default function CarDetailsPage() {
                     <div>
                       <div className="flex items-baseline gap-1">
                         <span className="text-base font-black text-[#F4F2EC]">{car.rating}</span>
-                        <span className="text-xs text-[#B9B7B0]">/ 5</span>
+                        <span className="text-xs text-[#B9B7B0]">{t("ratingOutOf5")}</span>
                       </div>
-                      <span className="text-[10px] text-[#B9B7B0]">({car.reviews.length} تقييم موثق)</span>
+                      <span className="text-[10px] text-[#B9B7B0]">
+                        {t("verifiedReviewsCount", { count: car.reviews.length })}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -238,21 +228,23 @@ export default function CarDetailsPage() {
                 {/* Key Technical Specifications Grid */}
                 <h3 className="text-sm font-bold text-[#F4F2EC] mb-3 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[#C9A227]" />
-                  <span>المواصفات الفنية الرئيسية</span>
+                  <span>{t("specsTitle")}</span>
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Users className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>سعة الركاب</span>
+                      <span>{t("passengerCapacity")}</span>
                     </div>
-                    <span className="text-sm font-bold text-[#F4F2EC]">{car.seats} ركاب</span>
+                    <span className="text-sm font-bold text-[#F4F2EC]">
+                      {t("passengersCount", { count: car.seats })}
+                    </span>
                   </div>
 
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Gauge className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>ناقل الحركة</span>
+                      <span>{t("transmission")}</span>
                     </div>
                     <span className="text-sm font-bold text-[#F4F2EC]">{car.transmission}</span>
                   </div>
@@ -260,7 +252,7 @@ export default function CarDetailsPage() {
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Fuel className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>نوع الوقود</span>
+                      <span>{t("fuelType")}</span>
                     </div>
                     <span className="text-sm font-bold text-[#F4F2EC]">{car.fuel}</span>
                   </div>
@@ -268,23 +260,27 @@ export default function CarDetailsPage() {
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Briefcase className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>سعة الحقائب</span>
+                      <span>{t("luggageCapacity")}</span>
                     </div>
-                    <span className="text-sm font-bold text-[#F4F2EC]">{car.luggage} حقائب كبيرة</span>
+                    <span className="text-sm font-bold text-[#F4F2EC]">
+                      {t("luggageCount", { count: car.luggage })}
+                    </span>
                   </div>
 
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <CarIcon className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>عدد الأبواب</span>
+                      <span>{t("doorsCountLabel")}</span>
                     </div>
-                    <span className="text-sm font-bold text-[#F4F2EC]">{car.doors} أبواب</span>
+                    <span className="text-sm font-bold text-[#F4F2EC]">
+                      {t("doorsCount", { count: car.doors })}
+                    </span>
                   </div>
 
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
                     <div className="flex items-center gap-2 text-xs text-[#B9B7B0] mb-1">
                       <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>سنة الموديل</span>
+                      <span>{t("modelYear")}</span>
                     </div>
                     <span className="text-sm font-bold text-[#F4F2EC]">{car.year}</span>
                   </div>
@@ -293,7 +289,7 @@ export default function CarDetailsPage() {
                 {/* Features Checklist */}
                 <h3 className="text-sm font-bold text-[#F4F2EC] mt-6 mb-3 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-[#C9A227]" />
-                  <span>تجهيزات الراحة والسلامة المضمنة</span>
+                  <span>{t("featuresTitle")}</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {car.features.map((feature, i) => (
@@ -312,7 +308,7 @@ export default function CarDetailsPage() {
               <div className="rounded-xl border border-[#2A2B2E] bg-[#141518] p-6">
                 <h3 className="text-base font-bold text-[#F4F2EC] mb-4 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-[#C9A227]" />
-                  <span>معلومات فرع التواجد والاستلام</span>
+                  <span>{t("branchInfoTitle")}</span>
                 </h3>
 
                 <div className="space-y-3 text-xs text-[#B9B7B0]">
@@ -323,7 +319,7 @@ export default function CarDetailsPage() {
                   </p>
                   <p className="flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                    <span>مواعيد العمل: {branchInfo.operatingHours}</span>
+                    <span>{t("workingHours", { hours: branchInfo.operatingHours })}</span>
                   </p>
                 </div>
 
@@ -333,7 +329,7 @@ export default function CarDetailsPage() {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-[#2A2B2E] text-xs font-semibold text-[#F4F2EC] hover:border-[#C9A227] transition-colors"
                   >
                     <Phone className="w-3.5 h-3.5 text-[#C9A227]" />
-                    <span>اتصل بالفرع: {branchInfo.phone}</span>
+                    <span>{t("callBranch", { phone: branchInfo.phone })}</span>
                   </a>
                   <a
                     href="https://wa.me/201006803316"
@@ -342,7 +338,7 @@ export default function CarDetailsPage() {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[#C9A227]/10 text-xs font-semibold text-[#C9A227] hover:bg-[#C9A227]/20 transition-colors"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
-                    <span>استفسار عبر واتساب</span>
+                    <span>{t("whatsAppInquiry")}</span>
                   </a>
                 </div>
               </div>
@@ -352,10 +348,10 @@ export default function CarDetailsPage() {
                 <div className="flex items-center justify-between pb-4 border-b border-[#2A2B2E] mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-[#F4F2EC]">
-                      تقييمات وآراء العملاء
+                      {t("reviewsTitle")}
                     </h3>
                     <p className="text-xs text-[#B9B7B0] mt-0.5">
-                      تقييمات حقيقية من عملاء استأجروا هذه السيارة سابقاً
+                      {t("reviewsSubtitle")}
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 bg-[#0B0A09] px-3 py-1.5 rounded-md border border-[#C9A227]/30">
@@ -366,7 +362,7 @@ export default function CarDetailsPage() {
 
                 {car.reviews.length === 0 ? (
                   <p className="text-xs text-[#B9B7B0] text-center py-6">
-                    لا توجد تقييمات مسجلة لهذه السيارة حتى الآن.
+                    {t("noReviewsYet")}
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -418,10 +414,10 @@ export default function CarDetailsPage() {
                     <span className="text-2xl font-black text-[#F4F2EC] font-mono">
                       {formatEGP(car.pricePerDay)}
                     </span>
-                    <span className="text-xs text-[#B9B7B0] me-1">/ يوم</span>
+                    <span className="text-xs text-[#B9B7B0] me-1">{t("perDay")}</span>
                   </div>
                   <span className="text-xs font-bold text-[#C9A227] bg-[#C9A227]/10 px-2.5 py-1 rounded border border-[#C9A227]/30">
-                    أفضل سعر مضمون
+                    {t("bestPriceGuarantee")}
                   </span>
                 </div>
 
@@ -432,7 +428,7 @@ export default function CarDetailsPage() {
                     <div>
                       <label className="block text-xs font-bold text-[#B9B7B0] mb-1.5 flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
-                        <span>فرع الاستلام</span>
+                        <span>{t("pickupBranch")}</span>
                       </label>
                       <select
                         value={pickupBranch}
@@ -450,7 +446,7 @@ export default function CarDetailsPage() {
                     <div>
                       <label className="block text-xs font-bold text-[#B9B7B0] mb-1.5 flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
-                        <span>فرع التسليم</span>
+                        <span>{t("returnBranch")}</span>
                       </label>
                       <select
                         value={returnBranch}
@@ -471,7 +467,7 @@ export default function CarDetailsPage() {
                     <div>
                       <label className="block text-xs font-bold text-[#B9B7B0] mb-1.5 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
-                        <span>تاريخ الاستلام</span>
+                        <span>{t("pickupDate")}</span>
                       </label>
                       <input
                         type="date"
@@ -484,7 +480,7 @@ export default function CarDetailsPage() {
                     <div>
                       <label className="block text-xs font-bold text-[#B9B7B0] mb-1.5 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
-                        <span>تاريخ التسليم ({rentalDays} {rentalDays === 1 ? "يوم" : "أيام"})</span>
+                        <span>{t("returnDateWithDays", { days: rentalDays })}</span>
                       </label>
                       <input
                         type="date"
@@ -501,9 +497,9 @@ export default function CarDetailsPage() {
                     <label className="block text-xs font-bold text-[#F4F2EC] mb-2.5 flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-[#C9A227]" />
-                        <span>إضافات وخدمات مميزة (اختياري)</span>
+                        <span>{t("extrasTitle")}</span>
                       </span>
-                      <span className="text-[10px] text-[#B9B7B0]">لكل يوم</span>
+                      <span className="text-[10px] text-[#B9B7B0]">{t("perDaySmall")}</span>
                     </label>
 
                     <div className="space-y-2">
@@ -537,7 +533,7 @@ export default function CarDetailsPage() {
                             </div>
 
                             <span className="text-xs font-bold text-[#C9A227] font-mono shrink-0 me-2">
-                              +{extra.pricePerDay} ج.م
+                              {t("plusPerDay", { price: extra.pricePerDay })}
                             </span>
                           </div>
                         )
@@ -548,30 +544,35 @@ export default function CarDetailsPage() {
                   {/* Live Cost Calculation Table */}
                   <div className="rounded-xl border border-[#2A2B2E] bg-[#0B0A09] p-4 space-y-2.5 text-xs pt-3 mt-4">
                     <div className="flex justify-between text-[#B9B7B0]">
-                      <span>إيجار السيارة ({rentalDays} {rentalDays === 1 ? "يوم" : "أيام"} × {formatEGP(car.pricePerDay)})</span>
+                      <span>
+                        {t("carRentalSummary", {
+                          days: rentalDays,
+                          price: formatEGP(car.pricePerDay),
+                        })}
+                      </span>
                       <span className="font-mono text-[#F4F2EC]">{formatEGP(baseRentalCost)}</span>
                     </div>
 
                     {totalExtrasCost > 0 && (
                       <div className="flex justify-between text-[#B9B7B0]">
-                        <span>تكلفة الإضافات المختارة ({rentalDays} {rentalDays === 1 ? "يوم" : "أيام"})</span>
+                        <span>{t("extrasCostSummary", { days: rentalDays })}</span>
                         <span className="font-mono text-[#C9A227]">+{formatEGP(totalExtrasCost)}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between text-[#B9B7B0]">
-                      <span>ضريبة القيمة المضافة الحكومية (14%)</span>
+                      <span>{t("vatSummary")}</span>
                       <span className="font-mono text-[#F4F2EC]">{formatEGP(taxAmount)}</span>
                     </div>
 
                     <div className="border-t border-[#2A2B2E] pt-3 flex justify-between items-baseline font-bold">
-                      <span className="text-sm text-[#F4F2EC]">المبلغ الإجمالي التقريبي:</span>
+                      <span className="text-sm text-[#F4F2EC]">{t("approxTotal")}</span>
                       <div className="text-end">
                         <span className="text-xl font-black text-[#C9A227] font-mono">
                           {formatEGP(grandTotal)}
                         </span>
                         <span className="block text-[10px] text-[#B9B7B0] font-normal">
-                          شامل الضريبة والمسافات
+                          {t("inclusiveNote")}
                         </span>
                       </div>
                     </div>
@@ -583,7 +584,7 @@ export default function CarDetailsPage() {
                       onClick={handleProceedToBooking}
                       className="w-full rounded-md bg-[#C9A227] py-4 font-bold text-sm text-[#0B0A09] transition-all hover:bg-[#E6CF85] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-[#C9A227]/10"
                     >
-                      <span>متابعة إتمام الحجز (4 خطوات سريعة)</span>
+                      <span>{t("proceedBooking")}</span>
                       <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
                     </button>
                   ) : (
@@ -592,10 +593,10 @@ export default function CarDetailsPage() {
                         disabled
                         className="w-full rounded-md bg-[#2A2B2E] py-4 font-bold text-sm text-[#B9B7B0]/60 cursor-not-allowed text-center"
                       >
-                        السيارة غير متاحة حالياً للحجز
+                        {t("carUnavailableBtn")}
                       </button>
                       <p className="text-[11px] text-[#B9B7B0] text-center">
-                        يمكنك اختيار سيارة أخرى من نفس الفئة من صفحة الأسطول.
+                        {t("carUnavailableNote")}
                       </p>
                     </div>
                   )}
@@ -604,17 +605,17 @@ export default function CarDetailsPage() {
                   <div className="pt-2 flex items-center justify-around text-[11px] text-[#B9B7B0]/80 border-t border-[#2A2B2E]">
                     <span className="flex items-center gap-1">
                       <ShieldCheck className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>إلغاء مجاني</span>
+                      <span>{t("featureFreeCancel")}</span>
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
                       <Check className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>استلام فوري</span>
+                      <span>{t("featureInstantPickup")}</span>
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>دعم 24/7</span>
+                      <span>{t("featureSupport247")}</span>
                     </span>
                   </div>
                 </div>

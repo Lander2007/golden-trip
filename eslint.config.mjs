@@ -1,0 +1,106 @@
+import i18next from "eslint-plugin-i18next"
+import tsParser from "@typescript-eslint/parser"
+
+export default [
+  {
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "out/**",
+      "dist/**",
+      "tests/**",
+      "scripts/**",
+      "app/opengraph-image.tsx",
+    ],
+  },
+  {
+    files: ["app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    plugins: {
+      i18next,
+    },
+    rules: {
+      "i18next/no-literal-string": [
+        "error",
+        {
+          mode: "jsx-text-only",
+          "jsx-attributes": {
+            include: ["aria-label", "alt", "placeholder", "title", "label"],
+            exclude: [],
+          },
+          callees: {
+            exclude: [
+              "t.*",
+              "useTranslations",
+              "getTranslations",
+              "format.*",
+              "subscribe.*",
+              "encodeURIComponent",
+              "NumberFormat",
+            ],
+          },
+          words: {
+            exclude: [
+              "GT",
+              "EN",
+              "عربي",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "14",
+              "24",
+              "010 06803316",
+              "010 1234 5678",
+              "demo@example.com",
+              "GT VIP",
+              "Golden Card VIP",
+              "Golden Trip",
+              "FPS",
+              "LITE",
+              "FULL",
+              "off",
+              "blur",
+              "empty",
+              "/",
+              "14\\+",
+              "24/7",
+              "-",
+              "\\+",
+              "\\\"",
+              "\\.",
+              "\\|",
+              "\\(",
+              "\\)",
+              "\\[",
+              "\\]",
+              "•",
+              "·",
+              "→",
+              "←",
+              "↗",
+              "↘",
+              "©",
+              "N",
+            ],
+          },
+        },
+      ],
+    },
+  },
+]

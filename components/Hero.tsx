@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import BookingBar from "./BookingBar"
@@ -26,6 +26,8 @@ const HERO_STARS = Array.from({ length: 28 }).map((_, i) => {
 
 export default function Hero({ frames = false }: { frames?: boolean }) {
   const tHero = useTranslations("hero")
+  const locale = useLocale()
+  const isRtl = locale === "ar"
   const heroRef = useRef<HTMLDivElement>(null)
   const [imgFailed, setImgFailed] = useState(false)
 

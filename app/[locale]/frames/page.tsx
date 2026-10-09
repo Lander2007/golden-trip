@@ -7,6 +7,8 @@ import { MotionNote } from "@/components/Scene"
 import Odometer from "@/components/Odometer"
 import RouteBoard from "@/components/RouteBoard"
 
+import { getTranslations } from "next-intl/server"
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }))
 }
@@ -20,24 +22,25 @@ export default async function Frames({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
+  const t = await getTranslations({ locale, namespace: "frames" })
   const mobile = (await searchParams).size === "mobile"
 
   return (
     <div className="overflow-x-auto pt-28">
       <div className="mx-6 mb-8 flex flex-wrap items-center gap-6 text-sm">
         <h1 className="font-display text-2xl text-gold">
-          Golden Trip / Storyboard
+          {t("title")}
         </h1>
         <Link href="/frames" className={!mobile ? "text-gold underline" : ""}>
-          Desktop · 1440
+          {t("desktop")}
         </Link>
         <Link
           href="/frames?size=mobile"
           className={mobile ? "text-gold underline" : ""}
         >
-          Mobile · 390
+          {t("mobile")}
         </Link>
-        <Link href="/">Live journey ↗</Link>
+        <Link href="/">{t("liveJourney")}</Link>
       </div>
       <div
         className={`frame-sheet relative mx-auto ${

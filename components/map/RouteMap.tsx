@@ -359,7 +359,14 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
                 strokeWidth="1.2"
                 className="transition-all duration-200 group-hover:scale-150 group-hover:fill-[#C9A227]"
               />
-              <title>{`${city.city} (${city.km} km from Alex)`}</title>
+              <title>
+                {tA11y("routeMapPinCityTitle", {
+                  city: city.nameKey
+                    ? tCities(city.nameKey.replace(/^cities\./, ""))
+                    : tCities(`${city.id}.name`),
+                  km: numFormat.format(city.km),
+                })}
+              </title>
             </g>
           ))}
         </g>
@@ -438,7 +445,9 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
                     letterSpacing={isAr ? "0" : "0.02em"}
                     className="transition-colors duration-200"
                   >
-                    {tCities(`${city.id}.name`)}
+                    {city.nameKey
+                      ? tCities(city.nameKey.replace(/^cities\./, ""))
+                      : tCities(`${city.id}.name`)}
                     {city.isHq ? ` ${tCities("hqLabel")}` : ""}
                   </text>
                   {isActive && (
@@ -523,7 +532,9 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
       {hoveredCity && (
         <div className="pointer-events-none absolute bottom-12 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 rounded-md border border-[#C9A227]/40 bg-[#080D15]/95 px-3 py-1.5 font-mono text-xs text-[#F4F2EC] shadow-xl backdrop-blur-md">
           <span className="font-bold text-[#C9A227]">
-            {tCities(`${hoveredCity.id}.name`)}
+            {hoveredCity.nameKey
+              ? tCities(hoveredCity.nameKey.replace(/^cities\./, ""))
+              : tCities(`${hoveredCity.id}.name`)}
           </span>
           <span className="ms-2 text-[#B9B7B0]">
             · {numFormat.format(hoveredCity.km)} {tCommon("kmUnit")} {tCities("fromAlexLabel")}

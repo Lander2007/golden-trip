@@ -3,14 +3,14 @@
 import { useLocale, useTranslations } from "next-intl"
 import { usePathname, Link } from "@/i18n/routing"
 import { useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 
 interface LanguageSwitcherProps {
   className?: string
   variant?: "pill" | "sheet" | "header" | "standalone"
 }
 
-export default function LanguageSwitcher({
+function LanguageSwitcherContent({
   className = "",
   variant = "pill",
 }: LanguageSwitcherProps) {
@@ -25,25 +25,28 @@ export default function LanguageSwitcher({
     const saved = sessionStorage.getItem("gt_lang_switch")
     if (saved) {
       try {
-        const { sectionId, ratio } = JSON.parse(saved)
+        const { sectionId, scrollY, ratio } = JSON.parse(saved)
         sessionStorage.removeItem("gt_lang_switch")
+        const restore = () => {
+          if (sectionId && document.getElementById(sectionId)) {
+            document.getElementById(sectionId)!.scrollIntoView({ behavior: "instant" })
+          } else if (scrollY !== undefined && scrollY > 0) {
+            window.scrollTo({ top: scrollY, behavior: "instant" })
+          } else if (ratio !== undefined) {
+            const targetScroll = ratio * (document.documentElement.scrollHeight - window.innerHeight)
+            window.scrollTo({ top: targetScroll, behavior: "instant" })
+          }
+          if ((window as any).ScrollTrigger?.refresh) {
+            ;(window as any).ScrollTrigger.refresh()
+          }
+        }
         if (document.fonts && document.fonts.ready) {
           document.fonts.ready.then(() => {
-            requestAnimationFrame(() => {
-              if (sectionId) {
-                const el = document.getElementById(sectionId)
-                if (el) {
-                  el.scrollIntoView({ behavior: "instant" })
-                } else if (ratio !== undefined) {
-                  const targetScroll = ratio * (document.documentElement.scrollHeight - window.innerHeight)
-                  window.scrollTo({ top: targetScroll, behavior: "instant" })
-                }
-              }
-              if ((window as any).ScrollTrigger?.refresh) {
-                ;(window as any).ScrollTrigger.refresh()
-              }
-            })
+            requestAnimationFrame(restore)
+            setTimeout(restore, 100)
           })
+        } else {
+          setTimeout(restore, 50)
         }
       } catch {
         sessionStorage.removeItem("gt_lang_switch")
@@ -115,5 +118,27 @@ export default function LanguageSwitcher({
         عربي
       </Link>
     </div>
+  )
+}
+
+export default function LanguageSwitcher(props: LanguageSwitcherProps) {
+  return (
+    <Suspense
+      fallback={
+        <div
+          role="group"
+          className={`inline-flex items-center rounded-full border border-[#C9A227]/30 bg-[#0B0A09]/85 p-0.5 backdrop-blur-md ${props.className || ""}`}
+        >
+          <span className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full px-2.5 font-mono text-xs font-bold text-[#B9B7B0]">
+            EN
+          </span>
+          <span className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full px-2.5 font-sans text-xs font-bold text-[#B9B7B0]">
+            عربي
+          </span>
+        </div>
+      }
+    >
+      <LanguageSwitcherContent {...props} />
+    </Suspense>
   )
 }

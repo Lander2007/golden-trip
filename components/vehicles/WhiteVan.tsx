@@ -1,14 +1,19 @@
+import { useTranslations } from "next-intl"
+
 export default function WhiteVan({
   className = "",
   showBeam = true,
   beamBrightness = 1,
   wheelRotation = 0,
+  ariaLabel,
 }: {
   className?: string
   showBeam?: boolean
   beamBrightness?: number
   wheelRotation?: number
+  ariaLabel?: string
 }) {
+  const tA11y = useTranslations("a11y")
   const brightness = Math.max(0.2, Math.min(1.5, beamBrightness))
 
   return (
@@ -17,7 +22,7 @@ export default function WhiteVan({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="Golden Trip executive white passenger van"
+      aria-label={ariaLabel || tA11y("vanAriaLabel")}
       className={className}
     >
       <defs>

@@ -15,8 +15,7 @@ export default function DatePalm({
       viewBox="0 0 240 380"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      aria-label="Egyptian Date Palm flat silhouette"
+      aria-hidden="true"
       className={className}
       style={flipped ? { transform: "scaleX(-1)" } : undefined}
     >

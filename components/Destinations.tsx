@@ -16,6 +16,7 @@ export interface DestinationExit {
   id: string
   exit: string
   city: string
+  nameKey: string
   km: number
   isHq?: boolean
 }
@@ -24,6 +25,7 @@ export const destinationsList: DestinationExit[] = ALL_CITIES.map((c, idx) => ({
   id: c.id,
   exit: String(idx + 1).padStart(2, "0"),
   city: c.city,
+  nameKey: c.nameKey,
   km: c.km,
   isHq: c.isHq,
 }))

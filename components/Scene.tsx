@@ -13,11 +13,14 @@ const motionNotes = [
   "End of route: clean, accessible layout. Reduced motion displays the complete final static state of every scene.",
 ]
 
+import { useTranslations } from "next-intl"
+
 export function MotionNote({ index }: { index: number }) {
+  const t = useTranslations("frames")
   return (
     <p className="frame-note border-y border-[#2A2B2E] bg-[#141518] px-7 py-5 text-sm leading-relaxed text-[#F4F2EC]">
       <span className="font-semibold text-[#C9A227]">
-        Motion note · {index + 1} / 7 —{" "}
+        {t("motionNotePrefix", { current: index + 1, total: 7 })}
       </span>
       {motionNotes[index]}
       <a
@@ -25,14 +28,14 @@ export function MotionNote({ index }: { index: number }) {
         href={`/storyboards/desktop-${String(index + 1).padStart(2, "0")}.png`}
         download
       >
-        Download frame ↗
+        {t("downloadFrame")}
       </a>
       <a
         className="frame-download-mobile ms-3 text-[#C9A227] underline underline-offset-4"
         href={`/storyboards/mobile-${String(index + 1).padStart(2, "0")}.png`}
         download
       >
-        Download frame ↗
+        {t("downloadFrame")}
       </a>
     </p>
   )

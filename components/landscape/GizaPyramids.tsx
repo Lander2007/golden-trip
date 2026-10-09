@@ -15,8 +15,7 @@ export default function GizaPyramids({
       viewBox="0 0 800 320"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      aria-label="Giza Pyramids flat two-tone silhouette"
+      aria-hidden="true"
       className={className}
       preserveAspectRatio="xMidYMax meet"
     >

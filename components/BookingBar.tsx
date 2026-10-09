@@ -21,7 +21,10 @@ export default function BookingBar({ className = "" }: { className?: string }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const cityName = tCities(`${cityId}.name`)
+    const dest = destinationsList.find((d) => d.id === cityId)
+    const cityName = dest?.nameKey
+      ? tCities(dest.nameKey.replace(/^cities\./, ""))
+      : tCities(`${cityId}.name`)
     router.push(
       `/signup?branch=${encodeURIComponent(cityName)}&date=${encodeURIComponent(date)}`,
     )
@@ -51,7 +54,8 @@ export default function BookingBar({ className = "" }: { className?: string }) {
                   value={d.id}
                   className="bg-[#0B0A09] text-[#F4F2EC]"
                 >
-                  {tCities(`${d.id}.name`)} {d.isHq ? tBooking("hqBadge") : ""}
+                  {d.nameKey ? tCities(d.nameKey.replace(/^cities\./, "")) : tCities(`${d.id}.name`)}{" "}
+                  {d.isHq ? tBooking("hqBadge") : ""}
                 </option>
               ))}
             </select>

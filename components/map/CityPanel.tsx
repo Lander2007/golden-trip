@@ -49,7 +49,9 @@ export default function CityPanel({
   }, [city])
 
   const shortCode = displayedCity.code || CITY_SHORT_CODES[displayedCity.id] || "EGY"
-  const cityName = tCities(`${displayedCity.id}.name`)
+  const cityName = displayedCity.nameKey
+    ? tCities(displayedCity.nameKey.replace(/^cities\./, ""))
+    : tCities(`${displayedCity.id}.name`)
   const bookLabel = tCities("bookFromCity", { city: cityName })
 
   const cityTagline = displayedCity.taglineKey
@@ -202,7 +204,9 @@ export default function CityPanel({
               const isCurrent = rc.id === displayedCity.id
               const isPassed = cityIndex > idx
               const code = rc.code || CITY_SHORT_CODES[rc.id] || String(idx + 1)
-              const rcName = tCities(`${rc.id}.name`)
+              const rcName = rc.nameKey
+                ? tCities(rc.nameKey.replace(/^cities\./, ""))
+                : tCities(`${rc.id}.name`)
 
               return (
                 <button

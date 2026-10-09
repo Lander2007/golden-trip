@@ -33,7 +33,9 @@ export default function DestinationsList() {
       {/* Compact 14 Destinations Link Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
         {ALL_CITIES.map((dest: CityData, index: number) => {
-          const cityName = tCities(`${dest.id}.name`)
+          const cityName = dest.nameKey
+            ? tCities(dest.nameKey.replace(/^cities\./, ""))
+            : tCities(`${dest.id}.name`)
           const distanceStr =
             dest.km === 0
               ? `${numFormat.format(0)} ${tCommon("kmUnit")}`

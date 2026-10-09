@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import ProtectedRoute from "@/components/auth/ProtectedRoute"
 import { useApp } from "@/context/AppContext"
 import {
   MOCK_BRANCHES,
   calculateDaysBetween,
   formatEGP,
-  Car,
 } from "@/lib/mockData"
 import {
   Search,
@@ -24,11 +24,13 @@ import {
   RotateCcw,
   SlidersHorizontal,
   ChevronRight,
-  Shield,
   Sparkles,
 } from "lucide-react"
 
 export default function CarsPage() {
+  const t = useTranslations("carsCatalog")
+  const tCommon = useTranslations("common")
+
   const {
     cars,
     currentUser,
@@ -123,37 +125,34 @@ export default function CarsPage() {
   }
 
   const carTypes = [
-    { id: "all", label: "جميع الفئات" },
-    { id: "اقتصادية", label: "اقتصادية" },
-    { id: "سيدان", label: "سيدان" },
-    { id: "SUV", label: "SUV دفع رباعي" },
-    { id: "فاخرة", label: "فاخرة VIP" },
-    { id: "عائلية", label: "عائلية وفان" },
+    { id: "all", label: t("typeAll") },
+    { id: "اقتصادية", label: t("typeEconomy") },
+    { id: "سيدان", label: t("typeSedan") },
+    { id: "SUV", label: t("typeSuv") },
+    { id: "فاخرة", label: t("typeLuxury") },
+    { id: "عائلية", label: t("typeFamily") },
   ]
 
   return (
     <ProtectedRoute>
-      <div dir="rtl" className="min-h-screen bg-[#0B0A09] text-[#F4F2EC] pb-24">
+      <div className="min-h-screen bg-[#0B0A09] text-[#F4F2EC] pb-24">
         {/* Top Hero / Welcome Banner */}
         <section className="relative border-b border-[#2A2B2E] bg-gradient-to-b from-[#141518] to-[#0B0A09] pt-10 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
           {/* Subtle Ambient Light */}
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#C9A227]/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 end-1/4 w-96 h-96 bg-[#C9A227]/5 rounded-full blur-3xl pointer-events-none" />
 
           <div className="mx-auto max-w-7xl">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#C9A227]/30 bg-[#C9A227]/10 px-3.5 py-1 text-xs font-bold text-[#C9A227] mb-3">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>أسطول سيارات جولدن تريب المعتمد</span>
+                  <span>{t("badge")}</span>
                 </div>
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#F4F2EC] tracking-tight">
-                  مرحباً بك،{" "}
-                  <span className="text-[#C9A227]">
-                    {currentUser?.name || "ضيفنا العزيز"}
-                  </span>
+                  {t("welcome", { name: currentUser?.name || t("defaultGuest") })}
                 </h1>
                 <p className="mt-2 text-sm sm:text-base text-[#B9B7B0] max-w-2xl leading-relaxed">
-                  اختر سيارتك المفضلة من بين أحدث الموديلات المجهزة بالكامل للسفر والرحلات بين كافة محافظات ومطارات مصر.
+                  {t("subtitle")}
                 </p>
               </div>
 
@@ -161,15 +160,15 @@ export default function CarsPage() {
               <div className="flex flex-wrap sm:flex-nowrap gap-3">
                 <div className="flex-1 sm:flex-initial rounded-lg border border-[#2A2B2E] bg-[#141518]/80 p-3.5 text-center min-w-[110px]">
                   <span className="block text-2xl font-black text-[#C9A227]">14+</span>
-                  <span className="text-xs text-[#B9B7B0]">سيارة متاحة</span>
+                  <span className="text-xs text-[#B9B7B0]">{t("statCarsAvailable")}</span>
                 </div>
                 <div className="flex-1 sm:flex-initial rounded-lg border border-[#2A2B2E] bg-[#141518]/80 p-3.5 text-center min-w-[110px]">
                   <span className="block text-2xl font-black text-[#F4F2EC]">6</span>
-                  <span className="text-xs text-[#B9B7B0]">فروع رئيسية</span>
+                  <span className="text-xs text-[#B9B7B0]">{t("statMainBranches")}</span>
                 </div>
                 <div className="flex-1 sm:flex-initial rounded-lg border border-[#2A2B2E] bg-[#141518]/80 p-3.5 text-center min-w-[110px]">
                   <span className="block text-2xl font-black text-[#E6CF85]">24/7</span>
-                  <span className="text-xs text-[#B9B7B0]">دعم ومساعدة</span>
+                  <span className="text-xs text-[#B9B7B0]">{t("statSupport")}</span>
                 </div>
               </div>
             </div>
@@ -181,7 +180,7 @@ export default function CarsPage() {
                 <div>
                   <label className="block text-xs font-bold text-[#C9A227] mb-1.5 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5" />
-                    <span>فرع الاستلام</span>
+                    <span>{t("pickupBranch")}</span>
                   </label>
                   <select
                     value={pickupBranch}
@@ -203,7 +202,7 @@ export default function CarsPage() {
                 <div>
                   <label className="block text-xs font-bold text-[#C9A227] mb-1.5 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5" />
-                    <span>فرع التسليم</span>
+                    <span>{t("returnBranch")}</span>
                   </label>
                   <select
                     value={returnBranch}
@@ -222,7 +221,7 @@ export default function CarsPage() {
                 <div>
                   <label className="block text-xs font-bold text-[#C9A227] mb-1.5 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>تاريخ الاستلام</span>
+                    <span>{t("pickupDate")}</span>
                   </label>
                   <input
                     type="date"
@@ -236,7 +235,7 @@ export default function CarsPage() {
                 <div>
                   <label className="block text-xs font-bold text-[#C9A227] mb-1.5 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>تاريخ التسليم ({rentalDays} {rentalDays === 1 ? "يوم" : rentalDays === 2 ? "يومان" : "أيام"})</span>
+                    <span>{t("returnDateWithDays", { days: rentalDays })}</span>
                   </label>
                   <input
                     type="date"
@@ -260,28 +259,28 @@ export default function CarsPage() {
                 <div className="flex items-center justify-between pb-4 border-b border-[#2A2B2E] mb-5">
                   <div className="flex items-center gap-2 font-bold text-sm text-[#F4F2EC]">
                     <SlidersHorizontal className="w-4 h-4 text-[#C9A227]" />
-                    <span>تصفية النتائج</span>
+                    <span>{t("filterTitle")}</span>
                   </div>
                   <button
                     onClick={resetFilters}
                     className="flex items-center gap-1 text-xs text-[#B9B7B0] hover:text-[#C9A227] transition-colors"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    <span>إعادة ضبط</span>
+                    <span>{t("resetFilters")}</span>
                   </button>
                 </div>
 
                 {/* Search Box */}
                 <div className="mb-5">
                   <label className="block text-xs font-bold text-[#B9B7B0] mb-2">
-                    البحث بالاسم أو الفئة
+                    {t("searchLabel")}
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="مثال: تويوتا، BMW، SUV..."
+                      placeholder={t("searchPlaceholder")}
                       className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2 pe-9 text-xs text-[#F4F2EC] placeholder-[#B9B7B0]/40 focus:border-[#C9A227] focus:outline-none"
                     />
                     <Search className="absolute top-2.5 end-2.5 w-4 h-4 text-[#B9B7B0]/50" />
@@ -291,14 +290,14 @@ export default function CarsPage() {
                 {/* Filter by Branch */}
                 <div className="mb-5">
                   <label className="block text-xs font-bold text-[#B9B7B0] mb-2">
-                    تصفية حسب موقع الفرع
+                    {t("branchFilterLabel")}
                   </label>
                   <select
                     value={selectedBranchFilter}
                     onChange={(e) => setSelectedBranchFilter(e.target.value)}
                     className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
                   >
-                    <option value="all">جميع الفروع (6 فروع)</option>
+                    <option value="all">{t("allBranches")}</option>
                     {MOCK_BRANCHES.map((b) => (
                       <option key={b.id} value={b.id}>
                         {b.city} - {b.name}
@@ -310,7 +309,7 @@ export default function CarsPage() {
                 {/* Filter by Car Type */}
                 <div className="mb-5">
                   <label className="block text-xs font-bold text-[#B9B7B0] mb-2">
-                    فئة السيارة
+                    {t("categoryLabel")}
                   </label>
                   <div className="flex flex-wrap gap-1.5">
                     {carTypes.map((type) => (
@@ -333,7 +332,7 @@ export default function CarsPage() {
                 {/* Transmission */}
                 <div className="mb-5">
                   <label className="block text-xs font-bold text-[#B9B7B0] mb-2">
-                    ناقل الحركة
+                    {t("transmissionLabel")}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     <button
@@ -345,7 +344,7 @@ export default function CarsPage() {
                           : "bg-[#0B0A09] text-[#B9B7B0] border border-[#2A2B2E]"
                       }`}
                     >
-                      الكل
+                      {t("all")}
                     </button>
                     <button
                       type="button"
@@ -356,7 +355,7 @@ export default function CarsPage() {
                           : "bg-[#0B0A09] text-[#B9B7B0] border border-[#2A2B2E]"
                       }`}
                     >
-                      أوتوماتيك
+                      {t("automatic")}
                     </button>
                     <button
                       type="button"
@@ -367,7 +366,7 @@ export default function CarsPage() {
                           : "bg-[#0B0A09] text-[#B9B7B0] border border-[#2A2B2E]"
                       }`}
                     >
-                      يدوي
+                      {t("manual")}
                     </button>
                   </div>
                 </div>
@@ -375,7 +374,7 @@ export default function CarsPage() {
                 {/* Max Price Range */}
                 <div className="mb-5">
                   <div className="flex items-center justify-between text-xs font-bold mb-2">
-                    <span className="text-[#B9B7B0]">الحد الأقصى للسعر / يوم</span>
+                    <span className="text-[#B9B7B0]">{t("maxPriceLabel")}</span>
                     <span className="text-[#C9A227] font-mono">{formatEGP(maxPrice)}</span>
                   </div>
                   <input
@@ -388,15 +387,15 @@ export default function CarsPage() {
                     className="w-full accent-[#C9A227] bg-[#0B0A09] cursor-pointer"
                   />
                   <div className="flex justify-between text-[10px] text-[#B9B7B0]/60 mt-1">
-                    <span>850 ج.م</span>
-                    <span>15,000 ج.م</span>
+                    <span>{t("priceRangeMin")}</span>
+                    <span>{t("priceRangeMax")}</span>
                   </div>
                 </div>
 
                 {/* Availability Only Toggle */}
                 <div className="pt-2 border-t border-[#2A2B2E]">
                   <label className="flex items-center justify-between cursor-pointer text-xs font-medium text-[#B9B7B0]">
-                    <span>السيارات المتاحة فقط</span>
+                    <span>{t("onlyAvailableLabel")}</span>
                     <input
                       type="checkbox"
                       checked={onlyAvailable}
@@ -413,18 +412,19 @@ export default function CarsPage() {
               {/* Results Count bar */}
               <div className="flex items-center justify-between mb-6 pb-3 border-b border-[#2A2B2E]/60">
                 <p className="text-sm text-[#B9B7B0]">
-                  تم العثور على{" "}
-                  <strong className="text-[#C9A227] font-bold">{filteredCars.length}</strong>{" "}
-                  سيارة جاهزة للحجز
+                  {t("foundCars", { count: filteredCars.length })}
                   {selectedBranchFilter !== "all" && (
                     <span>
-                      {" "}في فرع {MOCK_BRANCHES.find((b) => b.id === selectedBranchFilter)?.city}
+                      {" "}
+                      {t("inBranch", {
+                        branch: MOCK_BRANCHES.find((b) => b.id === selectedBranchFilter)?.city || "",
+                      })}
                     </span>
                   )}
                 </p>
 
                 <div className="text-xs text-[#B9B7B0]/80">
-                  مدة الرحلة المحتسبة: <span className="font-bold text-[#F4F2EC]">{rentalDays} {rentalDays === 1 ? "يوم" : "أيام"}</span>
+                  {t("tripDuration")}<span className="font-bold text-[#F4F2EC]">{t("daysCount", { count: rentalDays })}</span>
                 </div>
               </div>
 
@@ -450,17 +450,17 @@ export default function CarsPage() {
                     <Filter className="w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-bold text-[#F4F2EC] mb-2">
-                    لا توجد سيارات مطابقة لبحثك
+                    {t("noCarsTitle")}
                   </h3>
                   <p className="text-sm text-[#B9B7B0] mb-6 leading-relaxed">
-                    لم نتمكن من العثور على سيارات تطابق الفلاتر المحددة. جرب توسيع نطاق السعر أو تغيير الفرع أو فئة السيارة.
+                    {t("noCarsDesc")}
                   </p>
                   <button
                     onClick={resetFilters}
                     className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-[#C9A227] text-[#0B0A09] font-bold text-xs hover:bg-[#E6CF85] transition-all"
                   >
                     <RotateCcw className="w-4 h-4" />
-                    <span>إعادة ضبط جميع الفلاتر</span>
+                    <span>{t("resetAllFilters")}</span>
                   </button>
                 </div>
               ) : (
@@ -500,12 +500,12 @@ export default function CarsPage() {
                             {car.available ? (
                               <>
                                 <CheckCircle className="w-3 h-3" />
-                                <span>متاح الآن</span>
+                                <span>{t("availableNow")}</span>
                               </>
                             ) : (
                               <>
                                 <XCircle className="w-3 h-3" />
-                                <span>محجوز حالياً</span>
+                                <span>{t("reservedNow")}</span>
                               </>
                             )}
                           </span>
@@ -538,7 +538,7 @@ export default function CarsPage() {
                             <div className="grid grid-cols-3 gap-1.5 py-3 border-y border-[#2A2B2E]/70 my-3 text-[11px] text-[#B9B7B0]">
                               <div className="flex items-center gap-1">
                                 <Users className="w-3.5 h-3.5 text-[#C9A227]" />
-                                <span>{car.seats} مقاعد</span>
+                                <span>{t("seatsCount", { count: car.seats })}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Gauge className="w-3.5 h-3.5 text-[#C9A227]" />
@@ -558,11 +558,11 @@ export default function CarsPage() {
                                 <span className="text-lg font-black text-[#F4F2EC] font-mono">
                                   {formatEGP(car.pricePerDay)}
                                 </span>
-                                <span className="text-xs text-[#B9B7B0] me-1">/ يوم</span>
+                                <span className="text-xs text-[#B9B7B0] me-1">{t("perDay")}</span>
                               </div>
 
                               <div className="text-end text-[11px] text-[#B9B7B0]">
-                                <span>إجمالي {rentalDays} {rentalDays === 1 ? "يوم" : "أيام"}: </span>
+                                <span>{t("totalDuration", { days: rentalDays })}</span>
                                 <span className="text-[#C9A227] font-bold font-mono">
                                   {formatEGP(totalTripPrice)}
                                 </span>
@@ -575,8 +575,8 @@ export default function CarsPage() {
                                 href={`/cars/${car.id}`}
                                 className="flex items-center justify-center gap-1 py-2.5 rounded-md border border-[#2A2B2E] text-xs font-semibold text-[#F4F2EC] hover:border-[#C9A227] hover:text-[#C9A227] transition-all"
                               >
-                                <span>التفاصيل</span>
-                                <ChevronRight className="w-3.5 h-3.5 rotate-180" />
+                                <span>{t("viewDetails")}</span>
+                                <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
                               </Link>
 
                               {car.available ? (
@@ -584,14 +584,14 @@ export default function CarsPage() {
                                   href={`/cars/${car.id}`}
                                   className="flex items-center justify-center gap-1.5 py-2.5 rounded-md bg-[#C9A227] text-xs font-bold text-[#0B0A09] hover:bg-[#E6CF85] transition-all active:scale-95 shadow-md shadow-[#C9A227]/10"
                                 >
-                                  <span>احجز الآن</span>
+                                  <span>{t("bookNow")}</span>
                                 </Link>
                               ) : (
                                 <button
                                   disabled
                                   className="flex items-center justify-center py-2.5 rounded-md bg-[#2A2B2E]/50 text-xs font-semibold text-[#B9B7B0]/50 cursor-not-allowed"
                                 >
-                                  غير متاح
+                                  {t("unavailable")}
                                 </button>
                               )}
                             </div>

@@ -67,7 +67,17 @@
     "010 1234 5678",
     "DL-EGY",
     "goldentrip.eg",
-    "https://goldentrip.eg"
+    "https://goldentrip.eg",
+    "CVV",
+    "SUV",
+    "EN",
+    "EGP",
+    "MUH",
+    "DHB",
+    "Golden Trip",
+    "N"
   ],
-  "allowedArabicTokensInEnglish": []
+  "allowedArabicTokensInEnglish": [
+    "عربي"
+  ]
 }
