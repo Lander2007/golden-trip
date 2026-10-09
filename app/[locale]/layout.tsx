@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import Script from "next/script"
 import { notFound } from "next/navigation"
 import { NextIntlClientProvider } from "next-intl"
 import { getMessages, setRequestLocale } from "next-intl/server"
@@ -9,6 +8,7 @@ import Header from "@/components/Header"
 import PerfLab from "@/components/PerfLab"
 import { AppProvider } from "@/context/AppContext"
 import ToastContainer from "@/components/shared/ToastContainer"
+import PerfBootScript from "@/components/PerfBootScript"
 import "@/app/globals.css"
 
 export function generateStaticParams() {
@@ -91,54 +91,9 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <head>
-        {process.env.FIGMA && process.env.NODE_ENV === "development" && (
-          <Script
-            id="preview-hydration-cleanup"
-            strategy="beforeInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-              (() => {
-                const attribute = "data--h-bstatus";
-                const clean = (node) => {
-                  if (!(node instanceof Element)) return;
-                  node.removeAttribute(attribute);
-                  node.querySelectorAll("[" + attribute + "]").forEach(
-                    (element) => element.removeAttribute(attribute)
-                  );
-                };
-                clean(document.documentElement);
-                const observer = new MutationObserver((records) => {
-                  for (const record of records) {
-                    if (record.type === "attributes") {
-                      if (record.target.hasAttribute(attribute)) {
-                        record.target.removeAttribute(attribute);
-                      }
-                    } else {
-                      record.addedNodes.forEach(clean);
-                    }
-                  }
-                });
-                observer.observe(document.documentElement, {
-                  subtree: true,
-                  childList: true,
-                  attributes: true,
-                  attributeFilter: [attribute]
-                });
-                window.addEventListener("pagehide", () => observer.disconnect(), { once: true });
-              })();
-            `,
-            }}
-          />
-        )}
+        <PerfBootScript />
       </head>
       <body className="bg-[var(--sky,#0B0A09)] text-[#F4F2EC] selection:bg-[#C9A227] selection:text-[#0B0A09]">
-        <Script
-          id="perf-boot"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(()=>{const q=new URLSearchParams(location.search);const lite=matchMedia("(max-width: 767px), (pointer: coarse)").matches||(navigator.hardwareConcurrency||4)<=4||matchMedia("(prefers-reduced-motion: reduce)").matches||q.has("lite");if(lite)document.documentElement.classList.add("lite");const off=q.get("off");if(off)off.split(",").forEach(f=>{const k=f.trim();if(k)document.documentElement.setAttribute("data-off-"+k,"");});})();`,
-          }}
-        />
         <div className="film-grain" aria-hidden="true" />
         <NextIntlClientProvider messages={messages} locale={locale}>
           <AppProvider>

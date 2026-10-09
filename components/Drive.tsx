@@ -119,7 +119,6 @@ export default function Drive({
       if (typeof window !== "undefined") {
         delete (window as any).__lenis
       }
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
     }
   }, [frames])
 
@@ -570,10 +569,11 @@ export default function Drive({
           },
         })
 
-        // Sort and refresh triggers to reconcile any dynamically created pin-spacers across scenes
-        ScrollTrigger.sort()
-        ScrollTrigger.refresh()
       })
+
+      return () => {
+        mm.revert()
+      }
     },
     { scope: root, dependencies: [frames] }
   )

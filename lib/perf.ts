@@ -64,11 +64,6 @@ export function setFeatureOff(feature: string, disabled: boolean) {
 }
 
 export function showPerfLab(): boolean {
-  if (typeof window === "undefined") {
-    return process.env.NODE_ENV !== "production"
-  }
-  return (
-    process.env.NODE_ENV !== "production" ||
-    new URLSearchParams(window.location.search).has("perflab")
-  )
+  if (typeof window === "undefined") return false
+  return new URLSearchParams(window.location.search).has("perflab")
 }
