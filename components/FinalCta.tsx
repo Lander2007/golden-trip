@@ -21,15 +21,15 @@ export default function FinalCta({ frames = false }: { frames?: boolean }) {
 
         {/* Headlight illumination beam spread across the bottom of the scene */}
         <div
-          className="pointer-events-none absolute bottom-0 left-[-10%] right-[-10%] h-48 bg-gradient-to-t from-[#C9A227]/[0.06] via-[#E6CF85]/[0.03] to-transparent blur-2xl z-0"
+          className="pointer-events-none absolute bottom-0 left-[-10%] right-[-10%] h-48 bg-gradient-to-t from-[#C9A227]/[0.06] via-[#E6CF85]/[0.03] to-transparent z-0"
           aria-hidden="true"
         />
 
         {/* Final Gantry Highway Sign Box */}
-        <div className="final-gantry relative z-10 w-full rounded-sm border-2 border-[#C9A227] bg-[#141518] p-6 sm:p-10 md:p-12 text-center shadow-2xl">
+        <div className="final-gantry relative z-10 w-full rounded-sm border-2 border-[#C9A227] bg-[#141518] p-6 sm:p-10 md:p-12 text-center">
           {/* Status Subtitle */}
           <div className="flex items-center justify-center gap-2 mb-4 text-xs font-mono text-[#C9A227]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A227] animate-pulse" />
+            <span data-loop="" className="loop-anim h-1.5 w-1.5 rounded-full bg-[#C9A227] animate-pulse" />
             <span>Night fleet ready · Alexandria headquarters</span>
           </div>
 
@@ -54,7 +54,7 @@ export default function FinalCta({ frames = false }: { frames?: boolean }) {
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/signup"
-              className="inline-flex items-center justify-center rounded-full bg-[#C9A227] px-8 py-3.5 font-display text-sm font-bold text-[#0B0A09] transition-all hover:bg-[#E6CF85] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227] shadow-lg"
+              className="inline-flex items-center justify-center rounded-full bg-[#C9A227] px-8 py-3.5 font-display text-sm font-bold text-[#0B0A09] transition-all hover:bg-[#E6CF85] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
             >
               Sign up
             </Link>

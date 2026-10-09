@@ -90,7 +90,7 @@ export default function Vehicle({
         placeholder="blur"
         blurDataURL={BLUR_PLACEHOLDERS[variant] || BLUR_PLACEHOLDERS.suv}
         onError={() => setImgFailed((prev) => ({ ...prev, [variant]: true }))}
-        className="w-full h-auto object-contain select-none pointer-events-none drop-shadow-2xl"
+        className="w-full h-auto object-contain select-none pointer-events-none"
         draggable={false}
       />
       {}
@@ -110,8 +110,7 @@ export default function Vehicle({
         className="pointer-events-none absolute left-[-6%] top-[48%] h-6 w-10 rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(224,122,47,0.7) 0%, rgba(224,122,47,0.2) 60%, transparent 100%)",
-          filter: "blur(6px)",
+            "radial-gradient(circle, rgba(224,122,47,0.55) 0%, rgba(224,122,47,0.18) 45%, transparent 100%)",
         }}
       />
     </div>

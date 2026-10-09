@@ -61,12 +61,11 @@ export default function WhiteVan({
       <ellipse
         cx="56"
         cy="99"
-        rx="26"
-        ry="22"
+        rx="38"
+        ry="28"
         fill="#E07A2F"
-        opacity={0.55 * brightness}
+        opacity={0.28 * brightness}
         className="rear-light-glow"
-        style={{ filter: "blur(7px)" }}
       />
 
       {/* Underbody shadow on road */}
@@ -74,84 +73,37 @@ export default function WhiteVan({
 
       {/* Tone 1: Van Body (Off-White #F4F2EC) */}
       <path
-        d="M 64 156 
-           L 60 76 
-           Q 62 48 84 46 
-           L 416 46 
-           Q 432 46 442 62 
-           L 476 112 
-           L 488 120 
-           Q 494 126 494 136 
-           L 494 154 
-           Q 494 164 484 166 
-           L 445 166 
-           A 36 36 0 0 0 373 166 
-           L 187 166 
-           A 36 36 0 0 0 115 166 
-           L 64 166 
-           Z"
+        d="M 64 156 L 60 76 Q 62 48 84 46 L 416 46 Q 432 46 442 62 L 476 112 L 488 120 Q 494 126 494 136 L 494 154 Q 494 164 484 166 L 445 166 A 36 36 0 0 0 373 166 L 187 166 A 36 36 0 0 0 115 166 L 64 166 Z"
         fill="#F4F2EC"
       />
 
       {/* Tone 2: Lower side shadow facet & body trim (#D2CEC4) */}
       <path
-        d="M 64 146 
-           L 115 146 
-           A 36 36 0 0 1 187 146 
-           L 373 146 
-           A 36 36 0 0 1 445 146 
-           L 488 146 
-           L 488 166 
-           L 445 166 
-           A 36 36 0 0 0 373 166 
-           L 187 166 
-           A 36 36 0 0 0 115 166 
-           L 64 166 
-           Z"
+        d="M 64 146 L 115 146 A 36 36 0 0 1 187 146 L 373 146 A 36 36 0 0 1 445 146 L 488 146 L 488 166 L 445 166 A 36 36 0 0 0 373 166 L 187 166 A 36 36 0 0 0 115 166 L 64 166 Z"
         fill="#D2CEC4"
       />
 
       {/* Tone 3: Tinted Glass Ribbon (Panoramic passenger windows) */}
       <path
-        d="M 76 56 
-           L 174 56 
-           L 174 106 
-           L 76 106 
-           Z"
+        d="M 76 56 L 174 56 L 174 106 L 76 106 Z"
         fill="url(#vanGlass)"
       />
       <path
-        d="M 180 56 
-           L 284 56 
-           L 284 106 
-           L 180 106 
-           Z"
+        d="M 180 56 L 284 56 L 284 106 L 180 106 Z"
         fill="url(#vanGlass)"
       />
       <path
-        d="M 290 56 
-           L 396 56 
-           L 396 106 
-           L 290 106 
-           Z"
+        d="M 290 56 L 396 56 L 396 106 L 290 106 Z"
         fill="url(#vanGlass)"
       />
       <path
-        d="M 402 56 
-           L 434 56 
-           L 468 106 
-           L 402 106 
-           Z"
+        d="M 402 56 L 434 56 L 468 106 L 402 106 Z"
         fill="url(#vanGlass)"
       />
 
       {/* Window boundary frame */}
       <path
-        d="M 74 54 
-           L 436 54 
-           L 472 106 
-           L 74 106 
-           Z"
+        d="M 74 54 L 436 54 L 472 106 L 74 106 Z"
         stroke="#2A2B2E"
         strokeWidth="2"
         fill="none"

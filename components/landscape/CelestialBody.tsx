@@ -1,7 +1,6 @@
 "use client"
 
 import { forwardRef, useImperativeHandle, useRef, useEffect } from "react"
-import gsap from "gsap"
 
 export interface CelestialBodyHandle {
   update: (progress: number) => void
@@ -80,7 +79,7 @@ const CelestialBody = forwardRef<CelestialBodyHandle, CelestialBodyProps>(
     return (
       <div
         ref={rootRef}
-        className="pointer-events-none fixed top-0 left-0 z-[8] will-change-transform"
+        className="pointer-events-none fixed top-0 left-0 z-[8] celestial-wrapper"
         style={{
           transform: "translate3d(15vw, 40vh, 0) translate(-50%, -50%)",
           opacity: 0,
@@ -91,7 +90,7 @@ const CelestialBody = forwardRef<CelestialBodyHandle, CelestialBodyProps>(
           {/* Photographic Sun Glow Falloff */}
           <div
             ref={glowRef}
-            className="absolute -inset-4 sm:-inset-6 rounded-full will-change-[opacity]"
+            className="absolute -inset-4 sm:-inset-6 rounded-full celestial-glow"
             style={{
               opacity: 0.6,
               background:
@@ -102,7 +101,7 @@ const CelestialBody = forwardRef<CelestialBodyHandle, CelestialBodyProps>(
           {/* Sun Disc */}
           <div
             ref={sunRef}
-            className="absolute inset-0 rounded-full will-change-[opacity]"
+            className="absolute inset-0 rounded-full"
             style={{
               opacity: 1,
               backgroundColor: "#E07A2F",
@@ -112,7 +111,7 @@ const CelestialBody = forwardRef<CelestialBodyHandle, CelestialBodyProps>(
           {/* Pale Moon Disc */}
           <div
             ref={moonRef}
-            className="absolute inset-0 rounded-full bg-[#E2DFD2] will-change-[opacity]"
+            className="absolute inset-0 rounded-full bg-[#E2DFD2]"
             style={{ opacity: 0 }}
           >
             <div className="absolute top-2.5 left-3.5 h-3 w-3 rounded-full bg-[#C8C4B5] opacity-60" />

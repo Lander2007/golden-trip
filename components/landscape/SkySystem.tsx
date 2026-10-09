@@ -64,7 +64,9 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
       const y = (((seed * 13) % 45) + 5).toFixed(1)
       const size = (i % 3 === 0 ? 2 : 1.2).toFixed(1)
       const opacity = (((i % 5) + 4) / 10).toFixed(2)
-      return { id: i, x, y, size, opacity }
+      const duration = (3.2 + (i % 5) * 0.7).toFixed(1)
+      const delay = ((i % 7) * 0.5).toFixed(1)
+      return { id: i, x, y, size, opacity, duration, delay, isTwinkling: i < 12 }
     })
   }, [])
 
@@ -142,7 +144,7 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
       {/* 1. Dawn Photographic Sky Grading */}
       <div
         ref={dawnRef}
-        className="absolute inset-0 will-change-[opacity]"
+        className="absolute inset-0"
         style={{
           opacity: initialDawnOpacity,
           background:
@@ -153,7 +155,7 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
       {/* 2. Dusk Photographic Sky Grading */}
       <div
         ref={duskRef}
-        className="absolute inset-0 will-change-[opacity]"
+        className="absolute inset-0"
         style={{
           opacity: initialDuskOpacity,
           background:
@@ -164,7 +166,7 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
       {/* 3. Night Sky Stars */}
       <div
         ref={starsRef}
-        className="absolute inset-0 will-change-[opacity]"
+        className="sky-stars absolute inset-0"
         style={{ opacity: initialStarsOpacity }}
       >
         <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
@@ -176,6 +178,14 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
               r={star.size}
               fill="#C9A227"
               opacity={star.opacity}
+              className={star.isTwinkling ? "hero-star-dot" : undefined}
+              style={
+                star.isTwinkling
+                  ? {
+                      animation: `heroTwinkle ${star.duration}s ease-in-out ${star.delay}s infinite`,
+                    }
+                  : undefined
+              }
             />
           ))}
         </svg>
@@ -184,7 +194,7 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
       {/* Shared Moon: isolated to prevent full-screen blend cost */}
       <div
         ref={moonRef}
-        className="shared-moon pointer-events-none absolute z-[2] will-change-[opacity]"
+        className="shared-moon pointer-events-none absolute z-[2]"
         style={{
           top: "24%",
           left: "90%",
@@ -219,7 +229,7 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
             cy="100"
             r="75"
             fill="url(#sharedMoonGlow)"
-            style={{ mixBlendMode: "screen" }}
+            className="hero-moon-glow"
           />
 
           {/* Crescent Moon */}
@@ -233,11 +243,7 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
         </svg>
       </div>
 
-      {/* Soft Vignette */}
       <div className="vignette absolute inset-0" />
-
-      {/* Film Grain */}
-      <div className="film-grain" />
     </div>
   )
 })

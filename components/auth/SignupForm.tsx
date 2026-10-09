@@ -45,7 +45,7 @@ export default function SignupForm({ initialBranch = "" }: SignupFormProps) {
 
   if (submitted) {
     return (
-      <div className="rounded-sm border-2 border-[#C9A227] bg-[#141518] p-8 sm:p-10 text-center shadow-2xl animate-in fade-in duration-300">
+      <div className="rounded-sm border-2 border-[#C9A227] bg-[#141518] p-8 sm:p-10 text-center animate-in fade-in duration-300">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#C9A227]/10 text-[#C9A227]">
           <CheckCircle2 className="h-10 w-10 stroke-[2.5]" />
         </div>
@@ -84,7 +84,7 @@ export default function SignupForm({ initialBranch = "" }: SignupFormProps) {
   }
 
   return (
-    <div className="rounded-sm border border-[#2A2B2E] bg-[#141518] p-6 sm:p-10 shadow-2xl">
+    <div className="rounded-sm border border-[#2A2B2E] bg-[#141518] p-6 sm:p-10">
       <div className="mb-6 border-b border-[#2A2B2E] pb-4">
         <span className="font-mono text-xs font-semibold text-[#C9A227]">
           Client registration

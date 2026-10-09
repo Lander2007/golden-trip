@@ -61,12 +61,11 @@ export default function BlackSUV({
       <ellipse
         cx="58"
         cy="104"
-        rx="26"
-        ry="13"
+        rx="38"
+        ry="18"
         fill="#E07A2F"
-        opacity={0.55 * brightness}
+        opacity={0.28 * brightness}
         className="rear-light-glow"
-        style={{ filter: "blur(6px)" }}
       />
 
       {/* Underbody shadow on road */}
@@ -74,45 +73,13 @@ export default function BlackSUV({
 
       {/* Vehicle body main silhouette (Tone 1: Deep Black #17181C) */}
       <path
-        d="M 64 135 
-           L 62 108 
-           Q 63 94 72 88 
-           L 138 78 
-           L 185 40 
-           Q 192 34 204 34 
-           L 366 34 
-           Q 378 34 386 42 
-           L 426 80 
-           L 466 86 
-           Q 478 88 480 100 
-           L 482 122 
-           Q 482 136 476 142 
-           L 472 145 
-           L 435 145 
-           A 36 36 0 0 0 363 145 
-           L 187 145 
-           A 36 36 0 0 0 115 145 
-           L 64 145 
-           Z"
+        d="M 64 135 L 62 108 Q 63 94 72 88 L 138 78 L 185 40 Q 192 34 204 34 L 366 34 Q 378 34 386 42 L 426 80 L 466 86 Q 478 88 480 100 L 482 122 Q 482 136 476 142 L 472 145 L 435 145 A 36 36 0 0 0 363 145 L 187 145 A 36 36 0 0 0 115 145 L 64 145 Z"
         fill="#17181C"
       />
 
       {/* Tone 2: Upper shoulder highlight / facet (#26282E) */}
       <path
-        d="M 72 88 
-           L 138 78 
-           L 185 40 
-           Q 192 34 204 34 
-           L 366 34 
-           Q 378 34 386 42 
-           L 426 80 
-           L 466 86 
-           Q 474 88 478 94 
-           L 430 92 
-           L 384 84 
-           L 182 84 
-           L 128 86 
-           Z"
+        d="M 72 88 L 138 78 L 185 40 Q 192 34 204 34 L 366 34 Q 378 34 386 42 L 426 80 L 466 86 Q 474 88 478 94 L 430 92 L 384 84 L 182 84 L 128 86 Z"
         fill="#26282E"
       />
 
@@ -124,37 +91,21 @@ export default function BlackSUV({
       {/* Tone 3: Tinted Glass Area */}
       {/* Front windshield & side window group */}
       <path
-        d="M 194 42 
-           L 248 42 
-           L 248 80 
-           L 156 80 
-           Z"
+        d="M 194 42 L 248 42 L 248 80 L 156 80 Z"
         fill="url(#suvGlass)"
       />
       <path
-        d="M 254 42 
-           L 326 42 
-           L 326 80 
-           L 254 80 
-           Z"
+        d="M 254 42 L 326 42 L 326 80 L 254 80 Z"
         fill="url(#suvGlass)"
       />
       <path
-        d="M 332 42 
-           L 374 42 
-           L 412 80 
-           L 332 80 
-           Z"
+        d="M 332 42 L 374 42 L 412 80 L 332 80 Z"
         fill="url(#suvGlass)"
       />
 
       {/* Window trim frame */}
       <path
-        d="M 190 40 
-           L 378 40 
-           L 418 80 
-           L 150 80 
-           Z"
+        d="M 190 40 L 378 40 L 418 80 L 150 80 Z"
         stroke="#111215"
         strokeWidth="2.5"
         fill="none"

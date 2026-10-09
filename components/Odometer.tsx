@@ -105,7 +105,6 @@ const Odometer = forwardRef<OdometerHandle, OdometerProps>(function Odometer(
             {/* Sliding column (imperatively translated via quickSetter) */}
             <div
               ref={wheelRefs[i]}
-              className="will-change-transform"
               style={{
                 transform: `translate3d(0, -${initialDigits[i] * 26}px, 0)`,
               }}

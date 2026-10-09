@@ -10,6 +10,8 @@ import Odometer, { type OdometerHandle } from "./Odometer"
 import CelestialBody, { type CelestialBodyHandle } from "./landscape/CelestialBody"
 import SkySystem, { getSkyColor, type SkySystemHandle } from "./landscape/SkySystem"
 import { scrollProgress, updateScrollProgress } from "@/lib/scrollEngine"
+import DustTrail, { type DustTrailHandle } from "./vehicle/DustTrail"
+import { LITE, off } from "@/lib/perf"
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger)
@@ -27,6 +29,7 @@ export default function Drive({
   const odometerRef = useRef<OdometerHandle>(null)
   const skyRef = useRef<SkySystemHandle>(null)
   const celestialRef = useRef<CelestialBodyHandle>(null)
+  const dustRef = useRef<DustTrailHandle>(null)
 
   const [activeScene, setActiveScene] = useState(0)
   const [light, setLight] = useState(false)
@@ -39,13 +42,8 @@ export default function Drive({
     const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     setReducedMotion(isReduced)
 
-    const isLowPower =
-      window.innerWidth < 768 ||
-      (typeof navigator !== "undefined" &&
-        navigator.hardwareConcurrency != null &&
-        navigator.hardwareConcurrency <= 4)
-    if (isLowPower) {
-      document.documentElement.classList.add("low-power")
+    if (LITE) {
+      document.documentElement.classList.add("lite")
     }
 
     const lenis = new Lenis({
@@ -81,6 +79,7 @@ export default function Drive({
       skyRef.current?.update(p)
       celestialRef.current?.update(p)
       scrollCarRef.current?.updatePhysics(vel, lenis.scroll || 0)
+      if (!LITE) dustRef.current?.tick(vel)
     }
 
     gsap.ticker.add(tickerCallback)
@@ -193,17 +192,17 @@ export default function Drive({
         },
       })
 
-      // Parallax layers (responsive: desktop 3 layers, mobile <= 2 layers per Step 2 budget)
       const mm = gsap.matchMedia()
-      mm.add("(min-width: 769px)", () => {
-        heroTimeline.to(".hero-parallax-far", { x: -60, ease: "none" }, 0)
-        heroTimeline.to(".hero-parallax-mid", { x: -160, ease: "none" }, 0)
-        heroTimeline.to(".hero-parallax-fg", { x: -520, ease: "none" }, 0)
-      })
-      mm.add("(max-width: 768px)", () => {
-        heroTimeline.to(".hero-parallax-far", { x: -40, ease: "none" }, 0)
-        heroTimeline.to(".hero-parallax-mid", { x: -100, ease: "none" }, 0)
-      })
+      if (!LITE && !off("parallax")) {
+        mm.add("(min-width: 768px)", () => {
+          heroTimeline.to(".hero-parallax-far", { x: -60, ease: "none" }, 0)
+          heroTimeline.to(".hero-parallax-mid", { x: -160, ease: "none" }, 0)
+          heroTimeline.to(".hero-parallax-fg", { x: -520, ease: "none" }, 0)
+        })
+        mm.add("(max-width: 767px)", () => {
+          heroTimeline.to(".hero-parallax-far", { x: -40, ease: "none" }, 0)
+        })
+      }
       heroTimeline.to(".travel-lane", { x: "-=480", ease: "none" }, 0)
 
       // ----------------------------------------------------------------------
@@ -336,13 +335,16 @@ export default function Drive({
       const welcomeGantryTl = gsap.timeline({
         scrollTrigger: {
           trigger: "#welcome",
-          start: "top 60%",
-          end: "bottom 20%",
+          start: "top 75%",
+          end: "center center",
           scrub: true,
         },
       })
-      welcomeGantryTl.fromTo(".gantry", { y: -150, opacity: 0.3 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" })
-      welcomeGantryTl.to(".gantry", { y: -240, duration: 0.6, ease: "power1.in" }, 0.6)
+      welcomeGantryTl.fromTo(
+        ".gantry",
+        { y: 28, opacity: 0.35 },
+        { y: 0, opacity: 1, duration: 1, ease: "power2.out" }
+      )
 
       // SCENE 2: MAP SECTION / DESTINATIONS (#destinations)
       ScrollTrigger.create({
@@ -569,6 +571,7 @@ export default function Drive({
           className="road-zone fixed inset-x-0 bottom-0 z-30 h-[24vh] pointer-events-none overflow-hidden select-none"
           aria-hidden="true"
         >
+          <DustTrail ref={dustRef} reducedMotion={reducedMotion} />
           {/* Lane Line */}
           <div className="absolute inset-x-0 bottom-[8.5vh] h-2 overflow-hidden">
             <svg className="travel-lane h-2 w-[200%]" aria-hidden="true">

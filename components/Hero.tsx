@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
-import { ArrowDown } from "lucide-react"
 import BookingBar from "./BookingBar"
 import FitText from "./FitText"
 import CelestialBody, { HeroSun, HeroMoon } from "./CelestialBody"
@@ -19,7 +18,7 @@ const HERO_STARS = Array.from({ length: 28 }).map((_, i) => {
   const color = i % 2 === 0 ? "#C9A227" : "#EADFC8"
   const duration = (3.2 + (i % 5) * 0.7).toFixed(1) // 3.2s to 6.0s loops
   const delay = ((i % 7) * 0.5).toFixed(1)
-  const isTwinkling = i < 12 // Cap animated stars to at most 12
+  const isTwinkling = i < 12
   return { id: i, x, y, size, color, duration, delay, isTwinkling }
 })
 
@@ -124,7 +123,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
       {/* ============================================================== */}
       {/* INSET FRAME: 16px margin, 28px radius, min-height 600px        */}
       {/* ============================================================== */}
-      <div className="relative h-full min-h-[600px] w-full rounded-[24px] sm:rounded-[28px] overflow-hidden border border-[#EADFC8]/12 bg-[#0B0A09] flex flex-col justify-between shadow-2xl">
+      <div className="relative h-full min-h-[600px] w-full rounded-[24px] sm:rounded-[28px] overflow-hidden border border-[#EADFC8]/12 bg-[#0B0A09] flex flex-col justify-between">
         {/* ------------------------------------------------------------ */}
         {/* Z-1: PHOTO BACKDROP (/images/hero-giza-dawn.jpg)             */}
         {/* ------------------------------------------------------------ */}
@@ -138,17 +137,17 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
             placeholder="blur"
             blurDataURL="data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADQAQCdASoQAAkABUB8JaACdAEOun1YAAD+qhDOSCNS68/8eSnk6UbMlVOBsLCSzgGkK/8L/ZISgAAA"
             onError={() => setImgFailed(true)}
-            className="hero-bg-photo hero-parallax-far absolute inset-0 h-full w-full object-cover object-center will-change-transform pointer-events-none z-[1]"
+            className="hero-bg-photo hero-parallax-far absolute inset-0 h-full w-full object-cover object-center pointer-events-none z-[1]"
           />
         ) : (
           <div className="absolute inset-0 pointer-events-none z-[1]">
-            <GizaPyramids className="hero-parallax-far absolute right-0 bottom-16 w-[640px] opacity-40 will-change-transform" />
+            <GizaPyramids className="hero-parallax-far absolute right-0 bottom-16 w-[640px] opacity-40" />
           </div>
         )}
 
         {/* Photo darkening overlay div (replaces runtime CSS filter) */}
         <div
-          className="hero-bg-photo-overlay pointer-events-none absolute inset-0 bg-[#0B0A09] opacity-0 z-[1] will-change-[opacity]"
+          className="hero-bg-photo-overlay pointer-events-none absolute inset-0 bg-[#0B0A09] opacity-0 z-[1]"
           aria-hidden="true"
         />
 
@@ -175,7 +174,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         {/* Z-2b: DUSK HORIZON HAZE (peaks at p=0.40, then fades)        */}
         {/* ------------------------------------------------------------ */}
         <div
-          className="hero-dusk-haze pointer-events-none absolute inset-x-0 bottom-[22%] z-[2] h-[38%] opacity-0 will-change-[opacity]"
+          className="hero-dusk-haze pointer-events-none absolute inset-x-0 bottom-[22%] z-[2] h-[38%] opacity-0"
           style={{
             background:
               "radial-gradient(ellipse 85% 65% at 88% 90%, rgba(201, 61, 27, 0.72) 0%, rgba(232, 116, 42, 0.38) 45%, transparent 80%)",
@@ -200,7 +199,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         {/* Z-4: STARS (28 tiny dots in top 40% of frame, at most 12 twinkle) */}
         {/* ------------------------------------------------------------ */}
         <div
-          className="hero-stars pointer-events-none absolute inset-0 z-[4] opacity-0 will-change-[opacity]"
+          className="hero-stars pointer-events-none absolute inset-0 z-[4] opacity-0"
           aria-hidden="true"
         >
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -239,7 +238,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         >
           {/* Sun starts at SUN_START: x=72%, y=30% */}
           <div
-            className="hero-sun-wrapper absolute will-change-transform"
+            className="hero-sun-wrapper absolute"
             style={{
               left: "72%",
               top: "30%",
@@ -260,7 +259,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
           aria-hidden="true"
         >
           <div
-            className="hero-moon-wrapper absolute opacity-0 will-change-transform will-change-[opacity]"
+            className="hero-moon-wrapper absolute opacity-0"
             style={{
               left: "84%",
               top: "24%",
@@ -295,7 +294,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         {/* ------------------------------------------------------------ */}
         <div
           data-parallax="mid"
-          className="hero-parallax-mid pointer-events-none absolute inset-x-0 bottom-[14vh] z-[6] h-28 overflow-hidden opacity-30 will-change-transform"
+          className="hero-parallax-mid pointer-events-none absolute inset-x-0 bottom-[14vh] z-[6] h-28 overflow-hidden opacity-30"
           aria-hidden="true"
         >
           <svg
@@ -323,7 +322,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         {/* Foreground roadside marker (1.3x parallax) */}
         <div
           data-parallax="fg"
-          className="hero-parallax-fg pointer-events-none absolute right-[-2%] bottom-[7vh] z-[6] opacity-20 will-change-transform"
+          className="hero-parallax-fg pointer-events-none absolute right-[-2%] bottom-[7vh] z-[6] opacity-20"
           aria-hidden="true"
         >
           <div className="w-1.5 h-14 rounded-sm bg-[#EADFC8]/35 -skew-x-[15deg]" />
@@ -375,18 +374,8 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         {/* ------------------------------------------------------------ */}
         {/* BOTTOM ROW INSIDE FRAME: Scroll cue & Route chip             */}
         {/* ------------------------------------------------------------ */}
-        <div className="relative z-[8] w-full max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-14 pb-4 sm:pb-5 flex items-center justify-between pointer-events-none">
-          {/* Spacer for bottom-left odometer clearance */}
-          <div className="w-32 hidden sm:block" />
-
-          {/* Centered Scroll Cue (bobbing) */}
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-4 sm:bottom-5 hero-scroll-cue flex flex-col items-center gap-1 text-xs text-[#EADFC8]/75 pointer-events-auto">
-            <span className="tracking-wide">Scroll to drive</span>
-            <ArrowDown className="h-3.5 w-3.5 text-[#C9A227] animate-bounce" />
-          </div>
-
-          {/* Right Route Chip */}
-          <div className="ml-auto hidden sm:flex items-center gap-3 text-xs text-[#EADFC8]/70 pointer-events-auto">
+        <div className="relative z-[8] w-full max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-14 pb-4 sm:pb-5 flex items-center justify-end pointer-events-none">
+          <div className="hidden sm:flex items-center gap-3 text-xs text-[#EADFC8]/70 pointer-events-auto">
             <span className="h-1.5 w-1.5 rounded-full bg-[#C9A227]" />
             <span className="font-medium">Alexandria to Anywhere</span>
           </div>

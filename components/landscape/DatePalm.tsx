@@ -20,112 +20,18 @@ export default function DatePalm({
       className={className}
       style={flipped ? { transform: "scaleX(-1)" } : undefined}
     >
-      {/* Ribbed segmented trunk: tapering upwards with distinct bark rings */}
-      <g id="ribbed-trunk">
-        {/* Core tapered trunk */}
-        <path
-          d="M 112 380 
-             L 114 170 
-             L 126 170 
-             L 128 380 
-             Z"
-          fill={palmColor}
-        />
-        {/* Trunk horizontal bark ribs (18 rings) */}
-        {[
-          180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336,
-          348, 360, 372,
-        ].map((y, i) => {
-          const width = 14 + i * 0.35
-          return (
-            <path
-              key={`rib-${y}`}
-              d={`M ${120 - width / 2} ${y} Q 120 ${y - 3} ${120 + width / 2} ${y}`}
-              stroke={ribColor}
-              strokeWidth="2.2"
-              fill="none"
-              strokeLinecap="round"
-            />
-          )
-        })}
-      </g>
-
-      {/* 11 Separate distinct arched fronds radiating from crown (x: 120, y: 170) */}
-      <g
-        id="crown-fronds"
-        stroke={palmColor}
+      <path d="M112 380L114 170H126L128 380Z" fill={palmColor} />
+      <path
+        d="M113 180Q120 177 127 180M112.4 192Q120 189 127.6 192M111.9 204Q120 201 128.1 204M111.5 216Q120 213 128.5 216M111.2 228Q120 225 128.8 228M110.8 240Q120 237 129.2 240M110.5 252Q120 249 129.5 252M110.1 264Q120 261 129.9 264M109.8 276Q120 273 130.2 276M109.4 288Q120 285 130.6 288M109.1 300Q120 297 130.9 300M108.7 312Q120 309 131.3 312M108.4 324Q120 321 131.6 324M108 336Q120 333 132 336M107.7 348Q120 345 132.3 348M107.3 360Q120 357 132.7 360M107 372Q120 369 133 372"
+        stroke={ribColor}
+        strokeWidth="2.2"
+        fill="none"
         strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        {/* Frond 1: Left low drooping */}
-        <path
-          d="M 120 170 Q 75 190 25 210 Q 55 198 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-        {/* Frond 2: Left lower arch */}
-        <path
-          d="M 120 170 Q 60 160 15 175 Q 55 155 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-        {/* Frond 3: Left mid arch */}
-        <path
-          d="M 120 170 Q 50 130 20 135 Q 60 120 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-        {/* Frond 4: Left high arch */}
-        <path
-          d="M 120 170 Q 65 95 45 80 Q 80 98 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-        {/* Frond 5: Left upright crown */}
-        <path
-          d="M 120 170 Q 90 70 85 45 Q 102 78 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-
-        {/* Frond 6: Central top spire frond */}
-        <path
-          d="M 120 170 Q 120 50 120 30 Q 124 60 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-
-        {/* Frond 7: Right upright crown */}
-        <path
-          d="M 120 170 Q 150 70 155 45 Q 138 78 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-        {/* Frond 8: Right high arch */}
-        <path
-          d="M 120 170 Q 175 95 195 80 Q 160 98 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-        {/* Frond 9: Right mid arch */}
-        <path
-          d="M 120 170 Q 190 130 220 135 Q 180 120 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-        {/* Frond 10: Right lower arch */}
-        <path
-          d="M 120 170 Q 180 160 225 175 Q 185 155 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-        {/* Frond 11: Right low drooping */}
-        <path
-          d="M 120 170 Q 165 190 215 210 Q 185 198 120 170"
-          fill={palmColor}
-          strokeWidth="1.5"
-        />
-      </g>
+      />
+      <path
+        d="M120 170Q75 190 25 210Q55 198 120 170Q60 160 15 175Q55 155 120 170Q50 130 20 135Q60 120 120 170Q65 95 45 80Q80 98 120 170Q90 70 85 45Q102 78 120 170Q120 50 120 30Q124 60 120 170Q150 70 155 45Q138 78 120 170Q175 95 195 80Q160 98 120 170Q190 130 220 135Q180 120 120 170Q180 160 225 175Q185 155 120 170Q165 190 215 210Q185 198 120 170"
+        fill={palmColor}
+      />
     </svg>
   )
 }

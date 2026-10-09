@@ -37,13 +37,12 @@ export function HeroSun({ className = "" }: CelestialProps) {
 
         {/* Soft Radial Sun Glow */}
         <circle
-          className="hero-sun-glow celestial-glow will-change-transform"
+          className="hero-sun-glow celestial-glow"
           cx="100"
           cy="100"
           r="95"
           fill="url(#sunGlowGrad)"
           style={{
-            mixBlendMode: "screen",
             transformOrigin: "100px 100px",
           }}
         />
@@ -112,7 +111,6 @@ export function HeroMoon({ className = "" }: CelestialProps) {
           r="95"
           fill="url(#heroMoonGlowGrad)"
           style={{
-            mixBlendMode: "screen",
             transformOrigin: "100px 100px",
           }}
         />

@@ -6,7 +6,7 @@ import { ALL_CITIES, type CityData } from "./egyptMapData"
 
 export default function DestinationsList() {
   return (
-    <div className="mt-16 w-full border-t border-[#2A2B2E] pt-12">
+    <div className="mt-8 w-full border-t border-[#2A2B2E] pt-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
           <span className="font-mono text-xs font-semibold text-[#C9A227]">

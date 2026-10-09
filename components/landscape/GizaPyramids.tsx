@@ -5,8 +5,6 @@ export default function GizaPyramids({
   className?: string
   light?: boolean
 }) {
-  // Slope of 52 degrees: tan(52) = 1.28
-  // Lit face and shadow face only, flat 2-tone vector shapes
   const litColor = light ? "#DDD9CE" : "#28292D"
   const shadowColor = light ? "#C8C4B8" : "#141517"
   const casingLit = light ? "#ECE8DD" : "#36383E"
@@ -22,40 +20,10 @@ export default function GizaPyramids({
       className={className}
       preserveAspectRatio="xMidYMax meet"
     >
-      {/* 1. Menkaure (Smallest - back right, apex at 620, 150; base width 190, height 120 -> slope ~51.6°) */}
-      <g id="menkaure">
-        {/* Lit Face */}
-        <polygon
-          points="620,150 525,304 620,304"
-          fill={litColor}
-          opacity="0.8"
-        />
-        {/* Shadow Face */}
-        <polygon
-          points="620,150 620,304 715,304"
-          fill={shadowColor}
-          opacity="0.8"
-        />
-      </g>
-
-      {/* 2. Khafre (Second largest - center, apex at 380, 50; base width 380, height 254 -> slope ~53°) */}
-      <g id="khafre">
-        {/* Lit Face */}
-        <polygon points="380,50 190,304 380,304" fill={litColor} />
-        {/* Shadow Face */}
-        <polygon points="380,50 380,304 570,304" fill={shadowColor} />
-        {/* Casing stones preserved at the peak */}
-        <polygon points="380,50 340,105 380,105" fill={casingLit} />
-        <polygon points="380,50 380,105 420,105" fill={casingShadow} />
-      </g>
-
-      {/* 3. Khufu (Great Pyramid - front left, apex at 170, 75; base width 360, height 229 -> slope ~51.9°) */}
-      <g id="khufu">
-        {/* Lit Face */}
-        <polygon points="170,75 -10,304 170,304" fill={litColor} />
-        {/* Shadow Face */}
-        <polygon points="170,75 170,304 350,304" fill={shadowColor} />
-      </g>
+      <path d="M620 150L525 304H620ZM380 50L190 304H380ZM170 75L-10 304H170Z" fill={litColor} />
+      <path d="M620 150V304H715ZM380 50V304H570ZM170 75V304H350Z" fill={shadowColor} />
+      <path d="M380 50L340 105H380Z" fill={casingLit} />
+      <path d="M380 50V105H420Z" fill={casingShadow} />
     </svg>
   )
 }

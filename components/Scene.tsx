@@ -61,15 +61,13 @@ export default function Scene({
         id={id}
         data-scene={index}
         style={{
-          backgroundColor: "var(--sky, #0B0A09)",
-          contain: index === 2 ? "none" : "layout paint",
+          backgroundColor: index === 1 || index === 2 ? "#0B0A09" : "var(--sky, #0B0A09)",
         }}
-        className={`scene relative min-h-[100svh] w-full overflow-hidden flex flex-col justify-between transition-colors duration-150 ${
+        className={`scene relative z-10 min-h-[100svh] w-full overflow-hidden flex flex-col justify-between ${
           light ? "text-[#0B0A09]" : "text-[#F4F2EC]"
         }`}
       >
-        {}
-        <div className="content-zone relative z-10 mx-auto w-full max-w-[1200px] px-6 sm:px-8 lg:px-12 pt-[clamp(80px,11vh,100px)] pb-[26vh] flex-1 flex flex-col justify-center">
+        <div className="content-zone relative z-10 mx-auto w-full max-w-[1200px] flex-1 flex flex-col justify-center px-6 pt-[88px] pb-[22vh] sm:px-8 lg:px-12">
           {children}
         </div>
 

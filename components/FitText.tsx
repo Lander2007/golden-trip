@@ -172,7 +172,7 @@ export default function FitText({ className = "" }: FitTextProps) {
 
       {/* Headlight beam sweep across the wordmark */}
       <div
-        className="hero-headlight-sweep pointer-events-none absolute inset-y-0 w-[45%] bg-gradient-to-r from-transparent via-[#E6CF85]/30 to-transparent -skew-x-[25deg] will-change-transform"
+        className="hero-headlight-sweep pointer-events-none absolute inset-y-0 w-[45%] bg-gradient-to-r from-transparent via-[#E6CF85]/30 to-transparent -skew-x-[25deg]"
         aria-hidden="true"
       />
     </div>

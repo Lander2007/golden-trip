@@ -15,7 +15,7 @@ export default function FleetLineup({
     >
       {/* Sedan */}
       <div className="w-[30%] max-w-[280px] shrink-0">
-        <WhiteSedan showBeam={true} beamBrightness={1.2} className="w-full h-auto drop-shadow-md" />
+        <WhiteSedan showBeam={true} beamBrightness={1.2} className="w-full h-auto" />
         <p className="mt-1 text-center font-display text-[11px] text-[#B9B7B0]">
           Sedan
         </p>
@@ -23,7 +23,7 @@ export default function FleetLineup({
 
       {/* SUV (center) */}
       <div className="w-[35%] max-w-[320px] shrink-0">
-        <BlackSUV showBeam={true} beamBrightness={1.2} className="w-full h-auto drop-shadow-lg" />
+        <BlackSUV showBeam={true} beamBrightness={1.2} className="w-full h-auto" />
         <p className="mt-1 text-center font-display text-[11px] text-[#C9A227] font-semibold">
           Executive SUV
         </p>
@@ -31,7 +31,7 @@ export default function FleetLineup({
 
       {/* Van */}
       <div className="w-[35%] max-w-[320px] shrink-0">
-        <WhiteVan showBeam={true} beamBrightness={1.2} className="w-full h-auto drop-shadow-md" />
+        <WhiteVan showBeam={true} beamBrightness={1.2} className="w-full h-auto" />
         <p className="mt-1 text-center font-display text-[11px] text-[#B9B7B0]">
           Passenger Van
         </p>

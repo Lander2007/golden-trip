@@ -66,7 +66,7 @@
   letter-spacing: -0.01em;
 }
 
-/* Subtle Film Grain (strictly 4% opacity, static pre-rendered tiling noise PNG) */
+/* Subtle Film Grain (static 128x128 PNG tiled at 4% opacity) */
 .film-grain {
   position: fixed;
   inset: 0;
@@ -77,6 +77,11 @@
   background-repeat: repeat;
 }
 
+html.lite .film-grain,
+html[data-off-grain] .film-grain {
+  display: none !important;
+}
+
 /* Soft Vignette */
 .vignette {
   position: fixed;
@@ -84,6 +89,71 @@
   pointer-events: none;
   z-index: 37;
   background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(11, 10, 9, 0.45) 100%);
+}
+
+/* Navbar pill glass, max 8px. None in LITE. */
+.nav-pill {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+html.lite .nav-pill,
+html[data-off-blur] .nav-pill {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: rgba(11, 10, 9, 0.9) !important;
+}
+
+html[data-off-glow] .hero-sun-glow,
+html[data-off-glow] .hero-moon-glow,
+html[data-off-glow] .rear-light-glow,
+html[data-off-glow] .celestial-glow {
+  display: none !important;
+}
+
+html[data-off-sun] .hero-sun-wrapper,
+html[data-off-sun] .hero-moon-wrapper,
+html[data-off-sun] .hero-sun-sky-track,
+html[data-off-sun] .hero-moon-track,
+html[data-off-sun] .celestial-wrapper,
+html[data-off-sun] .shared-moon {
+  visibility: hidden !important;
+}
+
+html[data-off-stars] .hero-stars,
+html[data-off-stars] .sky-stars {
+  display: none !important;
+}
+
+html[data-off-parallax] .hero-parallax-far,
+html[data-off-parallax] .hero-parallax-mid,
+html[data-off-parallax] .hero-parallax-fg {
+  transform: none !important;
+}
+
+html[data-off-dust] .dust-canvas,
+html[data-off-canvas] .dust-canvas,
+html.lite .dust-canvas {
+  display: none !important;
+}
+
+html[data-off-blend] .blend-layer {
+  display: none !important;
+}
+
+.hero-parallax-far,
+.hero-sun-wrapper,
+.hero-moon-wrapper,
+.road-zone-car,
+.celestial-wrapper {
+  will-change: transform;
+}
+
+@media (min-width: 768px) {
+  html:not(.lite) .hero-parallax-mid,
+  html:not(.lite) .hero-parallax-fg {
+    will-change: transform;
+  }
 }
 
 /* Hero Star Twinkle Animation */
@@ -96,28 +166,20 @@
   }
 }
 
-/* Pause offscreen star animations */
-.hero-offscreen .hero-star-dot {
+.hero-offscreen .hero-star-dot,
+.hero-offscreen .loop-anim,
+.is-offscreen .loop-anim,
+.is-offscreen.loop-anim,
+html.lite .hero-star-dot,
+html.lite .loop-anim,
+html.lite .animate-bounce,
+html.lite .animate-pulse,
+html.lite .animate-ping {
+  animation: none !important;
   animation-play-state: paused !important;
 }
 
-/* Mobile & Low-Power Optimizations */
-@media (max-width: 768px) {
-  .film-grain {
-    display: none !important;
-  }
-  .hero-star-dot {
-    animation: none !important;
-    opacity: 0.75 !important;
-  }
-}
-
-.low-power .film-grain {
-  display: none !important;
-}
-
-.low-power .hero-star-dot {
-  animation: none !important;
+html.lite .hero-star-dot {
   opacity: 0.75 !important;
 }
 

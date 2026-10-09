@@ -1,7 +1,6 @@
 "use client"
 
 import { useRef, useState } from "react"
-import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import Scene from "./Scene"
@@ -25,7 +24,7 @@ export const destinationsList: DestinationExit[] = ALL_CITIES.map((c, idx) => ({
 }))
 
 export default function Destinations({ frames = false }: { frames?: boolean }) {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
   const routeMapRef = useRef<RouteMapHandle>(null)
   const [activeCityIndex, setActiveCityIndex] = useState(0)
   const [manualCity, setManualCity] = useState<CityData | null>(null)
@@ -35,13 +34,12 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
 
   useGSAP(
     () => {
-      if (frames || !containerRef.current) return
+      if (frames) return
 
       ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: "top top",
-        end: "+=160%",
-        pin: true,
+        trigger: "#destinations",
+        start: "top 20%",
+        end: "bottom 35%",
         scrub: 0.6,
         onUpdate: (self) => {
           const p = self.progress
@@ -51,14 +49,12 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
             setManualCity(null)
           }
 
-          // Calculate active city index from scroll progress and only setState when it CHANGES
           let nextIndex = 0
-          if (p >= 0.92) nextIndex = 5 // Aswan
-          else if (p >= 0.76) nextIndex = 4 // Luxor
-          else if (p >= 0.58) nextIndex = 3 // Hurghada
-          else if (p >= 0.36) nextIndex = 2 // Sharm El-Sheikh
-          else if (p >= 0.12) nextIndex = 1 // Cairo
-          else nextIndex = 0 // Alexandria
+          if (p >= 0.92) nextIndex = 5
+          else if (p >= 0.76) nextIndex = 4
+          else if (p >= 0.58) nextIndex = 3
+          else if (p >= 0.36) nextIndex = 2
+          else if (p >= 0.12) nextIndex = 1
 
           if (nextIndex !== cityIndexRef.current) {
             cityIndexRef.current = nextIndex
@@ -67,7 +63,7 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
         },
       })
     },
-    { scope: containerRef, dependencies: [frames] }
+    { scope: sectionRef, dependencies: [frames] }
   )
 
   const currentCity = manualCity || ROUTE_CITIES[activeCityIndex] || ROUTE_CITIES[0]
@@ -82,60 +78,44 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
   }
 
   return (
-    <Scene index={2} id="destinations" frames={frames}>
-      <div ref={containerRef} className="w-full flex flex-col justify-center min-h-[90vh] py-6 sm:py-8">
-        {/* Section Header */}
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#C9A227]" />
-              <span className="font-mono text-xs font-semibold text-[#C9A227]">
-                Highway network · 14 cities
-              </span>
-            </div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-[-0.04em] text-[#F4F2EC]">
+    <>
+      <Scene index={2} id="destinations" frames={frames}>
+        <div ref={sectionRef} className="flex w-full flex-col">
+          <div className="mb-4 flex flex-col gap-1 sm:mb-5">
+            <span className="font-mono text-xs font-semibold text-[#C9A227]">
+              Highway network · 14 cities
+            </span>
+            <h2 className="font-display text-3xl font-extrabold tracking-[-0.04em] text-[#F4F2EC] sm:text-4xl md:text-5xl">
               Branches across{" "}
-              <span className="font-accent italic font-normal text-[#C9A227]">
-                Egypt
-              </span>
-              .
+              <span className="font-accent italic font-normal text-[#C9A227]">Egypt</span>.
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-[#B9B7B0] max-w-sm sm:text-right">
-            Follow the highway route from Alexandria to Aswan. Select any city or scroll to travel.
-          </p>
-        </div>
 
-        {/* 
-          PINNED MAP SCENE:
-          Desktop: Map 60% Left, City Panel 40% Right
-          Mobile: Map on top, Panel below as a bottom sheet
-        */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-stretch">
-          {/* Map Section: 60% Width on Desktop (cols 1 to 7) */}
-          <div className="lg:col-span-7 h-[44vh] sm:h-[50vh] lg:h-[62vh] min-h-[380px] w-full">
-            <RouteMap
-              ref={routeMapRef}
-              activeCity={currentCity}
-              onSelectCity={handleSelectCity}
-            />
-          </div>
-
-          {/* City Panel: 40% Width on Desktop (cols 8 to 12), Bottom sheet on Mobile */}
-          <div className="lg:col-span-5 flex flex-col min-h-[320px] lg:h-[62vh]">
-            <CityPanel
-              city={currentCity}
-              cityIndex={activeCityIndex}
-              totalRouteCities={ROUTE_CITIES.length}
-              onSelectCity={handleSelectCity}
-              routeCities={ROUTE_CITIES}
-            />
+          <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-12 lg:gap-5">
+            <div className="h-[38vh] min-h-[240px] max-h-[420px] w-full lg:col-span-7 lg:h-[min(48vh,440px)]">
+              <RouteMap
+                ref={routeMapRef}
+                activeCity={currentCity}
+                onSelectCity={handleSelectCity}
+              />
+            </div>
+            <div className="lg:col-span-5 lg:h-[min(48vh,440px)]">
+              <CityPanel
+                city={currentCity}
+                cityIndex={activeCityIndex}
+                totalRouteCities={ROUTE_CITIES.length}
+                onSelectCity={handleSelectCity}
+                routeCities={ROUTE_CITIES}
+              />
+            </div>
           </div>
         </div>
-
-        {/* End of the Scene: Compact List of All 14 Destinations */}
-        <DestinationsList />
-      </div>
-    </Scene>
+      </Scene>
+      <section className="relative z-10 bg-[#0B0A09] px-6 pb-[22vh] pt-2 sm:px-8 lg:px-12">
+        <div className="mx-auto w-full max-w-[1200px]">
+          <DestinationsList />
+        </div>
+      </section>
+    </>
   )
 }

@@ -3,7 +3,7 @@ import Script from "next/script"
 import { Anybody, Instrument_Serif, Source_Sans_3 } from "next/font/google"
 import Footer from "@/components/Footer"
 import Header from "@/components/Header"
-import DevFpsMeter from "@/components/DevFpsMeter"
+import PerfLab from "@/components/PerfLab"
 import "./globals.css"
 
 const anybody = Anybody({
@@ -102,10 +102,18 @@ export default function RootLayout({
         )}
       </head>
       <body className="bg-[var(--sky,#0B0A09)] text-[#F4F2EC] selection:bg-[#C9A227] selection:text-[#0B0A09]">
+        <Script
+          id="perf-boot"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(()=>{const q=new URLSearchParams(location.search);const lite=matchMedia("(max-width: 767px), (pointer: coarse)").matches||(navigator.hardwareConcurrency||4)<=4||matchMedia("(prefers-reduced-motion: reduce)").matches||q.has("lite");if(lite)document.documentElement.classList.add("lite");const off=q.get("off");if(off)off.split(",").forEach(f=>{const k=f.trim();if(k)document.documentElement.setAttribute("data-off-"+k,"");});})();`,
+          }}
+        />
+        <div className="film-grain" aria-hidden="true" />
         <Header />
         {children}
         <Footer />
-        <DevFpsMeter />
+        <PerfLab />
       </body>
     </html>
   )

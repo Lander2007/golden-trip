@@ -61,12 +61,11 @@ export default function WhiteSedan({
       <ellipse
         cx="56"
         cy="109"
-        rx="26"
-        ry="13"
+        rx="38"
+        ry="18"
         fill="#E07A2F"
-        opacity={0.55 * brightness}
+        opacity={0.28 * brightness}
         className="rear-light-glow"
-        style={{ filter: "blur(6px)" }}
       />
 
       {/* Underbody shadow on road */}
@@ -81,79 +80,33 @@ export default function WhiteSedan({
 
       {/* Tone 1: Vehicle Body (Off-White #F4F2EC) */}
       <path
-        d="M 60 134 
-           L 58 116 
-           Q 60 102 74 98 
-           L 124 96 
-           L 175 58 
-           Q 186 48 206 48 
-           L 348 48 
-           Q 366 48 382 62 
-           L 424 96 
-           L 468 100 
-           Q 482 102 484 114 
-           L 486 128 
-           Q 486 142 476 145 
-           L 435 145 
-           A 36 36 0 0 0 363 145 
-           L 187 145 
-           A 36 36 0 0 0 115 145 
-           L 60 145 
-           Z"
+        d="M 60 134 L 58 116 Q 60 102 74 98 L 124 96 L 175 58 Q 186 48 206 48 L 348 48 Q 366 48 382 62 L 424 96 L 468 100 Q 482 102 484 114 L 486 128 Q 486 142 476 145 L 435 145 A 36 36 0 0 0 363 145 L 187 145 A 36 36 0 0 0 115 145 L 60 145 Z"
         fill="#F4F2EC"
       />
 
       {/* Tone 2: Lower side shadow facet & rocker line (#D6D3C9) */}
       <path
-        d="M 60 126 
-           L 115 126 
-           A 36 36 0 0 1 187 126 
-           L 363 126 
-           A 36 36 0 0 1 435 126 
-           L 476 126 
-           L 476 145 
-           L 435 145 
-           A 36 36 0 0 0 363 145 
-           L 187 145 
-           A 36 36 0 0 0 115 145 
-           L 60 145 
-           Z"
+        d="M 60 126 L 115 126 A 36 36 0 0 1 187 126 L 363 126 A 36 36 0 0 1 435 126 L 476 126 L 476 145 L 435 145 A 36 36 0 0 0 363 145 L 187 145 A 36 36 0 0 0 115 145 L 60 145 Z"
         fill="#D6D3C9"
       />
 
       {/* Tone 3: Tinted Glass Area */}
       <path
-        d="M 184 56 
-           L 248 56 
-           L 248 94 
-           L 142 94 
-           Z"
+        d="M 184 56 L 248 56 L 248 94 L 142 94 Z"
         fill="url(#sedanGlass)"
       />
       <path
-        d="M 254 56 
-           L 330 56 
-           L 330 94 
-           L 254 94 
-           Z"
+        d="M 254 56 L 330 56 L 330 94 L 254 94 Z"
         fill="url(#sedanGlass)"
       />
       <path
-        d="M 336 56 
-           L 368 56 
-           L 412 94 
-           L 336 94 
-           Z"
+        d="M 336 56 L 368 56 L 412 94 L 336 94 Z"
         fill="url(#sedanGlass)"
       />
 
       {/* Chrome/Dark Window outline trim */}
       <path
-        d="M 180 54 
-           L 372 54 
-           L 418 94 
-           L 138 94 
-           Z"
+        d="M 180 54 L 372 54 L 418 94 L 138 94 Z"
         stroke="#2A2B2E"
         strokeWidth="2"
         fill="none"

@@ -9,13 +9,13 @@ export default function Fleet({ className = "" }: { className?: string }) {
       aria-label="Golden Trip fleet: white sedan, black SUV, and white van"
     >
       <div className="w-[30%]">
-        <WhiteSedan showBeam={false} className="w-full h-auto drop-shadow-sm" />
+        <WhiteSedan showBeam={false} className="w-full h-auto" />
       </div>
       <div className="w-[35%]">
-        <BlackSUV showBeam={false} className="w-full h-auto drop-shadow-md" />
+        <BlackSUV showBeam={false} className="w-full h-auto" />
       </div>
       <div className="w-[35%]">
-        <WhiteVan showBeam={false} className="w-full h-auto drop-shadow-sm" />
+        <WhiteVan showBeam={false} className="w-full h-auto" />
       </div>
     </div>
   )

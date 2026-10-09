@@ -21,6 +21,15 @@ interface RouteMapProps {
   showOtherCities?: boolean
 }
 
+const LABEL_LAYOUT: Record<string, { dx: number; dy: number; anchor: "start" | "end" | "middle"; name: string }> = {
+  alexandria: { dx: -12, dy: 4, anchor: "end", name: "Alexandria" },
+  cairo: { dx: 12, dy: 16, anchor: "start", name: "Cairo" },
+  sharm: { dx: 12, dy: -6, anchor: "start", name: "Sharm" },
+  hurghada: { dx: -12, dy: 14, anchor: "end", name: "Hurghada" },
+  luxor: { dx: -12, dy: 4, anchor: "end", name: "Luxor" },
+  aswan: { dx: 12, dy: 4, anchor: "start", name: "Aswan" },
+}
+
 const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
   {
     progress = 0,
@@ -109,7 +118,7 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
   const otherCities = ALL_CITIES.filter((c) => !c.isRouteCity)
 
   return (
-    <div className="relative w-full h-full min-h-[380px] sm:min-h-[460px] lg:min-h-[560px] flex items-center justify-center rounded-2xl border border-[#EADFC8]/15 bg-[#0C1A2B] p-2 sm:p-4 overflow-hidden shadow-2xl select-none">
+    <div className="relative w-full h-full min-h-[380px] sm:min-h-[460px] lg:min-h-[560px] flex items-center justify-center rounded-2xl border border-[#EADFC8]/15 bg-[#0C1A2B] p-2 sm:p-4 overflow-hidden select-none">
       {/* Subtle Coordinate Grid Lines for Cartographic Aesthetics */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.06] bg-[radial-gradient(#EADFC8_1px,transparent_1px)] [background-size:24px_24px]"
@@ -128,7 +137,7 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
       {/* Main SVG Map */}
       <svg
         viewBox={`0 0 ${EGYPT_MAP_WIDTH} ${EGYPT_MAP_HEIGHT}`}
-        className="w-full h-full max-h-[720px] object-contain drop-shadow-lg"
+        className="w-full h-full max-h-[720px] object-contain"
         aria-label="Route map across Egypt"
         role="img"
       >
@@ -166,7 +175,6 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
           strokeDasharray="8 5"
           strokeDashoffset={1200}
           strokeLinecap="round"
-          className="will-change-[stroke-dashoffset]"
         />
 
         {/* 
@@ -187,23 +195,13 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
               <circle
                 cx={city.x}
                 cy={city.y}
-                r="3.5"
+                r="3"
                 fill="#EADFC8"
                 stroke="#0B0A09"
                 strokeWidth="1"
-                className="transition-transform group-hover:scale-150"
-              />
-              <text
-                x={city.x + 6}
-                y={city.y + 3}
-                fill="#B9B7B0"
-                fontSize="10"
-                fontFamily="var(--font-anybody), sans-serif"
-                fontWeight="500"
-                className="select-none pointer-events-none group-hover:fill-[#F4F2EC] group-hover:font-bold transition-colors"
               >
-                {city.city}
-              </text>
+                <title>{city.city}</title>
+              </circle>
             </g>
           ))}
         </g>
@@ -214,59 +212,53 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
         */}
         {routeCities.map((city) => {
           const isActive = activeCity.id === city.id
+          const label = LABEL_LAYOUT[city.id]
           return (
             <g
               key={city.id}
-              className="cursor-pointer group"
+              className="cursor-pointer"
               onClick={() => onSelectCity?.(city)}
             >
-              {/* Radiating pulse ring */}
+              {isActive && (
+                <circle
+                  cx={city.x}
+                  cy={city.y}
+                  r="11"
+                  fill="none"
+                  stroke="#C9A227"
+                  strokeWidth="1.25"
+                  opacity="0.45"
+                />
+              )}
               <circle
                 cx={city.x}
                 cy={city.y}
-                r="11"
-                fill="none"
-                stroke="#C9A227"
-                strokeWidth="1.5"
-                opacity={isActive ? "0.85" : "0.35"}
-                className={isActive ? "animate-ping" : ""}
-              />
-
-              {/* Large Gold Dot */}
-              <circle
-                cx={city.x}
-                cy={city.y}
-                r={isActive ? "6.5" : "5.5"}
+                r={isActive ? "6.5" : "5"}
                 fill="#C9A227"
                 stroke="#0B0A09"
                 strokeWidth="2"
-                className="transition-all duration-200 group-hover:scale-125"
               />
-
-              {/* Center Core */}
               <circle
                 cx={city.x}
                 cy={city.y}
                 r="2"
                 fill={isActive ? "#0B0A09" : "#F4F2EC"}
               />
-
-              {/* City Label Badge */}
-              <g transform={`translate(${city.x}, ${city.y})`}>
+              {label && (
                 <text
-                  x={city.x > 500 ? -12 : 12}
-                  y={city.y > 450 ? -10 : 4}
-                  textAnchor={city.x > 500 ? "end" : "start"}
+                  x={city.x + label.dx}
+                  y={city.y + label.dy}
+                  textAnchor={label.anchor}
                   fill={isActive ? "#C9A227" : "#F4F2EC"}
-                  fontSize="12"
+                  fontSize="11"
                   fontFamily="var(--font-anybody), sans-serif"
-                  fontWeight={isActive ? "800" : "600"}
-                  className="select-none pointer-events-none drop-shadow-md transition-colors"
+                  fontWeight={isActive ? "700" : "500"}
+                  className="select-none pointer-events-none"
                 >
-                  {city.city}
-                  {city.isHq && " (HQ)"}
+                  {label.name}
+                  {city.isHq ? " HQ" : ""}
                 </text>
-              </g>
+              )}
             </g>
           )
         })}
@@ -275,7 +267,7 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
           SMALL TOP-DOWN GOLD CAR MARKER:
           Pre-sampled tangent & coordinates, hardware-accelerated transform
         */}
-        <g ref={carMarkerRef} id="map-car-marker" className="will-change-transform" style={{ transformOrigin: "0px 0px" }}>
+        <g ref={carMarkerRef} id="map-car-marker" style={{ transformOrigin: "0px 0px" }}>
           {/* Headlight beams radiating forward */}
           <path
             d="M 12 0 L 32 -10 L 32 10 Z"
@@ -294,7 +286,6 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
             fill="#C9A227"
             stroke="#0B0A09"
             strokeWidth="1.2"
-            className="drop-shadow-lg"
           />
 
           {/* Windshield */}

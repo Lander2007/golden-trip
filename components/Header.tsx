@@ -15,6 +15,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X, Phone, MessageSquare } from "lucide-react"
+import gsap from "gsap"
 import Logo from "./Logo"
 import RouteProgressLine from "./RouteProgressLine"
 
@@ -56,53 +57,54 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
     }
     window.addEventListener("resize", handleResize, { passive: true })
 
-    let ticking = false
-    const handleScroll = () => {
-      if (!ticking) {
-        ticking = true
-        requestAnimationFrame(() => {
-          ticking = false
-          const scrollY = window.scrollY
-          const nextCondensed = scrollY > 24
-          if (nextCondensed !== condensedRef.current) {
-            condensedRef.current = nextCondensed
-            setCondensed(nextCondensed)
-          }
+    let dirty = true
+    const markDirty = () => {
+      dirty = true
+    }
+    const onTick = () => {
+      if (!dirty) return
+      dirty = false
+      const scrollY = window.scrollY
+      const nextCondensed = scrollY > 24
+      if (nextCondensed !== condensedRef.current) {
+        condensedRef.current = nextCondensed
+        setCondensed(nextCondensed)
+      }
 
-          if (activeSection) {
-            if (activeSection !== activeNavRef.current) {
-              activeNavRef.current = activeSection
-              setActiveNav(activeSection)
-            }
-            return
-          }
+      if (activeSection) {
+        if (activeSection !== activeNavRef.current) {
+          activeNavRef.current = activeSection
+          setActiveNav(activeSection)
+        }
+        return
+      }
 
-          const scrollPos = scrollY + 200
-          const { destinations, howItWorks, whyUs } = offsetsRef.current
+      const scrollPos = scrollY + 200
+      const { destinations, howItWorks, whyUs } = offsetsRef.current
 
-          let nextNav = ""
-          if (whyUs > 0 && scrollPos >= whyUs) {
-            nextNav = "why-golden-trip"
-          } else if (howItWorks > 0 && scrollPos >= howItWorks) {
-            nextNav = "how-it-works"
-          } else if (destinations > 0 && scrollPos >= destinations) {
-            nextNav = "destinations"
-          }
+      let nextNav = ""
+      if (whyUs > 0 && scrollPos >= whyUs) {
+        nextNav = "why-golden-trip"
+      } else if (howItWorks > 0 && scrollPos >= howItWorks) {
+        nextNav = "how-it-works"
+      } else if (destinations > 0 && scrollPos >= destinations) {
+        nextNav = "destinations"
+      }
 
-          if (nextNav !== activeNavRef.current) {
-            activeNavRef.current = nextNav
-            setActiveNav(nextNav)
-          }
-        })
+      if (nextNav !== activeNavRef.current) {
+        activeNavRef.current = nextNav
+        setActiveNav(nextNav)
       }
     }
 
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    handleScroll()
+    window.addEventListener("scroll", markDirty, { passive: true })
+    gsap.ticker.add(onTick)
+    onTick()
 
     return () => {
-      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("scroll", markDirty)
       window.removeEventListener("resize", handleResize)
+      gsap.ticker.remove(onTick)
       clearTimeout(resizeTimer)
     }
   }, [activeSection])
@@ -237,7 +239,7 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
           {}
           <nav
             aria-label="Main navigation"
-            className={`pointer-events-auto hidden items-center justify-center lg:flex w-full mx-4 rounded-full border border-[#EADFC8]/15 bg-[#0B0A09]/75 backdrop-blur-md shadow-xl transition-all duration-300 ${
+            className={`nav-pill pointer-events-auto hidden items-center justify-center lg:flex w-full mx-4 rounded-full border border-[#EADFC8]/15 bg-[#0B0A09]/75 transition-all duration-300 ${
               condensed
                 ? "max-w-[480px] py-1.5 px-6 gap-6 text-xs"
                 : "max-w-[560px] py-2.5 px-8 gap-8 text-sm"
@@ -338,7 +340,7 @@ export default function Header({ km = 0, activeSection }: HeaderProps) {
 
           {}
           <div className="my-auto py-8">
-            <div className="rounded-sm border-2 border-[#C9A227] bg-[#141518] p-6 shadow-2xl">
+            <div className="rounded-sm border-2 border-[#C9A227] bg-[#141518] p-6">
               <div className="mb-4 flex items-center justify-between border-b border-[#2A2B2E] pb-3 text-xs font-medium text-[#C9A227]">
                 <span>Highway Route Navigator</span>
                 <span>Egypt</span>
