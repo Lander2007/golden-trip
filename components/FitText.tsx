@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useLocale } from "next-intl"
 
 interface FitTextProps {
   className?: string
@@ -8,14 +9,14 @@ interface FitTextProps {
 
 /**
  * FitText
- * Measures "GOLDEN TRIP" rendered at 100px font-size and dynamically computes
- * the exact font-size so the wordmark fills the available width without clipping:
- * font-size = (containerWidth - 2 * 24px) / measuredWidth * 100
- *
- * Re-runs on ResizeObserver and after document.fonts.ready (ensuring Anybody font is loaded).
- * Mobile (< 640px): splits into stacked "GOLDEN" and "TRIP", each fitted to width.
+ * Measures "GOLDEN TRIP" (or "جولدن تريب" in Arabic) rendered at 100px font-size
+ * and dynamically computes the exact font-size so the wordmark fills the available width.
+ * Re-runs on ResizeObserver and after document.fonts.ready.
+ * Mobile (< 640px): splits into stacked lines ("GOLDEN" / "TRIP" or "جولدن" / "تريب").
  */
 export default function FitText({ className = "" }: FitTextProps) {
+  const locale = useLocale()
+  const isAr = locale === "ar"
   const containerRef = useRef<HTMLDivElement>(null)
   const measureSingleRef = useRef<HTMLSpanElement>(null)
   const measureGoldenRef = useRef<HTMLSpanElement>(null)
@@ -25,6 +26,10 @@ export default function FitText({ className = "" }: FitTextProps) {
   const [fontSizeSingle, setFontSizeSingle] = useState<number | null>(null)
   const [fontSizeGolden, setFontSizeGolden] = useState<number | null>(null)
   const [fontSizeTrip, setFontSizeTrip] = useState<number | null>(null)
+
+  const singleText = isAr ? "جولدن تريب" : "GOLDEN TRIP"
+  const firstWord = isAr ? "جولدن" : "GOLDEN"
+  const secondWord = isAr ? "تريب" : "TRIP"
 
   useEffect(() => {
     const container = containerRef.current
@@ -37,17 +42,15 @@ export default function FitText({ className = "" }: FitTextProps) {
       const mobile = containerWidth < 640
       setIsMobile(mobile)
 
-      const availableWidth = Math.max(100, containerWidth - 48) // containerWidth - 2 * 24px
+      const availableWidth = Math.max(100, containerWidth - 48)
 
       if (!mobile) {
-        // Desktop / Tablet single line
         const measured = measureSingleRef.current?.getBoundingClientRect().width || 0
         if (measured > 0) {
           const calculated = (availableWidth / measured) * 100
           setFontSizeSingle(calculated)
         }
       } else {
-        // Mobile stacked lines: "GOLDEN" and "TRIP"
         const measuredGolden = measureGoldenRef.current?.getBoundingClientRect().width || 0
         const measuredTrip = measureTripRef.current?.getBoundingClientRect().width || 0
 
@@ -60,17 +63,14 @@ export default function FitText({ className = "" }: FitTextProps) {
       }
     }
 
-    // Run initial compute
     computeSizes()
 
-    // Re-run after web fonts (Anybody) have fully loaded
     if (typeof document !== "undefined" && document.fonts) {
       document.fonts.ready.then(() => {
         computeSizes()
       })
     }
 
-    // Observe container resize (debounced)
     let roTimer: NodeJS.Timeout
     const ro = new ResizeObserver(() => {
       clearTimeout(roTimer)
@@ -82,7 +82,18 @@ export default function FitText({ className = "" }: FitTextProps) {
       clearTimeout(roTimer)
       ro.disconnect()
     }
-  }, [])
+  }, [locale])
+
+  const fontStyle = isAr
+    ? {
+        fontFamily: "var(--font-reem-kufi), sans-serif",
+        letterSpacing: "0px",
+      }
+    : {
+        fontFamily: "var(--font-anybody), sans-serif",
+        letterSpacing: "-0.04em",
+        fontVariationSettings: '"wdth" 70, "wght" 800',
+      }
 
   return (
     <div
@@ -99,80 +110,77 @@ export default function FitText({ className = "" }: FitTextProps) {
           ref={measureSingleRef}
           className="font-display font-[800] whitespace-nowrap"
           style={{
+            ...fontStyle,
             fontSize: "100px",
             lineHeight: 1,
-            letterSpacing: "-0.04em",
-            fontVariationSettings: '"wdth" 70, "wght" 800',
           }}
         >
-          GOLDEN TRIP
+          {singleText}
         </span>
         <span
           ref={measureGoldenRef}
           className="font-display font-[800] whitespace-nowrap"
           style={{
+            ...fontStyle,
             fontSize: "100px",
             lineHeight: 1,
-            letterSpacing: "-0.04em",
-            fontVariationSettings: '"wdth" 70, "wght" 800',
           }}
         >
-          GOLDEN
+          {firstWord}
         </span>
         <span
           ref={measureTripRef}
           className="font-display font-[800] whitespace-nowrap"
           style={{
+            ...fontStyle,
             fontSize: "100px",
             lineHeight: 1,
-            letterSpacing: "-0.04em",
-            fontVariationSettings: '"wdth" 70, "wght" 800',
           }}
         >
-          TRIP
+          {secondWord}
         </span>
       </div>
 
       {/* Rendered Visible Wordmark */}
       {!isMobile ? (
         <span
-          className="font-display font-[800] text-[#EADFC8]/[0.14] whitespace-nowrap tracking-[-0.04em] block"
+          className="font-display font-[800] text-[#EADFC8]/[0.14] whitespace-nowrap block"
           style={{
+            ...fontStyle,
             fontSize: fontSizeSingle ? `${fontSizeSingle}px` : "18vw",
             lineHeight: 0.85,
-            fontVariationSettings: '"wdth" 70, "wght" 800',
           }}
         >
-          GOLDEN TRIP
+          {singleText}
         </span>
       ) : (
         <div className="flex flex-col items-center justify-center leading-[0.82] w-full">
           <span
-            className="font-display font-[800] text-[#EADFC8]/[0.14] whitespace-nowrap tracking-[-0.04em] block"
+            className="font-display font-[800] text-[#EADFC8]/[0.14] whitespace-nowrap block"
             style={{
+              ...fontStyle,
               fontSize: fontSizeGolden ? `${fontSizeGolden}px` : "24vw",
               lineHeight: 0.85,
-              fontVariationSettings: '"wdth" 70, "wght" 800',
             }}
           >
-            GOLDEN
+            {firstWord}
           </span>
           <span
-            className="font-display font-[800] text-[#EADFC8]/[0.14] whitespace-nowrap tracking-[-0.04em] block mt-1"
+            className="font-display font-[800] text-[#EADFC8]/[0.14] whitespace-nowrap block mt-1"
             style={{
+              ...fontStyle,
               fontSize: fontSizeTrip ? `${fontSizeTrip}px` : "24vw",
               lineHeight: 0.85,
-              fontVariationSettings: '"wdth" 70, "wght" 800',
             }}
           >
-            TRIP
+            {secondWord}
           </span>
         </div>
       )}
 
       {/* Headlight beam sweep across the wordmark */}
       <div
-        className="hero-headlight-sweep pointer-events-none absolute inset-y-0 w-[45%] bg-gradient-to-r from-transparent via-[#E6CF85]/30 to-transparent -skew-x-[25deg]"
+        className="hero-headlight-sweep pointer-events-none absolute inset-y-0 w-[45%] bg-gradient-to-r from-transparent via-[#E6CF85]/30 to-transparent -skew-x-[25deg] rtl:skew-x-[25deg]"
         aria-hidden="true"
       />
     </div>

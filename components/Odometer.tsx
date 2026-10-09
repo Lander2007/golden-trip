@@ -1,6 +1,7 @@
 "use client"
 
 import { forwardRef, useImperativeHandle, useRef, useEffect } from "react"
+import { useLocale, useTranslations } from "next-intl"
 import gsap from "gsap"
 
 export interface OdometerHandle {
@@ -12,10 +13,18 @@ interface OdometerProps {
   light?: boolean
 }
 
+const ARABIC_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"]
+const WESTERN_DIGITS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
 const Odometer = forwardRef<OdometerHandle, OdometerProps>(function Odometer(
   { km = 0, light = false },
   ref
 ) {
+  const locale = useLocale()
+  const isAr = locale === "ar"
+  const tCommon = useTranslations("common")
+  const tA11y = useTranslations("a11y")
+
   const rootRef = useRef<HTMLDivElement>(null)
   const wheel0Ref = useRef<HTMLDivElement>(null)
   const wheel1Ref = useRef<HTMLDivElement>(null)
@@ -62,12 +71,12 @@ const Odometer = forwardRef<OdometerHandle, OdometerProps>(function Odometer(
         if (rootRef.current) {
           rootRef.current.setAttribute(
             "aria-label",
-            `Odometer: ${clamped} kilometers traveled`
+            tA11y("odometerLabel", { count: clamped })
           )
         }
       },
     }),
-    []
+    [tA11y]
   )
 
   const initialClamped = Math.max(0, Math.min(980, km))
@@ -79,6 +88,7 @@ const Odometer = forwardRef<OdometerHandle, OdometerProps>(function Odometer(
   ]
 
   const wheelRefs = [wheel0Ref, wheel1Ref, wheel2Ref]
+  const digitGlyphs = isAr ? ARABIC_DIGITS : WESTERN_DIGITS
 
   return (
     <div
@@ -89,10 +99,10 @@ const Odometer = forwardRef<OdometerHandle, OdometerProps>(function Odometer(
           : "border-[#2A2B2E] bg-[#141518]"
       }`}
       role="status"
-      aria-label={`Odometer: ${initialClamped} kilometers traveled`}
+      aria-label={tA11y("odometerLabel", { count: initialClamped })}
     >
       {/* 3 Mechanical Digit Drums */}
-      <div className="relative flex items-center gap-0.5 rounded-[2px] bg-[#0E0E10] p-[2px] border border-[#2A2B2E]">
+      <div className="relative flex items-center gap-0.5 rounded-[2px] bg-[#0E0E10] p-[2px] border border-[#2A2B2E] dir-ltr" dir="ltr">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
@@ -109,12 +119,12 @@ const Odometer = forwardRef<OdometerHandle, OdometerProps>(function Odometer(
                 transform: `translate3d(0, -${initialDigits[i] * 26}px, 0)`,
               }}
             >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
+              {digitGlyphs.map((glyph, d) => (
                 <div
                   key={d}
                   className="flex h-[26px] w-[18px] items-center justify-center font-display text-[15px] font-bold tabular-nums text-[#F4F2EC]"
                 >
-                  {d}
+                  {glyph}
                 </div>
               ))}
             </div>
@@ -125,7 +135,7 @@ const Odometer = forwardRef<OdometerHandle, OdometerProps>(function Odometer(
       {/* Tiny km label */}
       <div className="flex flex-col justify-center">
         <span className="font-mono text-[11px] font-bold text-[#C9A227]">
-          km
+          {tCommon("kmUnit")}
         </span>
       </div>
     </div>

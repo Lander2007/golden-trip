@@ -91,11 +91,17 @@
     "mobileNavAria": "قائمة الهاتف",
     "footerNavAria": "تنقل التذييل",
     "openMenuAria": "فتح قائمة التنقل",
-    "closeMenuAria": "إغلاق قائمة التنقل"
+    "closeMenuAria": "إغلاق قائمة التنقل",
+    "logOut": "تسجيل الخروج",
+    "vipClient": "عميل مميز",
+    "activeAccount": "حساب نشط",
+    "activeCountBadge": "{count} نشطة",
+    "fleetVehiclesCount": "١٤ سيارة",
+    "directCallPhone": "اتصال مباشر: {phone}"
   },
   "hero": {
-    "titleLine1": "رحلتك تبدأ من",
-    "titleLine2Prefix": "",
+    "titleLine1": "رحلتك تبدأ",
+    "titleLine2Prefix": "من ",
     "titleLine2Accent": "بابك.",
     "subtitle": "التوصيل من وإلى المطار، رحلات المنتجعات، ورحلات السفر بين المدن في مصر.",
     "routeChip": "من الإسكندرية إلى أي مكان",
@@ -138,7 +144,7 @@
     "dailyExtrasSubtotal": "+ {rate} ج.م/يوم (إجمالي: {total} ج.م)",
     "baseRentalCost": "قيمة الإيجار الأساسية ({days} أيام × {rate} ج.م)",
     "extrasTotalCost": "إجمالي الإضافات المختارة ({days} أيام)",
-    "vatTaxLabel": "ضريبة القيمة المضافة الحكومية (14% VAT)",
+    "vatTaxLabel": "ضريبة القيمة المضافة الحكومية (14%)",
     "totalPayable": "الإجمالي المطلوب سداده:",
     "backToCarDetails": "العودة لتفاصيل السيارة",
     "continueToCustomerInfo": "المتابعة لبيانات العميل (خطوة ٢)",
@@ -195,12 +201,12 @@
     "corridorValue": "المقر الرئيسي بالإسكندرية ➔ أسوان",
     "networkTitle": "شبكة الطرق السريعة المصرية",
     "liveProgressStatus": "{km} كم · {pct}% من المسار",
-    "coordinatesAlex": "31.20°N 29.92°E",
-    "coordinatesCairo": "30.04°N 31.24°E",
-    "coordinatesSharm": "27.92°N 34.33°E",
-    "coordinatesHurghada": "27.26°N 33.81°E",
-    "coordinatesLuxor": "25.69°N 32.64°E",
-    "coordinatesAswan": "24.09°N 32.90°E",
+    "coordinatesAlex": "٣١.٢٠° شمالاً ٢٩.٩٢° شرقاً",
+    "coordinatesCairo": "٣٠.٠٤° شمالاً ٣١.٢٤° شرقاً",
+    "coordinatesSharm": "٢٧.٩٢° شمالاً ٣٤.٣٣° شرقاً",
+    "coordinatesHurghada": "٢٧.٢٦° شمالاً ٣٣.٨١° شرقاً",
+    "coordinatesLuxor": "٢٥.٦٩° شمالاً ٣٢.٦٤° شرقاً",
+    "coordinatesAswan": "٢٤.٠٩° شمالاً ٣٢.٩٠° شرقاً",
     "directionHighway": "من الإسكندرية ───────← إلى أي مكان",
     "exit01": "مخرج ٠١",
     "exit02": "مخرج ٠٢",
@@ -413,7 +419,12 @@
     "gizaZayedAddress": "الجيزة (الشيخ زايد)",
     "resortsSummaryAddress": "شرم الشيخ & الغردقة & مطروح",
     "contactImmediateTitle": "تواصل معنا فوراً",
-    "callImmediateSub": "الخط الساخن المباشر على مدار الساعة"
+    "callImmediateSub": "الخط الساخن المباشر على مدار الساعة",
+    "prototypeBadge": "نموذج تجريبي تفاعلي",
+    "rightsReservedEgypt": "جميع الحقوق محفوظة لجمهورية مصر العربية.",
+    "highwayHotline": "الخط الساخن المباشر",
+    "instantChat": "محادثة فورية",
+    "whatsAppCustomerService": "واتساب خدمة العملاء"
   },
   "auth": {
     "customerPortalTitle": "بوابة عملاء جولدن تريب",
@@ -485,7 +496,8 @@
     "demoLoginError": "تعذر الدخول بالحساب التجريبي.",
     "generalSignupError": "حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة مرة أخرى.",
     "identifierRequired": "يرجى إدخال البريد الإلكتروني أو رقم الهاتف المسجل.",
-    "passwordRequired": "يرجى إدخال كلمة المرور."
+    "passwordRequired": "يرجى إدخال كلمة المرور.",
+    "highwayDetourBadge": "404 · تحويلة طريق سريع"
   },
   "meta": {
     "homeTitle": "جولدن تريب — رحلات الطرق السريعة والأسطول الفاخر في مصر",
@@ -506,7 +518,7 @@
   },
   "a11y": {
     "languageSwitcherGroup": "اختيار اللغة",
-    "languageSwitcherEn": "Switch to English",
+    "languageSwitcherEn": "التحويل إلى الإنجليزية",
     "languageSwitcherAr": "التحويل إلى العربية",
     "odometerLabel": "{count, plural, zero {عداد المسافة: صفر كم مقطوعة} one {عداد المسافة: كيلومتر واحد مقطوع} two {عداد المسافة: كيلومتران مقطوعان} few {عداد المسافة: # كيلومترات مقطوعة} many {عداد المسافة: # كيلومتراً مقطوعاً} other {عداد المسافة: # كم مقطوعة}}",
     "fleetAriaLabel": "أسطول جولدن تريب: سيدان بيضاء، سيارة دفع رباعي سوداء، وفان بيضاء",

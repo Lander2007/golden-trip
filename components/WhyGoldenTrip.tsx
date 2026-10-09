@@ -1,48 +1,51 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import Scene from "./Scene"
 import PaymentPictogram from "./pictograms/PaymentPictogram"
 import BranchesPictogram from "./pictograms/BranchesPictogram"
 import ReviewsPictogram from "./pictograms/ReviewsPictogram"
-
-const items = [
-  {
-    id: "payment",
-    component: PaymentPictogram,
-    title: "Pay online or in cash",
-    copy: "Whichever suits you.",
-  },
-  {
-    id: "branches",
-    component: BranchesPictogram,
-    title: "Every branch, one account",
-    copy: "From Alexandria to Aswan.",
-  },
-  {
-    id: "reviews",
-    component: ReviewsPictogram,
-    title: "Real reviews",
-    copy: "Ratings from people who actually rode with us.",
-  },
-]
 
 export default function WhyGoldenTrip({
   frames = false,
 }: {
   frames?: boolean
 }) {
+  const tWhy = useTranslations("why")
+
+  const items = [
+    {
+      id: "payment",
+      component: PaymentPictogram,
+      title: tWhy("paymentTitle"),
+      copy: tWhy("paymentCopy"),
+    },
+    {
+      id: "branches",
+      component: BranchesPictogram,
+      title: tWhy("branchesTitle"),
+      copy: tWhy("branchesCopy"),
+    },
+    {
+      id: "reviews",
+      component: ReviewsPictogram,
+      title: tWhy("reviewsTitle"),
+      copy: tWhy("reviewsCopy"),
+    },
+  ]
+
   return (
     <Scene index={4} id="why-golden-trip" frames={frames}>
       <div className="mb-10">
         <h2 className="font-display text-[clamp(1.75rem,4vw+0.5rem,3.5rem)] font-extrabold tracking-[-0.04em] text-[#F4F2EC] text-balance">
-          Why Golden{" "}
-          <span className="font-accent italic font-normal text-[#C9A227]">
-            Trip
+          {tWhy("headingPart1")}
+          <span className="font-accent italic font-normal text-[#C9A227] rtl:not-italic">
+            {tWhy("headingAccent")}
           </span>
-          .
+          {tWhy("headingPeriod")}
         </h2>
         <p className="mt-3 text-sm text-[#B9B7B0] sm:text-base">
-          Built for reliability on every highway across Egypt.
+          {tWhy("subtitle")}
         </p>
       </div>
 
@@ -72,3 +75,4 @@ export default function WhyGoldenTrip({
     </Scene>
   )
 }
+

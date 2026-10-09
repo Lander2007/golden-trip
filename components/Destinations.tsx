@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
+import { useTranslations } from "next-intl"
 import Scene from "./Scene"
 import RouteMap, { type RouteMapHandle } from "./map/RouteMap"
 import CityPanel from "./map/CityPanel"
@@ -12,6 +13,7 @@ import { ROUTE_CITIES, ALL_CITIES, type CityData } from "./map/egyptMapData"
 import { Compass } from "lucide-react"
 
 export interface DestinationExit {
+  id: string
   exit: string
   city: string
   km: number
@@ -19,6 +21,7 @@ export interface DestinationExit {
 }
 
 export const destinationsList: DestinationExit[] = ALL_CITIES.map((c, idx) => ({
+  id: c.id,
   exit: String(idx + 1).padStart(2, "0"),
   city: c.city,
   km: c.km,
@@ -99,6 +102,7 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
     { scope: sceneRef, dependencies: [frames] }
   )
 
+  const tCities = useTranslations("cities")
   const currentCity = manualCity || ROUTE_CITIES[activeCityIndex] || ROUTE_CITIES[0]
 
   const handleSelectCity = (city: CityData) => {
@@ -135,16 +139,19 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs font-semibold text-[#FFD54F]">
-                  Highway network · 14 cities
+                  {tCities("networkDirectory")}
                 </span>
                 <span className="hidden md:inline-block h-1 w-1 rounded-full bg-[#C9A227]" />
                 <span className="hidden md:inline-block font-mono text-[11px] text-[#B9B7B0]/80">
-                  Scroll-Driven Navigation
+                  {tCities("scrollNavigation")}
                 </span>
               </div>
               <h2 className="mt-0.5 font-display text-2xl font-extrabold tracking-[-0.04em] text-[#F4F2EC] sm:text-4xl md:text-5xl">
-                Branches across{" "}
-                <span className="font-accent italic font-normal text-[#C9A227]">Egypt</span>.
+                {tCities("branchesAcrossEgypt")}{" "}
+                <span className="font-accent italic font-normal text-[#C9A227] rtl:not-italic">
+                  {tCities("egyptAccent")}
+                </span>
+                .
               </h2>
             </div>
 
@@ -156,11 +163,16 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
                 aria-hidden="true"
               />
               <span className="text-[#B9B7B0]">
-                {scrollProgressVal < 0.05 ? "Scroll wheel to drive highway ↓" : `Traversing Leg 0${activeCityIndex + 1} / 06`}
+                {scrollProgressVal < 0.05
+                  ? tCities("scrollWheelPrompt")
+                  : tCities("traversingLegPrompt", {
+                      current: String(activeCityIndex + 1).padStart(2, "0"),
+                      total: "06",
+                    })}
               </span>
               <span className="hidden sm:inline text-white/30">|</span>
               <span className="hidden sm:inline text-[#E6CF85] font-semibold">
-                {currentCity.city}
+                {tCities(`${currentCity.id}.name`)}
               </span>
             </div>
           </div>

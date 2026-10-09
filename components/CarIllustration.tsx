@@ -1,9 +1,15 @@
+"use client"
+
+import { useTranslations } from "next-intl"
+
 export default function CarIllustration() {
+  const tA11y = useTranslations("a11y")
+
   return (
     <svg
       viewBox="0 0 520 210"
       role="img"
-      aria-label="Flat side-view illustration of a car"
+      aria-label={tA11y("flatCarIllustrationAria")}
       className="h-auto w-full"
     >
       <path

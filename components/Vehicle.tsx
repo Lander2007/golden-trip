@@ -6,6 +6,7 @@
 /* Headlight beam overlay for cutout */ /* Ember rear taillight glow */
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import Image from "next/image"
 import BlackSUV from "./vehicles/BlackSUV"
 import WhiteSedan from "./vehicles/WhiteSedan"
@@ -35,19 +36,21 @@ export default function Vehicle({
   beamBrightness = 1,
   wheelRotation = 0,
 }: VehicleProps) {
+  const tA11y = useTranslations("a11y")
   const [imgFailed, setImgFailed] = useState<Record<string, boolean>>({})
 
-  if (
-    variant ===
-    "fleet"
-  ) {
+  const altMap: Record<VehicleVariant, string> = {
+    sedan: tA11y("sedanAriaLabel"),
+    suv: tA11y("suvAriaLabel"),
+    van: tA11y("vanAriaLabel"),
+    fleet: tA11y("completeFleetAriaLabel"),
+  }
+
+  if (variant === "fleet") {
     return <FleetLineup className={className} />
   }
   if (imgFailed[variant]) {
-    if (
-      variant ===
-      "sedan"
-    ) {
+    if (variant === "sedan") {
       return (
         <WhiteSedan
           className={className}
@@ -57,10 +60,7 @@ export default function Vehicle({
         />
       )
     }
-    if (
-      variant ===
-      "van"
-    ) {
+    if (variant === "van") {
       return (
         <WhiteVan
           className={className}
@@ -83,7 +83,7 @@ export default function Vehicle({
     <div className={`relative ${className}`}>
       <Image
         src={`/vehicles/${variant}.webp`}
-        alt={`Golden Trip ${variant}`}
+        alt={altMap[variant] || tA11y("suvAriaLabel")}
         width={560}
         height={190}
         sizes="(max-width: 768px) 340px, 560px"

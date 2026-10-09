@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "@/i18n/routing"
 import { useTranslations } from "next-intl"
 
 export default function NotFound() {
@@ -9,7 +9,7 @@ export default function NotFound() {
       <div className="film-grain" aria-hidden="true" />
       <div className="relative z-10 max-w-md rounded-2xl border border-[#2A2B2E] bg-[#141518]/90 p-8 shadow-2xl backdrop-blur-md">
         <span className="font-mono text-sm font-bold text-[#C9A227] tracking-wider">
-          404 · HIGHWAY DETOUR
+          {t("highwayDetourBadge")}
         </span>
         <h1 className="mt-4 font-display text-3xl font-extrabold text-[#F4F2EC]">
           {t("pageNotFoundTitle")}

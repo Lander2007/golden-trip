@@ -1,19 +1,18 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { useApp } from "@/context/AppContext"
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react"
 
 export default function ToastContainer() {
   const { toasts, removeToast } = useApp()
+  const tA11y = useTranslations("a11y")
 
   if (toasts.length === 0) return null
 
   return (
-    <div
-      dir="rtl"
-      className="fixed bottom-6 left-6 z-[120] flex flex-col gap-3 max-w-sm w-full pointer-events-none"
-    >
+    <div className="fixed bottom-6 start-6 z-[120] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
       {toasts.map((toast) => {
         const isSuccess = toast.type === "success"
         const isError = toast.type === "error"
@@ -39,7 +38,7 @@ export default function ToastContainer() {
             <button
               onClick={() => removeToast(toast.id)}
               className="p-1 rounded text-[#B9B7B0] hover:text-[#F4F2EC] hover:bg-white/5 transition-colors shrink-0"
-              aria-label="إغلاق التنبيه"
+              aria-label={tA11y("closeNotificationAria")}
             >
               <X className="w-4 h-4" />
             </button>

@@ -1,53 +1,63 @@
+"use client"
+
+import { useLocale, useTranslations } from "next-intl"
 import Scene from "./Scene"
 
-const steps = [
-  {
-    num: "01",
-    title: "Create your account",
-    copy: "Sign up with your email in a minute.",
-  },
-  {
-    num: "02",
-    title: "Choose a branch and a car",
-    copy: "Pick where you start, the car, and the date.",
-  },
-  {
-    num: "03",
-    title: "Confirm and pay",
-    copy: "Pay online or in cash.",
-  },
-]
-
 export default function HowItWorks({ frames = false }: { frames?: boolean }) {
+  const locale = useLocale()
+  const tSteps = useTranslations("steps")
+  const tCommon = useTranslations("common")
+
+  const numFormat = new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en", {
+    numberingSystem: locale === "ar" ? "arab" : "latn",
+  })
+
+  const steps = [
+    {
+      num: numFormat.format(1).padStart(2, "0"),
+      title: tSteps("step1Title"),
+      copy: tSteps("step1Copy"),
+    },
+    {
+      num: numFormat.format(2).padStart(2, "0"),
+      title: tSteps("step2Title"),
+      copy: tSteps("step2Copy"),
+    },
+    {
+      num: numFormat.format(3).padStart(2, "0"),
+      title: tSteps("step3Title"),
+      copy: tSteps("step3Copy"),
+    },
+  ]
+
   return (
     <Scene index={3} id="how-it-works" light frames={frames}>
-      {/* Title strictly following user copy: 'Three steps. Then you're off.' */}
       <div className="mb-12">
         <h2 className="font-display text-[clamp(1.75rem,4vw+0.5rem,3.5rem)] font-extrabold tracking-[-0.04em] text-[#0B0A09] text-balance">
-          Three steps. Then you’re{" "}
-          <span className="font-accent italic font-normal text-[#C9A227]">
-            off
+          {tSteps("headingPart1")}
+          <span className="font-accent italic font-normal text-[#C9A227] rtl:not-italic">
+            {tSteps("headingAccent")}
           </span>
-          .
+          {tSteps("headingPeriod")}
         </h2>
         <p className="mt-3 text-sm sm:text-base text-[#4A4B4E]">
-          Simple, direct highway booking across Egypt.
+          {tSteps("subtitle")}
         </p>
       </div>
 
       {/* 3 Steps with vertical mobile line or horizontal grid */}
-      <div className="flex flex-col relative pl-6 gap-8 md:pl-0 md:grid md:grid-cols-3 md:gap-4 lg:gap-8 items-start">
+      <div className="flex flex-col relative ps-6 gap-8 md:ps-0 md:grid md:grid-cols-3 md:gap-4 lg:gap-8 items-start">
         {/* Mobile Connecting Gold Line */}
-        <div className="absolute left-[3px] top-[28px] bottom-[28px] w-px bg-[#C9A227] md:hidden" aria-hidden="true" />
+        <div className="absolute start-[3px] top-[28px] bottom-[28px] w-px bg-[#C9A227] md:hidden" aria-hidden="true" />
         {steps.map((step) => (
-          <div key={step.num} className="step-post relative flex flex-col w-full shrink-0 md:w-auto">
+          <div key={step.title} className="step-post relative flex flex-col w-full shrink-0 md:w-auto">
             {/* Horizontal connection line for mobile */}
-            <div className="absolute -left-6 top-[28px] w-[21px] h-px bg-[#C9A227] md:hidden" aria-hidden="true" />
+            <div className="absolute -start-6 top-[28px] w-[21px] h-px bg-[#C9A227] md:hidden" aria-hidden="true" />
             
             {/* Physical Km Marker Signpost */}
             <div className="mb-5 inline-flex w-fit items-center border-2 border-[#2A2B2E] bg-white shadow-sm relative z-10">
               <span className="bg-[#2A2B2E] px-3.5 py-2 font-mono text-[10px] md:text-xs font-bold text-[#F4F2EC]">
-                km
+                {tCommon("kmUnit")}
               </span>
               <span className="px-4 py-1.5 font-display text-2xl md:text-3xl font-extrabold tabular-nums text-[#0E0E10]">
                 {step.num}
@@ -70,7 +80,7 @@ export default function HowItWorks({ frames = false }: { frames?: boolean }) {
             {/* Mile marker ground post line */}
             <div
               aria-hidden="true"
-              className="ml-6 hidden h-8 w-1 bg-[#2A2B2E]/40 md:block"
+              className="ms-6 hidden h-8 w-1 bg-[#2A2B2E]/40 md:block"
             />
           </div>
         ))}
@@ -78,3 +88,4 @@ export default function HowItWorks({ frames = false }: { frames?: boolean }) {
     </Scene>
   )
 }
+

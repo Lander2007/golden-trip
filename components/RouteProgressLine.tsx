@@ -46,9 +46,9 @@ export default function RouteProgressLine({
       }`}
       aria-label={tRoute("routeProgressAria")}
     >
-      <div className="relative h-[2px] w-full bg-[#2A2B2E]">
+      <div dir={isRtl ? "rtl" : "ltr"} className="relative h-[2px] w-full bg-[#2A2B2E]">
         <div
-          className={`h-full bg-[#C9A227] ${isRtl ? "ms-auto" : ""}`}
+          className="h-full bg-[#C9A227]"
           style={{ width: "calc(var(--p, 0) * 100%)" }}
         />
         <div className="absolute inset-0 mx-auto max-w-[1200px] px-4 sm:px-8">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from "react"
+import { useLocale, useTranslations } from "next-intl"
 import {
   EGYPT_PATH_DATA,
   ROUTE_PATH_DATA,
@@ -22,13 +23,13 @@ interface RouteMapProps {
   showOtherCities?: boolean
 }
 
-const LABEL_LAYOUT: Record<string, { dx: number; dy: number; anchor: "start" | "end" | "middle"; name: string }> = {
-  alexandria: { dx: -12, dy: 4, anchor: "end", name: "Alexandria" },
-  cairo: { dx: 14, dy: 16, anchor: "start", name: "Cairo" },
-  sharm: { dx: 14, dy: -6, anchor: "start", name: "Sharm" },
-  hurghada: { dx: -14, dy: 14, anchor: "end", name: "Hurghada" },
-  luxor: { dx: -14, dy: 4, anchor: "end", name: "Luxor" },
-  aswan: { dx: 14, dy: 4, anchor: "start", name: "Aswan" },
+const LABEL_LAYOUT: Record<string, { dx: number; dy: number; anchor: "start" | "end" | "middle" }> = {
+  alexandria: { dx: -12, dy: 4, anchor: "end" },
+  cairo: { dx: 14, dy: 16, anchor: "start" },
+  sharm: { dx: 14, dy: -6, anchor: "start" },
+  hurghada: { dx: -14, dy: 14, anchor: "end" },
+  luxor: { dx: -14, dy: 4, anchor: "end" },
+  aswan: { dx: 14, dy: 4, anchor: "start" },
 }
 
 // Milestone progress points for the 6 route cities
@@ -50,6 +51,16 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
   },
   ref
 ) {
+  const locale = useLocale()
+  const isAr = locale === "ar"
+  const tRoute = useTranslations("route")
+  const tCities = useTranslations("cities")
+  const tCommon = useTranslations("common")
+  const tA11y = useTranslations("a11y")
+  const numFormat = new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en", {
+    numberingSystem: locale === "ar" ? "arab" : "latn",
+  })
+
   const routePathRef = useRef<SVGPathElement>(null)
   const routeGlowPathRef = useRef<SVGPathElement>(null)
   const carMarkerRef = useRef<SVGGElement>(null)
@@ -137,7 +148,10 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
 
       // 3. Update live kilometer readout directly on DOM for zero React re-render overhead
       if (liveKmBadgeRef.current) {
-        liveKmBadgeRef.current.textContent = `${pt.km} km · ${Math.round(clamped * 100)}% route`
+        liveKmBadgeRef.current.textContent = tRoute("liveProgressStatus", {
+          km: numFormat.format(pt.km),
+          pct: numFormat.format(Math.round(clamped * 100)),
+        })
       }
     }
 
@@ -145,7 +159,9 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
     if (coordinatesBadgeRef.current) {
       const lat = (31.2 - clamped * (31.2 - 24.08)).toFixed(2)
       const lon = (29.9 + clamped * (32.9 - 29.9)).toFixed(2)
-      coordinatesBadgeRef.current.textContent = `${lat}°N ${lon}°E`
+      coordinatesBadgeRef.current.textContent = isAr
+        ? `${lat}° شمالاً ${lon}° شرقاً`
+        : `${lat}°N ${lon}°E`
     }
 
     // 5. Update bottom progress bar width
@@ -182,38 +198,40 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
 
       {/* Top Left: Compass Rose & Coordinates */}
       <div
-        className="pointer-events-none absolute left-4 top-4 z-10 flex items-center gap-2.5 font-mono text-[10px] text-[#EADFC8]/70"
+        className="pointer-events-none absolute start-4 top-4 z-10 flex items-center gap-2.5 font-mono text-[10px] text-[#EADFC8]/70"
         aria-hidden="true"
       >
         <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#C9A227]/30 bg-[#0B0A09]/80 text-[#C9A227]">
           <span className="font-bold">N</span>
         </div>
         <div className="flex flex-col leading-tight">
-          <span className="font-semibold tracking-wider text-[#F4F2EC]">EGYPT HIGHWAY NETWORK</span>
+          <span className="font-semibold tracking-wider text-[#F4F2EC]">
+            {tRoute("networkTitle")}
+          </span>
           <span ref={coordinatesBadgeRef} className="text-[#C9A227]/80 tabular-nums">
-            31.20°N 29.92°E
+            {tRoute("coordinatesAlex")}
           </span>
         </div>
       </div>
 
       {/* Top Right: Live Corridor Status Pill */}
       <div
-        className="pointer-events-none absolute right-4 top-4 z-10 hidden items-center gap-2 rounded-full border border-[#C9A227]/25 bg-[#0B0A09]/80 px-3 py-1 font-mono text-[10px] backdrop-blur-md sm:flex"
+        className="pointer-events-none absolute end-4 top-4 z-10 hidden items-center gap-2 rounded-full border border-[#C9A227]/25 bg-[#0B0A09]/80 px-3 py-1 font-mono text-[10px] backdrop-blur-md sm:flex"
         aria-hidden="true"
       >
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C9A227] opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-[#C9A227]" />
         </span>
-        <span className="text-[#B9B7B0]">CORRIDOR:</span>
-        <span className="font-bold text-[#E6CF85]">ALEXANDRIA HQ ➔ ASWAN</span>
+        <span className="text-[#B9B7B0]">{tRoute("corridorTitle")}</span>
+        <span className="font-bold text-[#E6CF85]">{tRoute("corridorValue")}</span>
       </div>
 
       {/* Main Interactive SVG Map */}
       <svg
         viewBox={`0 0 ${EGYPT_MAP_WIDTH} ${EGYPT_MAP_HEIGHT}`}
         className="h-full max-h-[680px] w-full object-contain"
-        aria-label="Interactive Egypt Highway Route Map"
+        aria-label={tA11y("interactiveMapAriaLabel")}
         role="img"
       >
         <defs>
@@ -415,13 +433,13 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
                     textAnchor={label.anchor}
                     fill={isActive ? "#FFD54F" : isVisited ? "#F4F2EC" : "#B9B7B0"}
                     fontSize={isActive ? "12" : "11"}
-                    fontFamily="var(--font-anybody), sans-serif"
+                    fontFamily={isAr ? "var(--font-ibm-plex-sans-arabic), sans-serif" : "var(--font-anybody), sans-serif"}
                     fontWeight={isActive ? "800" : "600"}
-                    letterSpacing="0.02em"
+                    letterSpacing={isAr ? "0" : "0.02em"}
                     className="transition-colors duration-200"
                   >
-                    {label.name}
-                    {city.isHq ? " HQ" : ""}
+                    {tCities(`${city.id}.name`)}
+                    {city.isHq ? ` ${tCities("hqLabel")}` : ""}
                   </text>
                   {isActive && (
                     <text
@@ -434,7 +452,7 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
                       fontWeight="600"
                       opacity="0.85"
                     >
-                      {city.km} KM
+                      {numFormat.format(city.km)} {tCommon("kmUnit")}
                     </text>
                   )}
                 </g>
@@ -503,17 +521,25 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
 
       {/* Floating Tooltip when hovering secondary cities */}
       {hoveredCity && (
-        <div className="pointer-events-none absolute bottom-12 left-1/2 -translate-x-1/2 rounded-md border border-[#C9A227]/40 bg-[#080D15]/95 px-3 py-1.5 font-mono text-xs text-[#F4F2EC] shadow-xl backdrop-blur-md">
-          <span className="font-bold text-[#C9A227]">{hoveredCity.city}</span>
-          <span className="ml-2 text-[#B9B7B0]">· {hoveredCity.km} km from Alex HQ</span>
+        <div className="pointer-events-none absolute bottom-12 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 rounded-md border border-[#C9A227]/40 bg-[#080D15]/95 px-3 py-1.5 font-mono text-xs text-[#F4F2EC] shadow-xl backdrop-blur-md">
+          <span className="font-bold text-[#C9A227]">
+            {tCities(`${hoveredCity.id}.name`)}
+          </span>
+          <span className="ms-2 text-[#B9B7B0]">
+            · {numFormat.format(hoveredCity.km)} {tCommon("kmUnit")} {tCities("fromAlexLabel")}
+          </span>
         </div>
       )}
 
       {/* Bottom Automotive Highway Distance Progress Meter */}
       <div className="pointer-events-none absolute bottom-3.5 inset-x-5 flex items-center justify-between font-mono text-[11px] text-[#B9B7B0]/80">
         <div className="flex items-center gap-1.5">
-          <span className="font-bold text-[#C9A227]">Alexandria HQ</span>
-          <span className="hidden sm:inline text-[#B9B7B0]/60">(0 km)</span>
+          <span className="font-bold text-[#C9A227]">
+            {tCities("alexandria.name")} {tCities("hqLabel")}
+          </span>
+          <span className="hidden sm:inline text-[#B9B7B0]/60">
+            ({numFormat.format(0)} {tCommon("kmUnit")})
+          </span>
         </div>
 
         {/* Central Track & Live Odometer Badge */}
@@ -529,13 +555,18 @@ const RouteMap = forwardRef<RouteMapHandle, RouteMapProps>(function RouteMap(
             ref={liveKmBadgeRef}
             className="mt-1 font-mono text-[10px] font-semibold text-[#E6CF85] tabular-nums"
           >
-            0 km · 0% route
+            {tRoute("liveProgressStatus", {
+              km: numFormat.format(0),
+              pct: numFormat.format(0),
+            })}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-right">
-          <span className="font-bold text-[#C9A227]">Aswan</span>
-          <span className="hidden sm:inline text-[#B9B7B0]/60">(980 km)</span>
+        <div className="flex items-center gap-1.5 text-end">
+          <span className="font-bold text-[#C9A227]">{tCities("aswan.name")}</span>
+          <span className="hidden sm:inline text-[#B9B7B0]/60">
+            ({numFormat.format(980)} {tCommon("kmUnit")})
+          </span>
         </div>
       </div>
     </div>

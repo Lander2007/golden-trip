@@ -91,7 +91,13 @@
     "mobileNavAria": "Mobile navigation",
     "footerNavAria": "Footer navigation",
     "openMenuAria": "Open navigation menu",
-    "closeMenuAria": "Close navigation menu"
+    "closeMenuAria": "Close navigation menu",
+    "logOut": "Log out",
+    "vipClient": "VIP Client",
+    "activeAccount": "Active Account",
+    "activeCountBadge": "{count} active",
+    "fleetVehiclesCount": "14 vehicles",
+    "directCallPhone": "Direct call: {phone}"
   },
   "hero": {
     "titleLine1": "Your trip starts",
@@ -413,7 +419,12 @@
     "gizaZayedAddress": "Giza (Sheikh Zayed)",
     "resortsSummaryAddress": "Sharm El-Sheikh & Hurghada & Matrouh",
     "contactImmediateTitle": "Contact us immediately",
-    "callImmediateSub": "Direct hotline 24/7"
+    "callImmediateSub": "Direct hotline 24/7",
+    "prototypeBadge": "Interactive Prototype",
+    "rightsReservedEgypt": "All rights reserved for the Arab Republic of Egypt.",
+    "highwayHotline": "Direct hotline",
+    "instantChat": "Instant chat",
+    "whatsAppCustomerService": "WhatsApp Customer Service"
   },
   "auth": {
     "customerPortalTitle": "Golden Trip Customer Portal",
@@ -485,7 +496,8 @@
     "demoLoginError": "Could not sign in with demo account.",
     "generalSignupError": "An error occurred while creating your account. Please try again.",
     "identifierRequired": "Please enter your registered email or phone number.",
-    "passwordRequired": "Please enter your password."
+    "passwordRequired": "Please enter your password.",
+    "highwayDetourBadge": "404 · HIGHWAY DETOUR"
   },
   "meta": {
     "homeTitle": "Golden Trip — Highway Transfers & Fleet Across Egypt",
@@ -507,7 +519,7 @@
   "a11y": {
     "languageSwitcherGroup": "Language selection",
     "languageSwitcherEn": "Switch to English",
-    "languageSwitcherAr": "التحويل إلى العربية",
+    "languageSwitcherAr": "Switch to Arabic",
     "odometerLabel": "{count, plural, one {Odometer: # kilometer traveled} other {Odometer: # kilometers traveled}}",
     "fleetAriaLabel": "Golden Trip fleet: white sedan, black SUV, and white van",
     "sedanAriaLabel": "Golden Trip executive white sedan",

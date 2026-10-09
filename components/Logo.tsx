@@ -1,3 +1,7 @@
+"use client"
+
+import { useTranslations } from "next-intl"
+
 export default function Logo({
   showTagline = false,
   condensed = false,
@@ -5,6 +9,8 @@ export default function Logo({
   showTagline?: boolean
   condensed?: boolean
 }) {
+  const tCommon = useTranslations("common")
+
   return (
     <span className="flex items-center gap-2.5 text-[#C9A227]">
       <svg
@@ -51,7 +57,7 @@ export default function Logo({
         </span>
         {showTagline && (
           <span className="mt-1 font-body text-[10px] font-normal tracking-[.18em] text-[#B9B7B0]">
-            Every road. Your story.
+            {tCommon("tagline")}
           </span>
         )}
       </span>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import { useTranslations } from "next-intl"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import BookingBar from "./BookingBar"
@@ -24,6 +25,7 @@ const HERO_STARS = Array.from({ length: 28 }).map((_, i) => {
 })
 
 export default function Hero({ frames = false }: { frames?: boolean }) {
+  const tHero = useTranslations("hero")
   const heroRef = useRef<HTMLDivElement>(null)
   const [imgFailed, setImgFailed] = useState(false)
 
@@ -131,7 +133,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         {!imgFailed ? (
           <Image
             src="/images/hero-giza-dawn.webp"
-            alt="Giza pyramids at dawn"
+            alt={tHero("altBackdrop")}
             fill
             priority
             sizes="100vw"
@@ -339,14 +341,14 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
                 <h1 className="font-display text-[clamp(2.125rem,7vw+0.5rem,6.5rem)] landscape-phone:text-[clamp(1.5rem,5vw,2rem)] lg:text-[clamp(40px,min(6.4vw,10.5vh),104px)] font-bold tracking-[-0.04em] text-[#EADFC8] leading-[1.02] text-balance">
                   <span className="block overflow-hidden">
                     <span className="hero-headline-line block">
-                      Your trip starts
+                      {tHero("titleLine1")}
                     </span>
                   </span>
                   <span className="block overflow-hidden mt-1">
                     <span className="hero-headline-line block">
-                      at your{" "}
-                      <span className="font-accent italic font-normal text-[#C9A227]">
-                        door.
+                      {tHero("titleLine2Prefix")}
+                      <span className="font-accent italic font-normal text-[#C9A227] rtl:not-italic">
+                        {tHero("titleLine2Accent")}
                       </span>
                     </span>
                   </span>
@@ -354,7 +356,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
 
                 {/* Subline: vh-aware scaling */}
                 <p className="mt-3 lg:mt-[clamp(10px,1.8vh,22px)] text-base lg:text-[clamp(14px,min(1.2vw,1.9vh),17px)] leading-relaxed text-[#EADFC8]/85 max-w-[46ch]">
-                  Airport transfers, resort runs, and city-to-city trips across Egypt.
+                  {tHero("subtitle")}
                 </p>
 
                 {/* Booking Bar: vh-aware spacing */}
@@ -375,7 +377,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
               </div>
               <div className="mt-4 flex items-center justify-center gap-3 text-xs text-[#EADFC8]/70 pointer-events-auto">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#C9A227]" />
-                <span className="font-medium">Alexandria to Anywhere</span>
+                <span className="font-medium">{tHero("routeChip")}</span>
               </div>
             </div>
           </div>
@@ -390,7 +392,7 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
         <div className="hidden lg:flex relative z-[8] w-full content-container pb-5 items-center justify-end pointer-events-none">
           <div className="flex items-center gap-3 text-xs text-[#EADFC8]/70 pointer-events-auto">
             <span className="h-1.5 w-1.5 rounded-full bg-[#C9A227]" />
-            <span className="font-medium">Alexandria to Anywhere</span>
+            <span className="font-medium">{tHero("routeChip")}</span>
           </div>
         </div>
       </div>

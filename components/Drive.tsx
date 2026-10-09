@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, type ReactNode } from "react"
+import { useTranslations } from "next-intl"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
@@ -25,6 +26,7 @@ export default function Drive({
   children: ReactNode
   frames?: boolean
 }) {
+  const tRoute = useTranslations("route")
   const root = useRef<HTMLDivElement>(null)
   const scrollCarRef = useRef<ScrollCarHandle>(null)
   const odometerRef = useRef<OdometerHandle>(null)
@@ -614,18 +616,17 @@ export default function Drive({
           />
 
           {/* Mechanical Odometer Plate */}
-          <div className="absolute bottom-4 left-7 sm:left-12 z-40 pointer-events-auto">
+          <div className="absolute bottom-4 start-7 sm:start-12 z-40 pointer-events-auto">
             <Odometer ref={odometerRef} km={0} light={light} />
           </div>
 
           {/* Subtle journey direction mark */}
           <div
-            className={`absolute bottom-5 right-6 z-40 hidden text-xs font-medium md:block ${
+            className={`absolute bottom-5 end-6 z-40 hidden text-xs font-medium md:block ${
               light ? "text-[#0E0E10]/70" : "text-[#B9B7B0]/60"
             }`}
           >
-            Alexandria <span className="mx-3 text-[#C9A227]">───────→</span>{" "}
-            Anywhere
+            {tRoute("directionHighway")}
           </div>
         </div>
       )}

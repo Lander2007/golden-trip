@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import gsap from "gsap"
 import {
   applyPerfFlags,
@@ -40,6 +41,7 @@ function pauseOffscreenLoops() {
 }
 
 export default function PerfLab() {
+  const tA11y = useTranslations("a11y")
   const [open, setOpen] = useState(false)
   const [fps, setFps] = useState(0)
   const [offs, setOffs] = useState<Record<string, boolean>>({})
@@ -84,9 +86,9 @@ export default function PerfLab() {
 
   return (
     <div
-      className="hidden md:block fixed bottom-3 right-3 z-[9999] w-[220px] rounded-md border border-[#2A2B2E] bg-[#0B0A09]/90 p-3 font-mono text-[11px] text-[#F4F2EC] pointer-events-auto select-none"
+      className="hidden md:block fixed bottom-3 end-3 z-[9999] w-[220px] rounded-md border border-[#2A2B2E] bg-[#0B0A09]/90 p-3 font-mono text-[11px] text-[#F4F2EC] pointer-events-auto select-none"
       role="region"
-      aria-label="Performance lab"
+      aria-label={tA11y("performanceLabAria")}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="font-bold" style={{ color: fpsColor }}>
