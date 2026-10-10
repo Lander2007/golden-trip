@@ -224,13 +224,13 @@ export default function CarDetailsPage() {
                     </span>
                   </div>
 
-                  {/* Branch tag overlay with <bdi> to preserve parenthesis direction */}
+                  {/* Branch tag overlay */}
                   <div className="absolute bottom-4 end-4 flex items-center gap-2 rounded-lg bg-[#0B0A09]/80 backdrop-blur-md px-3.5 py-2 border border-[#2A2B2E]">
                     <MapPin className="w-4 h-4 text-[#C9A227]" />
                     <span className="text-xs font-semibold text-[#F4F2EC]">
-                      {t.rich("locationInfo", {
+                      {t("locationInfo", {
                         city: pick(branchInfo.city, locale),
-                        branch: () => <bdi dir="ltr">{pick(branchInfo.name, locale)}</bdi>,
+                        branch: pick(branchInfo.name, locale),
                       })}
                     </span>
                   </div>
@@ -245,8 +245,8 @@ export default function CarDetailsPage() {
                       {carName}
                     </h1>
                     <p className="text-xs text-[#B9B7B0] mt-1">
-                      {t.rich("vehicleCode", {
-                        code: () => <bdi dir="ltr">{car.id.toUpperCase()}</bdi>,
+                      {t("vehicleCode", {
+                        code: car.id.toUpperCase(),
                       })}
                     </p>
                   </div>
@@ -375,7 +375,7 @@ export default function CarDetailsPage() {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-[#2A2B2E] text-xs font-semibold text-[#F4F2EC] hover:border-[#C9A227] transition-colors"
                   >
                     <Phone className="w-3.5 h-3.5 text-[#C9A227]" />
-                    <span>{t.rich("callBranch", { phone: () => <bdi dir="ltr">{branchInfo.phone}</bdi> })}</span>
+                    <span>{t("callBranch", { phone: branchInfo.phone })}</span>
                   </a>
                   <a
                     href="https://wa.me/201006803316"

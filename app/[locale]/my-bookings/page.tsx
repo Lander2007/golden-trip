@@ -466,7 +466,7 @@ export default function MyBookingsPage() {
               </div>
 
               <h3 className="text-lg font-bold text-[#F4F2EC] mb-2">
-                {t.rich("confirmCancelTitle", { id: () => <bdi dir="ltr">{cancelingBookingId}</bdi> })}
+                {t("confirmCancelTitle", { id: cancelingBookingId })}
               </h3>
               <p className="text-xs text-[#B9B7B0] leading-relaxed mb-6">
                 {t("confirmCancelDesc")}
