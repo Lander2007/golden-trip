@@ -27,9 +27,20 @@ export default function AppNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
 
+  // Resolve display user name according to active locale
+  const currentUserName = currentUser?.name
+    ? typeof currentUser.name === "object"
+      ? (locale === "en" ? currentUser.name.en : currentUser.name.ar)
+      : currentUser.name
+    : ""
+
   // Count active bookings (confirmed or pending)
   const activeBookingsCount = bookings.filter(
-    (b) => b.status === "مؤكد" || b.status === "قيد الانتظار"
+    (b) =>
+      b.status === "confirmed" ||
+      b.status === "pending" ||
+      (b.status as any) === "مؤكد" ||
+      (b.status as any) === "قيد الانتظار"
   ).length
 
   const handleLogout = () => {
@@ -108,11 +119,11 @@ export default function AppNavbar() {
                 aria-expanded={profileDropdownOpen}
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C9A227] to-[#E6CF85] flex items-center justify-center text-[#0B0A09] font-bold text-xs shadow-sm">
-                  {currentUser.name ? currentUser.name.slice(0, 2) : "GT"}
+                  {currentUserName ? currentUserName.slice(0, 2) : "GT"}
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-[#F4F2EC] truncate max-w-[130px]">
-                    {currentUser.name}
+                    {currentUserName}
                   </span>
                   <span className="text-[10px] text-[#C9A227]">{tNav("vipClient")}</span>
                 </div>
@@ -128,7 +139,7 @@ export default function AppNavbar() {
                   />
                   <div className="absolute end-0 mt-2 w-60 rounded-lg border border-[#2A2B2E] bg-[#141518] p-2 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                     <div className="px-3 py-2 border-b border-[#2A2B2E] mb-1">
-                      <p className="text-xs font-bold text-[#F4F2EC]">{currentUser.name}</p>
+                      <p className="text-xs font-bold text-[#F4F2EC]">{currentUserName}</p>
                       <p className="text-[11px] text-[#B9B7B0] truncate mt-0.5">{currentUser.email}</p>
                       <p className="text-[11px] text-[#C9A227] mt-1 font-mono">
                         <bdi dir="ltr">{currentUser.phone}</bdi>
@@ -235,10 +246,10 @@ export default function AppNavbar() {
             <div className="mb-6 rounded-lg border border-[#2A2B2E] bg-[#141518] p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C9A227] to-[#E6CF85] flex items-center justify-center text-[#0B0A09] font-bold text-sm">
-                  {currentUser.name ? currentUser.name.slice(0, 2) : "GT"}
+                  {currentUserName ? currentUserName.slice(0, 2) : "GT"}
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-[#F4F2EC]">{currentUser.name}</h4>
+                  <h4 className="text-sm font-bold text-[#F4F2EC]">{currentUserName}</h4>
                   <p className="text-xs text-[#B9B7B0]">{currentUser.email}</p>
                 </div>
               </div>

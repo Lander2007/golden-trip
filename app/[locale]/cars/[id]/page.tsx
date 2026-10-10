@@ -1,17 +1,23 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import ProtectedRoute from "@/components/auth/ProtectedRoute"
 import { useApp } from "@/context/AppContext"
 import {
   MOCK_BRANCHES,
   MOCK_EXTRAS,
   calculateDaysBetween,
-  formatEGP,
 } from "@/lib/mockData"
+import { pick } from "@/lib/localized"
+import {
+  money,
+  number,
+  date,
+  verifiedReviewsCount,
+} from "@/lib/format"
 import {
   Car as CarIcon,
   Star,
@@ -29,14 +35,12 @@ import {
   ArrowRight,
   Sparkles,
   Clock,
-  UserCheck,
-  Shield,
-  Navigation,
 } from "lucide-react"
 
 export default function CarDetailsPage() {
   const t = useTranslations("carDetails")
   const tCommon = useTranslations("common")
+  const locale = useLocale()
 
   const params = useParams()
   const router = useRouter()
@@ -55,6 +59,15 @@ export default function CarDetailsPage() {
   } = useApp()
 
   const car = getCarById(carId)
+
+  // Sync document title to localized car name
+  useEffect(() => {
+    if (car) {
+      const localizedName = pick(car.name, locale)
+      const brandName = locale === "ar" ? "جولدن تريب" : "Golden Trip"
+      document.title = `${localizedName} — ${brandName}`
+    }
+  }, [car, locale])
 
   // Local state for selected extras
   const [selectedExtraIds, setSelectedExtraIds] = useState<string[]>([
@@ -135,6 +148,32 @@ export default function CarDetailsPage() {
     )
   }
 
+  const carName = pick(car.name, locale)
+  const categoryLabel =
+    car.type === "economy"
+      ? tCommon("categoryEconomy")
+      : car.type === "sedan"
+      ? tCommon("categorySedan")
+      : car.type === "suv"
+      ? tCommon("categorySuv")
+      : car.type === "luxury"
+      ? tCommon("categoryLuxury")
+      : tCommon("categoryFamilyVan")
+
+  const transmissionLabel =
+    car.transmission === "automatic"
+      ? tCommon("transmissionAutomatic")
+      : tCommon("transmissionManual")
+
+  const fuelLabel =
+    car.fuel === "diesel"
+      ? tCommon("fuelDiesel")
+      : car.fuel === "hybrid"
+      ? tCommon("fuelHybrid")
+      : car.fuel === "electric"
+      ? tCommon("fuelElectric")
+      : tCommon("fuelPetrol")
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-[#0B0A09] text-[#F4F2EC] pb-24">
@@ -145,7 +184,7 @@ export default function CarDetailsPage() {
             <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180 text-[#B9B7B0]/60" />
             <Link href="/cars" className="hover:text-[#F4F2EC]">{t("breadcrumbFleet")}</Link>
             <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180 text-[#B9B7B0]/60" />
-            <span className="text-[#C9A227] font-semibold">{car.name}</span>
+            <span className="text-[#C9A227] font-semibold">{carName}</span>
           </div>
         </div>
 
@@ -158,7 +197,7 @@ export default function CarDetailsPage() {
                 <div className="h-72 sm:h-96 w-full relative">
                   <img
                     src={car.image}
-                    alt={car.name}
+                    alt={carName}
                     className="h-full w-full object-cover object-center"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#141518] via-transparent to-black/30" />
@@ -166,10 +205,10 @@ export default function CarDetailsPage() {
                   {/* Top Badges */}
                   <div className="absolute top-4 end-4 flex items-center gap-2">
                     <span className="rounded-md bg-[#0B0A09]/80 backdrop-blur-md px-3 py-1.5 text-xs font-bold text-[#C9A227] border border-[#C9A227]/30">
-                      {t("classBadge", { type: car.type })}
+                      {t("classBadge", { type: categoryLabel })}
                     </span>
                     <span className="rounded-md bg-[#0B0A09]/80 backdrop-blur-md px-3 py-1.5 text-xs font-bold text-[#F4F2EC] border border-white/10 font-mono">
-                      {t("yearBadge", { year: car.year })}
+                      {t("yearBadge", { year: number(car.year, locale) })}
                     </span>
                   </div>
 
@@ -185,11 +224,14 @@ export default function CarDetailsPage() {
                     </span>
                   </div>
 
-                  {/* Branch tag overlay */}
+                  {/* Branch tag overlay with <bdi> to preserve parenthesis direction */}
                   <div className="absolute bottom-4 end-4 flex items-center gap-2 rounded-lg bg-[#0B0A09]/80 backdrop-blur-md px-3.5 py-2 border border-[#2A2B2E]">
                     <MapPin className="w-4 h-4 text-[#C9A227]" />
                     <span className="text-xs font-semibold text-[#F4F2EC]">
-                      {t("locationInfo", { city: branchInfo.city, branch: branchInfo.name })}
+                      {t.rich("locationInfo", {
+                        city: pick(branchInfo.city, locale),
+                        branch: () => <bdi dir="ltr">{pick(branchInfo.name, locale)}</bdi>,
+                      })}
                     </span>
                   </div>
                 </div>
@@ -200,10 +242,12 @@ export default function CarDetailsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A2B2E] pb-5 mb-5">
                   <div>
                     <h1 className="text-2xl sm:text-3xl font-black text-[#F4F2EC]">
-                      {car.name}
+                      {carName}
                     </h1>
                     <p className="text-xs text-[#B9B7B0] mt-1">
-                      {t("vehicleCode", { code: car.id.toUpperCase() })}
+                      {t.rich("vehicleCode", {
+                        code: () => <bdi dir="ltr">{car.id.toUpperCase()}</bdi>,
+                      })}
                     </p>
                   </div>
 
@@ -211,18 +255,20 @@ export default function CarDetailsPage() {
                     <Star className="w-5 h-5 fill-[#C9A227] text-[#C9A227]" />
                     <div>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-base font-black text-[#F4F2EC]">{car.rating}</span>
+                        <span className="text-base font-black text-[#F4F2EC]">
+                          {number(car.rating, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                        </span>
                         <span className="text-xs text-[#B9B7B0]">{t("ratingOutOf5")}</span>
                       </div>
                       <span className="text-[10px] text-[#B9B7B0]">
-                        {t("verifiedReviewsCount", { count: car.reviews.length })}
+                        {verifiedReviewsCount(car.reviews.length, locale)}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <p className="text-sm text-[#B9B7B0] leading-relaxed mb-6">
-                  {car.description}
+                  {pick(car.description, locale)}
                 </p>
 
                 {/* Key Technical Specifications Grid */}
@@ -237,7 +283,7 @@ export default function CarDetailsPage() {
                       <span>{t("passengerCapacity")}</span>
                     </div>
                     <span className="text-sm font-bold text-[#F4F2EC]">
-                      {t("passengersCount", { count: car.seats })}
+                      {t("passengersCount", { count: number(car.seats, locale) })}
                     </span>
                   </div>
 
@@ -246,7 +292,7 @@ export default function CarDetailsPage() {
                       <Gauge className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>{t("transmission")}</span>
                     </div>
-                    <span className="text-sm font-bold text-[#F4F2EC]">{car.transmission}</span>
+                    <span className="text-sm font-bold text-[#F4F2EC]">{transmissionLabel}</span>
                   </div>
 
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
@@ -254,7 +300,7 @@ export default function CarDetailsPage() {
                       <Fuel className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>{t("fuelType")}</span>
                     </div>
-                    <span className="text-sm font-bold text-[#F4F2EC]">{car.fuel}</span>
+                    <span className="text-sm font-bold text-[#F4F2EC]">{fuelLabel}</span>
                   </div>
 
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3 text-start">
@@ -263,7 +309,7 @@ export default function CarDetailsPage() {
                       <span>{t("luggageCapacity")}</span>
                     </div>
                     <span className="text-sm font-bold text-[#F4F2EC]">
-                      {t("luggageCount", { count: car.luggage })}
+                      {t("luggageCount", { count: number(car.luggage, locale) })}
                     </span>
                   </div>
 
@@ -273,7 +319,7 @@ export default function CarDetailsPage() {
                       <span>{t("doorsCountLabel")}</span>
                     </div>
                     <span className="text-sm font-bold text-[#F4F2EC]">
-                      {t("doorsCount", { count: car.doors })}
+                      {t("doorsCount", { count: number(car.doors, locale) })}
                     </span>
                   </div>
 
@@ -282,7 +328,7 @@ export default function CarDetailsPage() {
                       <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>{t("modelYear")}</span>
                     </div>
-                    <span className="text-sm font-bold text-[#F4F2EC]">{car.year}</span>
+                    <span className="text-sm font-bold text-[#F4F2EC]">{number(car.year, locale)}</span>
                   </div>
                 </div>
 
@@ -298,7 +344,7 @@ export default function CarDetailsPage() {
                       className="flex items-center gap-2.5 rounded-md bg-[#0B0A09] px-3 py-2 text-xs text-[#F4F2EC] border border-[#2A2B2E]/70"
                     >
                       <Check className="w-4 h-4 text-[#C9A227] shrink-0" />
-                      <span>{feature}</span>
+                      <span>{pick(feature, locale)}</span>
                     </div>
                   ))}
                 </div>
@@ -312,14 +358,14 @@ export default function CarDetailsPage() {
                 </h3>
 
                 <div className="space-y-3 text-xs text-[#B9B7B0]">
-                  <p className="text-sm font-bold text-[#F4F2EC]">{branchInfo.name}</p>
+                  <p className="text-sm font-bold text-[#F4F2EC]">{pick(branchInfo.name, locale)}</p>
                   <p className="flex items-center gap-2">
                     <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                    <span>{branchInfo.address}</span>
+                    <span>{pick(branchInfo.address, locale)}</span>
                   </p>
                   <p className="flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                    <span>{t("workingHours", { hours: branchInfo.operatingHours })}</span>
+                    <span>{t("workingHours", { hours: pick(branchInfo.operatingHours, locale) })}</span>
                   </p>
                 </div>
 
@@ -329,7 +375,7 @@ export default function CarDetailsPage() {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-[#2A2B2E] text-xs font-semibold text-[#F4F2EC] hover:border-[#C9A227] transition-colors"
                   >
                     <Phone className="w-3.5 h-3.5 text-[#C9A227]" />
-                    <span>{t("callBranch", { phone: branchInfo.phone })}</span>
+                    <span>{t.rich("callBranch", { phone: () => <bdi dir="ltr">{branchInfo.phone}</bdi> })}</span>
                   </a>
                   <a
                     href="https://wa.me/201006803316"
@@ -356,7 +402,9 @@ export default function CarDetailsPage() {
                   </div>
                   <div className="flex items-center gap-1.5 bg-[#0B0A09] px-3 py-1.5 rounded-md border border-[#C9A227]/30">
                     <Star className="w-4 h-4 fill-[#C9A227] text-[#C9A227]" />
-                    <span className="text-sm font-bold text-[#C9A227]">{car.rating}</span>
+                    <span className="text-sm font-bold text-[#C9A227]">
+                      {number(car.rating, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                    </span>
                   </div>
                 </div>
 
@@ -366,40 +414,70 @@ export default function CarDetailsPage() {
                   </p>
                 ) : (
                   <div className="space-y-4">
-                    {car.reviews.map((rev) => (
-                      <div
-                        key={rev.id}
-                        className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-4 text-start"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-full bg-[#C9A227]/20 border border-[#C9A227]/40 flex items-center justify-center text-xs font-bold text-[#C9A227]">
-                              {rev.userName.slice(0, 1)}
+                    {car.reviews.map((rev) => {
+                      const reviewerName = pick(rev.userName, locale)
+                      const isMissingTranslation =
+                        !rev.comment[locale as "en" | "ar"] ||
+                        rev.comment[locale as "en" | "ar"].trim() === ""
+
+                      return (
+                        <div
+                          key={rev.id}
+                          className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-4 text-start"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-[#C9A227]/20 border border-[#C9A227]/40 flex items-center justify-center text-xs font-bold text-[#C9A227]">
+                                {reviewerName.slice(0, 1)}
+                              </div>
+                              <span className="text-xs font-bold text-[#F4F2EC]">{reviewerName}</span>
                             </div>
-                            <span className="text-xs font-bold text-[#F4F2EC]">{rev.userName}</span>
+                            <span className="text-[10px] text-[#B9B7B0] font-mono">
+                              {date(rev.date, locale)}
+                            </span>
                           </div>
-                          <span className="text-[10px] text-[#B9B7B0] font-mono">{rev.date}</span>
-                        </div>
 
-                        {/* Stars */}
-                        <div className="flex items-center gap-1 mb-2">
-                          {Array.from({ length: 5 }).map((_, idx) => (
-                            <Star
-                              key={idx}
-                              className={`w-3.5 h-3.5 ${
-                                idx < rev.rating
-                                  ? "fill-[#C9A227] text-[#C9A227]"
-                                  : "text-[#2A2B2E]"
-                              }`}
-                            />
-                          ))}
-                        </div>
+                          {/* Stars */}
+                          <div className="flex items-center gap-1 mb-2">
+                            {Array.from({ length: 5 }).map((_, idx) => (
+                              <Star
+                                key={idx}
+                                className={`w-3.5 h-3.5 ${
+                                  idx < rev.rating
+                                    ? "fill-[#C9A227] text-[#C9A227]"
+                                    : "text-[#2A2B2E]"
+                                }`}
+                              />
+                            ))}
+                          </div>
 
-                        <p className="text-xs text-[#B9B7B0] leading-relaxed">
-                          {rev.comment}
-                        </p>
-                      </div>
-                    ))}
+                          {/* Review Content with UGC fallback */}
+                          {isMissingTranslation ? (
+                            <div
+                              lang={rev.originalLang || "ar"}
+                              dir="auto"
+                              data-ugc-original="true"
+                              className="mt-1"
+                            >
+                              <span className="inline-block text-[10px] text-[#C9A227] bg-[#C9A227]/10 px-2 py-0.5 rounded mb-1">
+                                {rev.originalLang === "en"
+                                  ? tCommon("originalEnglish")
+                                  : tCommon("originalArabic")}
+                              </span>
+                              <p className="text-xs text-[#B9B7B0] leading-relaxed">
+                                {rev.comment[rev.originalLang || "ar"] ||
+                                  rev.comment.ar ||
+                                  rev.comment.en}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-[#B9B7B0] leading-relaxed">
+                              {pick(rev.comment, locale)}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -412,7 +490,7 @@ export default function CarDetailsPage() {
                 <div className="flex items-baseline justify-between pb-5 border-b border-[#2A2B2E] mb-6">
                   <div>
                     <span className="text-2xl font-black text-[#F4F2EC] font-mono">
-                      {formatEGP(car.pricePerDay)}
+                      {money(car.pricePerDay, locale)}
                     </span>
                     <span className="text-xs text-[#B9B7B0] me-1">{t("perDay")}</span>
                   </div>
@@ -437,7 +515,7 @@ export default function CarDetailsPage() {
                       >
                         {MOCK_BRANCHES.map((b) => (
                           <option key={b.id} value={b.id}>
-                            {b.city} ({b.name.split(" ")[1]})
+                            {pick(b.city, locale)} ({pick(b.name, locale)})
                           </option>
                         ))}
                       </select>
@@ -455,7 +533,7 @@ export default function CarDetailsPage() {
                       >
                         {MOCK_BRANCHES.map((b) => (
                           <option key={b.id} value={b.id}>
-                            {b.city} ({b.name.split(" ")[1]})
+                            {pick(b.city, locale)} ({pick(b.name, locale)})
                           </option>
                         ))}
                       </select>
@@ -469,12 +547,14 @@ export default function CarDetailsPage() {
                         <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
                         <span>{t("pickupDate")}</span>
                       </label>
-                      <input
-                        type="date"
-                        value={pickupDate}
-                        onChange={(e) => setPickupDate(e.target.value)}
-                        className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none [color-scheme:dark]"
-                      />
+                      <bdi dir="ltr" className="block">
+                        <input
+                          type="date"
+                          value={pickupDate}
+                          onChange={(e) => setPickupDate(e.target.value)}
+                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none [color-scheme:dark]"
+                        />
+                      </bdi>
                     </div>
 
                     <div>
@@ -482,13 +562,15 @@ export default function CarDetailsPage() {
                         <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
                         <span>{t("returnDateWithDays", { days: rentalDays })}</span>
                       </label>
-                      <input
-                        type="date"
-                        value={returnDate}
-                        min={pickupDate}
-                        onChange={(e) => setReturnDate(e.target.value)}
-                        className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none [color-scheme:dark]"
-                      />
+                      <bdi dir="ltr" className="block">
+                        <input
+                          type="date"
+                          value={returnDate}
+                          min={pickupDate}
+                          onChange={(e) => setReturnDate(e.target.value)}
+                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none [color-scheme:dark]"
+                        />
+                      </bdi>
                     </div>
                   </div>
 
@@ -524,16 +606,16 @@ export default function CarDetailsPage() {
                               />
                               <div>
                                 <span className="block text-xs font-bold text-[#F4F2EC]">
-                                  {extra.name}
+                                  {pick(extra.name, locale)}
                                 </span>
                                 <span className="block text-[10px] text-[#B9B7B0] line-clamp-1">
-                                  {extra.description}
+                                  {pick(extra.description, locale)}
                                 </span>
                               </div>
                             </div>
 
                             <span className="text-xs font-bold text-[#C9A227] font-mono shrink-0 me-2">
-                              {t("plusPerDay", { price: extra.pricePerDay })}
+                              +{money(extra.pricePerDay, locale)}
                             </span>
                           </div>
                         )
@@ -547,29 +629,29 @@ export default function CarDetailsPage() {
                       <span>
                         {t("carRentalSummary", {
                           days: rentalDays,
-                          price: formatEGP(car.pricePerDay),
+                          price: money(car.pricePerDay, locale),
                         })}
                       </span>
-                      <span className="font-mono text-[#F4F2EC]">{formatEGP(baseRentalCost)}</span>
+                      <span className="font-mono text-[#F4F2EC]">{money(baseRentalCost, locale)}</span>
                     </div>
 
                     {totalExtrasCost > 0 && (
                       <div className="flex justify-between text-[#B9B7B0]">
                         <span>{t("extrasCostSummary", { days: rentalDays })}</span>
-                        <span className="font-mono text-[#C9A227]">+{formatEGP(totalExtrasCost)}</span>
+                        <span className="font-mono text-[#C9A227]">+{money(totalExtrasCost, locale)}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between text-[#B9B7B0]">
                       <span>{t("vatSummary")}</span>
-                      <span className="font-mono text-[#F4F2EC]">{formatEGP(taxAmount)}</span>
+                      <span className="font-mono text-[#F4F2EC]">{money(taxAmount, locale)}</span>
                     </div>
 
                     <div className="border-t border-[#2A2B2E] pt-3 flex justify-between items-baseline font-bold">
                       <span className="text-sm text-[#F4F2EC]">{t("approxTotal")}</span>
                       <div className="text-end">
                         <span className="text-xl font-black text-[#C9A227] font-mono">
-                          {formatEGP(grandTotal)}
+                          {money(grandTotal, locale)}
                         </span>
                         <span className="block text-[10px] text-[#B9B7B0] font-normal">
                           {t("inclusiveNote")}

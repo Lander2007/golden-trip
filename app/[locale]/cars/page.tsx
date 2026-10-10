@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import ProtectedRoute from "@/components/auth/ProtectedRoute"
 import { useApp } from "@/context/AppContext"
 import {
   MOCK_BRANCHES,
   calculateDaysBetween,
-  formatEGP,
 } from "@/lib/mockData"
+import { pick } from "@/lib/localized"
+import { money, number, duration } from "@/lib/format"
 import {
   Search,
   Filter,
@@ -30,6 +31,7 @@ import {
 export default function CarsPage() {
   const t = useTranslations("carsCatalog")
   const tCommon = useTranslations("common")
+  const locale = useLocale()
 
   const {
     cars,
@@ -66,16 +68,19 @@ export default function CarsPage() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Filter cars
+  // Filter cars (bilingual search across English and Arabic names/types)
   const filteredCars = useMemo(() => {
     return cars.filter((car) => {
       // Search query
-      if (
-        searchQuery.trim() &&
-        !car.name.toLowerCase().includes(searchQuery.toLowerCase().trim()) &&
-        !car.type.toLowerCase().includes(searchQuery.toLowerCase().trim())
-      ) {
-        return false
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim()
+        const nameEn = car.name.en.toLowerCase()
+        const nameAr = car.name.ar.toLowerCase()
+        const matchesName = nameEn.includes(q) || nameAr.includes(q)
+        const matchesType = car.type.toLowerCase().includes(q)
+        if (!matchesName && !matchesType) {
+          return false
+        }
       }
 
       // Branch filter
@@ -83,12 +88,12 @@ export default function CarsPage() {
         return false
       }
 
-      // Car type
+      // Car type (using enum code)
       if (selectedType !== "all" && car.type !== selectedType) {
         return false
       }
 
-      // Transmission
+      // Transmission (using enum code)
       if (selectedTransmission !== "all" && car.transmission !== selectedTransmission) {
         return false
       }
@@ -126,12 +131,18 @@ export default function CarsPage() {
 
   const carTypes = [
     { id: "all", label: t("typeAll") },
-    { id: "اقتصادية", label: t("typeEconomy") },
-    { id: "سيدان", label: t("typeSedan") },
-    { id: "SUV", label: t("typeSuv") },
-    { id: "فاخرة", label: t("typeLuxury") },
-    { id: "عائلية", label: t("typeFamily") },
+    { id: "economy", label: t("typeEconomy") },
+    { id: "sedan", label: t("typeSedan") },
+    { id: "suv", label: t("typeSuv") },
+    { id: "luxury", label: t("typeLuxury") },
+    { id: "family_van", label: t("typeFamily") },
   ]
+
+  const currentUserName = currentUser
+    ? typeof currentUser.name === "object"
+      ? pick(currentUser.name, locale)
+      : currentUser.name
+    : t("defaultGuest")
 
   return (
     <ProtectedRoute>
@@ -149,7 +160,7 @@ export default function CarsPage() {
                   <span>{t("badge")}</span>
                 </div>
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#F4F2EC] tracking-tight">
-                  {t("welcome", { name: currentUser?.name || t("defaultGuest") })}
+                  {t("welcome", { name: currentUserName })}
                 </h1>
                 <p className="mt-2 text-sm sm:text-base text-[#B9B7B0] max-w-2xl leading-relaxed">
                   {t("subtitle")}
@@ -159,23 +170,29 @@ export default function CarsPage() {
               {/* Fast Stats Badges */}
               <div className="flex flex-wrap sm:flex-nowrap gap-3">
                 <div className="flex-1 sm:flex-initial rounded-lg border border-[#2A2B2E] bg-[#141518]/80 p-3.5 text-center min-w-[110px]">
-                  <span className="block text-2xl font-black text-[#C9A227]">14+</span>
+                  <span className="block text-2xl font-black text-[#C9A227]">
+                    {number(14, locale)}+
+                  </span>
                   <span className="text-xs text-[#B9B7B0]">{t("statCarsAvailable")}</span>
                 </div>
                 <div className="flex-1 sm:flex-initial rounded-lg border border-[#2A2B2E] bg-[#141518]/80 p-3.5 text-center min-w-[110px]">
-                  <span className="block text-2xl font-black text-[#F4F2EC]">6</span>
+                  <span className="block text-2xl font-black text-[#F4F2EC]">
+                    {number(6, locale)}
+                  </span>
                   <span className="text-xs text-[#B9B7B0]">{t("statMainBranches")}</span>
                 </div>
                 <div className="flex-1 sm:flex-initial rounded-lg border border-[#2A2B2E] bg-[#141518]/80 p-3.5 text-center min-w-[110px]">
-                  <span className="block text-2xl font-black text-[#E6CF85]">24/7</span>
+                  <span className="block text-2xl font-black text-[#E6CF85]">
+                    <bdi dir="ltr">24/7</bdi>
+                  </span>
                   <span className="text-xs text-[#B9B7B0]">{t("statSupport")}</span>
                 </div>
               </div>
             </div>
 
-            {/* Travel Dates & Pickup Selection Bar */}
-            <div className="mt-8 rounded-xl border border-[#2A2B2E] bg-[#141518] p-4 sm:p-5 shadow-xl">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+            {/* Quick Filter & Dates Ribbon */}
+            <div className="mt-8 rounded-xl border border-[#2A2B2E] bg-[#141518] p-4 shadow-xl">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Pickup Branch */}
                 <div>
                   <label className="block text-xs font-bold text-[#C9A227] mb-1.5 flex items-center gap-1.5">
@@ -184,15 +201,12 @@ export default function CarsPage() {
                   </label>
                   <select
                     value={pickupBranch}
-                    onChange={(e) => {
-                      setPickupBranch(e.target.value)
-                      setSelectedBranchFilter(e.target.value)
-                    }}
+                    onChange={(e) => setPickupBranch(e.target.value)}
                     className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2.5 text-sm text-[#F4F2EC] focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227] focus:outline-none"
                   >
                     {MOCK_BRANCHES.map((b) => (
                       <option key={b.id} value={b.id} className="bg-[#141518]">
-                        {b.name}
+                        {pick(b.name, locale)}
                       </option>
                     ))}
                   </select>
@@ -211,7 +225,7 @@ export default function CarsPage() {
                   >
                     {MOCK_BRANCHES.map((b) => (
                       <option key={b.id} value={b.id} className="bg-[#141518]">
-                        {b.name}
+                        {pick(b.name, locale)}
                       </option>
                     ))}
                   </select>
@@ -223,12 +237,14 @@ export default function CarsPage() {
                     <Calendar className="w-3.5 h-3.5" />
                     <span>{t("pickupDate")}</span>
                   </label>
-                  <input
-                    type="date"
-                    value={pickupDate}
-                    onChange={(e) => setPickupDate(e.target.value)}
-                    className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2.5 text-sm text-[#F4F2EC] focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227] focus:outline-none [color-scheme:dark]"
-                  />
+                  <bdi dir="ltr" className="block">
+                    <input
+                      type="date"
+                      value={pickupDate}
+                      onChange={(e) => setPickupDate(e.target.value)}
+                      className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2.5 text-sm text-[#F4F2EC] focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227] focus:outline-none [color-scheme:dark]"
+                    />
+                  </bdi>
                 </div>
 
                 {/* Return Date */}
@@ -237,13 +253,15 @@ export default function CarsPage() {
                     <Calendar className="w-3.5 h-3.5" />
                     <span>{t("returnDateWithDays", { days: rentalDays })}</span>
                   </label>
-                  <input
-                    type="date"
-                    value={returnDate}
-                    min={pickupDate}
-                    onChange={(e) => setReturnDate(e.target.value)}
-                    className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2.5 text-sm text-[#F4F2EC] focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227] focus:outline-none [color-scheme:dark]"
-                  />
+                  <bdi dir="ltr" className="block">
+                    <input
+                      type="date"
+                      value={returnDate}
+                      min={pickupDate}
+                      onChange={(e) => setReturnDate(e.target.value)}
+                      className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2.5 text-sm text-[#F4F2EC] focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227] focus:outline-none [color-scheme:dark]"
+                    />
+                  </bdi>
                 </div>
               </div>
             </div>
@@ -281,7 +299,7 @@ export default function CarsPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={t("searchPlaceholder")}
-                      className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3 py-2 pe-9 text-xs text-[#F4F2EC] placeholder-[#B9B7B0]/40 focus:border-[#C9A227] focus:outline-none"
+                      className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] pe-8 ps-3 py-2 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none placeholder:text-[#B9B7B0]/40"
                     />
                     <Search className="absolute top-2.5 end-2.5 w-4 h-4 text-[#B9B7B0]/50" />
                   </div>
@@ -300,7 +318,7 @@ export default function CarsPage() {
                     <option value="all">{t("allBranches")}</option>
                     {MOCK_BRANCHES.map((b) => (
                       <option key={b.id} value={b.id}>
-                        {b.city} - {b.name}
+                        {pick(b.city, locale)} - {pick(b.name, locale)}
                       </option>
                     ))}
                   </select>
@@ -348,9 +366,9 @@ export default function CarsPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSelectedTransmission("أوتوماتيك")}
+                      onClick={() => setSelectedTransmission("automatic")}
                       className={`py-1.5 rounded text-xs font-medium text-center transition-all ${
-                        selectedTransmission === "أوتوماتيك"
+                        selectedTransmission === "automatic"
                           ? "bg-[#C9A227] text-[#0B0A09] font-bold"
                           : "bg-[#0B0A09] text-[#B9B7B0] border border-[#2A2B2E]"
                       }`}
@@ -359,9 +377,9 @@ export default function CarsPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSelectedTransmission("يدوي")}
+                      onClick={() => setSelectedTransmission("manual")}
                       className={`py-1.5 rounded text-xs font-medium text-center transition-all ${
-                        selectedTransmission === "يدوي"
+                        selectedTransmission === "manual"
                           ? "bg-[#C9A227] text-[#0B0A09] font-bold"
                           : "bg-[#0B0A09] text-[#B9B7B0] border border-[#2A2B2E]"
                       }`}
@@ -375,7 +393,7 @@ export default function CarsPage() {
                 <div className="mb-5">
                   <div className="flex items-center justify-between text-xs font-bold mb-2">
                     <span className="text-[#B9B7B0]">{t("maxPriceLabel")}</span>
-                    <span className="text-[#C9A227] font-mono">{formatEGP(maxPrice)}</span>
+                    <span className="text-[#C9A227] font-mono">{money(maxPrice, locale)}</span>
                   </div>
                   <input
                     type="range"
@@ -387,8 +405,8 @@ export default function CarsPage() {
                     className="w-full accent-[#C9A227] bg-[#0B0A09] cursor-pointer"
                   />
                   <div className="flex justify-between text-[10px] text-[#B9B7B0]/60 mt-1">
-                    <span>{t("priceRangeMin")}</span>
-                    <span>{t("priceRangeMax")}</span>
+                    <span>{money(850, locale)}</span>
+                    <span>{money(15000, locale)}</span>
                   </div>
                 </div>
 
@@ -417,14 +435,20 @@ export default function CarsPage() {
                     <span>
                       {" "}
                       {t("inBranch", {
-                        branch: MOCK_BRANCHES.find((b) => b.id === selectedBranchFilter)?.city || "",
+                        branch: pick(
+                          MOCK_BRANCHES.find((b) => b.id === selectedBranchFilter)?.city,
+                          locale
+                        ),
                       })}
                     </span>
                   )}
                 </p>
 
                 <div className="text-xs text-[#B9B7B0]/80">
-                  {t("tripDuration")}<span className="font-bold text-[#F4F2EC]">{t("daysCount", { count: rentalDays })}</span>
+                  {t("tripDuration")}
+                  <span className="font-bold text-[#F4F2EC]">
+                    {duration(rentalDays, locale)}
+                  </span>
                 </div>
               </div>
 
@@ -449,26 +473,53 @@ export default function CarsPage() {
                   <div className="w-16 h-16 rounded-full bg-[#C9A227]/10 border border-[#C9A227]/20 flex items-center justify-center text-[#C9A227] mx-auto mb-4">
                     <Filter className="w-8 h-8" />
                   </div>
-                  <h3 className="text-xl font-bold text-[#F4F2EC] mb-2">
-                    {t("noCarsTitle")}
-                  </h3>
-                  <p className="text-sm text-[#B9B7B0] mb-6 leading-relaxed">
+                  <h3 className="text-lg font-bold text-[#F4F2EC] mb-2">{t("noCarsTitle")}</h3>
+                  <p className="text-xs text-[#B9B7B0] leading-relaxed mb-6">
                     {t("noCarsDesc")}
                   </p>
                   <button
                     onClick={resetFilters}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-[#C9A227] text-[#0B0A09] font-bold text-xs hover:bg-[#E6CF85] transition-all"
+                    className="px-5 py-2 rounded-md bg-[#C9A227] text-xs font-bold text-[#0B0A09] hover:bg-[#E6CF85] transition-all"
                   >
-                    <RotateCcw className="w-4 h-4" />
-                    <span>{t("resetAllFilters")}</span>
+                    {t("resetAllFilters")}
                   </button>
                 </div>
               ) : (
-                /* Cars Grid */
+                /* Car Cards Grid */
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {filteredCars.map((car) => {
                     const branchInfo = MOCK_BRANCHES.find((b) => b.id === car.branchId)
                     const totalTripPrice = car.pricePerDay * rentalDays
+
+                    const carName = pick(car.name, locale)
+                    const city = pick(branchInfo?.city, locale)
+                    const gov = pick(branchInfo?.governorate, locale)
+                    const locationLabel = gov && gov !== city ? `${city}, ${gov}` : city
+
+                    const categoryLabel =
+                      car.type === "economy"
+                        ? t("typeEconomy")
+                        : car.type === "sedan"
+                        ? t("typeSedan")
+                        : car.type === "suv"
+                        ? t("typeSuv")
+                        : car.type === "luxury"
+                        ? t("typeLuxury")
+                        : t("typeFamily")
+
+                    const transmissionLabel =
+                      car.transmission === "automatic"
+                        ? tCommon("transmissionAutomatic")
+                        : tCommon("transmissionManual")
+
+                    const fuelLabel =
+                      car.fuel === "diesel"
+                        ? tCommon("fuelDiesel")
+                        : car.fuel === "hybrid"
+                        ? tCommon("fuelHybrid")
+                        : car.fuel === "electric"
+                        ? tCommon("fuelElectric")
+                        : tCommon("fuelPetrol")
 
                     return (
                       <div
@@ -479,14 +530,14 @@ export default function CarsPage() {
                         <div className="relative h-48 w-full overflow-hidden bg-[#0B0A09]">
                           <img
                             src={car.image}
-                            alt={car.name}
+                            alt={carName}
                             className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#141518] via-transparent to-black/30" />
 
                           {/* Category Tag */}
                           <span className="absolute top-3 end-3 rounded-md bg-[#0B0A09]/80 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-[#C9A227] border border-[#C9A227]/30">
-                            {car.type}
+                            {categoryLabel}
                           </span>
 
                           {/* Availability Badge */}
@@ -514,7 +565,7 @@ export default function CarsPage() {
                           <div className="absolute bottom-2.5 end-3 flex items-center gap-1.5 text-xs text-[#F4F2EC] drop-shadow-md">
                             <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
                             <span className="font-medium text-[11px]">
-                              {branchInfo?.city} - {branchInfo?.name.split(" ")[1]}
+                              {locationLabel}
                             </span>
                           </div>
                         </div>
@@ -525,12 +576,19 @@ export default function CarsPage() {
                             {/* Car Name & Rating */}
                             <div className="flex items-start justify-between gap-2 mb-2">
                               <h3 className="text-base font-bold text-[#F4F2EC] group-hover:text-[#C9A227] transition-colors leading-snug">
-                                {car.name}
+                                {carName}
                               </h3>
                               <div className="flex items-center gap-1 bg-[#0B0A09] px-2 py-0.5 rounded border border-[#2A2B2E] text-xs shrink-0">
                                 <Star className="w-3.5 h-3.5 fill-[#C9A227] text-[#C9A227]" />
-                                <span className="font-bold text-[#F4F2EC]">{car.rating}</span>
-                                <span className="text-[10px] text-[#B9B7B0]">({car.reviews.length})</span>
+                                <span className="font-bold text-[#F4F2EC]">
+                                  {number(car.rating, locale, {
+                                    minimumFractionDigits: 1,
+                                    maximumFractionDigits: 1,
+                                  })}
+                                </span>
+                                <span className="text-[10px] text-[#B9B7B0]">
+                                  ({number(car.reviews.length, locale)})
+                                </span>
                               </div>
                             </div>
 
@@ -538,15 +596,15 @@ export default function CarsPage() {
                             <div className="grid grid-cols-3 gap-1.5 py-3 border-y border-[#2A2B2E]/70 my-3 text-[11px] text-[#B9B7B0]">
                               <div className="flex items-center gap-1">
                                 <Users className="w-3.5 h-3.5 text-[#C9A227]" />
-                                <span>{t("seatsCount", { count: car.seats })}</span>
+                                <span>{t("seatsCount", { count: number(car.seats, locale) })}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Gauge className="w-3.5 h-3.5 text-[#C9A227]" />
-                                <span>{car.transmission}</span>
+                                <span>{transmissionLabel}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Fuel className="w-3.5 h-3.5 text-[#C9A227]" />
-                                <span className="truncate">{car.fuel.split(" ")[0]}</span>
+                                <span className="truncate">{fuelLabel}</span>
                               </div>
                             </div>
                           </div>
@@ -556,7 +614,7 @@ export default function CarsPage() {
                             <div className="flex items-baseline justify-between mb-4">
                               <div>
                                 <span className="text-lg font-black text-[#F4F2EC] font-mono">
-                                  {formatEGP(car.pricePerDay)}
+                                  {money(car.pricePerDay, locale)}
                                 </span>
                                 <span className="text-xs text-[#B9B7B0] me-1">{t("perDay")}</span>
                               </div>
@@ -564,7 +622,7 @@ export default function CarsPage() {
                               <div className="text-end text-[11px] text-[#B9B7B0]">
                                 <span>{t("totalDuration", { days: rentalDays })}</span>
                                 <span className="text-[#C9A227] font-bold font-mono">
-                                  {formatEGP(totalTripPrice)}
+                                  {money(totalTripPrice, locale)}
                                 </span>
                               </div>
                             </div>

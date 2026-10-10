@@ -1,17 +1,19 @@
 "use client"
 
-import React, { useState, useMemo, Suspense } from "react"
+import React, { useState, useMemo, useEffect, Suspense } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import ProtectedRoute from "@/components/auth/ProtectedRoute"
 import { useApp } from "@/context/AppContext"
 import {
   MOCK_BRANCHES,
   MOCK_EXTRAS,
   calculateDaysBetween,
-  formatEGP,
 } from "@/lib/mockData"
+import { pick } from "@/lib/localized"
+import { money, number, date } from "@/lib/format"
+import { transliterateArabicNameToEnglish } from "@/lib/translate"
 import {
   Car,
   CheckCircle2,
@@ -27,12 +29,12 @@ import {
   Mail,
   FileText,
   ShieldCheck,
-  Printer,
 } from "lucide-react"
 
 function BookingCheckoutContent() {
   const t = useTranslations("directBooking")
   const tCommon = useTranslations("common")
+  const locale = useLocale()
 
   const params = useParams()
   const router = useRouter()
@@ -50,6 +52,13 @@ function BookingCheckoutContent() {
   } = useApp()
 
   const car = getCarById(carId)
+
+  // Sync document title to localized vehicle name
+  useEffect(() => {
+    if (car) {
+      document.title = `${t("portalHeader")} — ${pick(car.name, locale)}`
+    }
+  }, [car, locale, t])
 
   // Wizard Step: 1 = Summary, 2 = Customer Info, 3 = Payment, 4 = Confirmation
   const [currentStep, setCurrentStep] = useState<number>(1)
@@ -72,9 +81,17 @@ function BookingCheckoutContent() {
   }, [searchParams])
 
   // Step 2 Form States (Pre-filled with logged-in user if available)
-  const [customerName, setCustomerName] = useState(currentUser?.name || "علي محمد")
+  const initialUserName = currentUser
+    ? typeof currentUser.name === "object"
+      ? pick(currentUser.name, locale)
+      : currentUser.name
+    : locale === "en"
+    ? "Ahmed Mahmoud"
+    : "أحمد محمود"
+
+  const [customerName, setCustomerName] = useState(initialUserName)
   const [customerPhone, setCustomerPhone] = useState(currentUser?.phone || "01012345678")
-  const [customerEmail, setCustomerEmail] = useState(currentUser?.email || "ali@example.com")
+  const [customerEmail, setCustomerEmail] = useState(currentUser?.email || "demo@example.com")
   const [nationalId, setNationalId] = useState("29508140102345")
   const [licenseNumber, setLicenseNumber] = useState("DL-EGY-89420")
   const [notes, setNotes] = useState("")
@@ -85,7 +102,9 @@ function BookingCheckoutContent() {
   const [cardNumber, setCardNumber] = useState("4124 •••• •••• 9021")
   const [cardExpiry, setCardExpiry] = useState("09/28")
   const [cardCvv, setCardCvv] = useState("384")
-  const [cardHolder, setCardHolder] = useState(currentUser?.name || "ALI MOHAMED")
+  const [cardHolder, setCardHolder] = useState(
+    locale === "en" ? "AHMED MAHMOUD" : "أحمد محمود"
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [confirmedBookingId, setConfirmedBookingId] = useState<string>("")
 
@@ -131,11 +150,23 @@ function BookingCheckoutContent() {
   // Step 2 Form Validation
   const handleProceedFromStep2 = () => {
     const errors: Record<string, string> = {}
-    if (!customerName.trim()) errors.name = "يرجى إدخال الاسم بالكامل"
-    if (!customerPhone.trim()) errors.phone = "يرجى إدخال رقم الهاتف"
-    if (!customerEmail.trim()) errors.email = "يرجى إدخال البريد الإلكتروني"
-    if (!nationalId.trim()) errors.nationalId = "يرجى إدخال الرقم القومي أو جواز السفر"
-    if (!licenseNumber.trim()) errors.license = "يرجى إدخال رقم رخصة القيادة"
+    const isEn = locale === "en"
+
+    if (!customerName.trim()) {
+      errors.name = isEn ? "Please enter your full name" : "يرجى إدخال الاسم بالكامل"
+    }
+    if (!customerPhone.trim()) {
+      errors.phone = isEn ? "Please enter your phone number" : "يرجى إدخال رقم الهاتف"
+    }
+    if (!customerEmail.trim()) {
+      errors.email = isEn ? "Please enter your email address" : "يرجى إدخال البريد الإلكتروني"
+    }
+    if (!nationalId.trim()) {
+      errors.nationalId = isEn ? "Please enter national ID or passport" : "يرجى إدخال الرقم القومي أو جواز السفر"
+    }
+    if (!licenseNumber.trim()) {
+      errors.license = isEn ? "Please enter driver license number" : "يرجى إدخال رقم رخصة القيادة"
+    }
 
     if (Object.keys(errors).length > 0) {
       setStep2Errors(errors)
@@ -165,16 +196,29 @@ function BookingCheckoutContent() {
         returnDate,
         totalDays: rentalDays,
         pricePerDay: car.pricePerDay,
-        selectedExtras: selectedExtrasObj,
+        selectedExtras: selectedExtrasObj.map((e) => ({
+          id: e.id,
+          name: e.name,
+          pricePerDay: e.pricePerDay,
+        })),
         extrasTotal: totalExtrasCost,
         subtotal,
         tax: taxAmount,
         totalPrice: grandTotal,
-        customerName,
+        customerName: {
+          en: transliterateArabicNameToEnglish(customerName),
+          ar: customerName,
+        },
         customerEmail,
         customerPhone,
         nationalId,
         paymentMethod,
+        notes: notes.trim()
+          ? {
+              en: notes.trim(),
+              ar: notes.trim(),
+            }
+          : undefined,
       })
 
       setConfirmedBookingId(created.id)
@@ -201,6 +245,18 @@ function BookingCheckoutContent() {
     )
   }
 
+  const carName = pick(car.name, locale)
+  const categoryLabel =
+    car.type === "economy"
+      ? tCommon("categoryEconomy")
+      : car.type === "sedan"
+      ? tCommon("categorySedan")
+      : car.type === "suv"
+      ? tCommon("categorySuv")
+      : car.type === "luxury"
+      ? tCommon("categoryLuxury")
+      : tCommon("categoryFamilyVan")
+
   const stepsList = [
     { num: 1, title: t("stepDetails") },
     { num: 2, title: t("stepCustomer") },
@@ -220,48 +276,36 @@ function BookingCheckoutContent() {
                 {t("portalHeader")}
               </span>
               <h1 className="text-2xl sm:text-3xl font-black text-[#F4F2EC] mt-2">
-                {t("completeBookingFor", { name: car.name })}
+                {t("completeBookingFor", { name: carName })}
               </h1>
             </div>
 
-            {/* Stepper Wizard Indicator */}
-            <div className="relative flex items-center justify-between max-w-2xl mx-auto px-4">
-              {/* Connecting Background Line */}
-              <div className="absolute top-1/2 end-6 start-6 -translate-y-1/2 h-1 bg-[#2A2B2E] z-0" />
-              {/* Active Golden Line Progress */}
-              <div
-                className="absolute top-1/2 end-6 -translate-y-1/2 h-1 bg-[#C9A227] z-0 transition-all duration-500"
-                style={{
-                  width: `${((currentStep - 1) / 3) * 100}%`,
-                }}
-              />
+            {/* Steps indicator */}
+            <div className="flex items-center justify-between relative max-w-2xl mx-auto px-4">
+              <div className="absolute top-1/2 -translate-y-1/2 start-8 end-8 h-0.5 bg-[#2A2B2E] z-0" />
+              {stepsList.map((st) => {
+                const isPassed = currentStep > st.num
+                const isCurrent = currentStep === st.num
 
-              {stepsList.map((step) => {
-                const isCompleted = step.num < currentStep
-                const isCurrent = step.num === currentStep
                 return (
-                  <div key={step.num} className="relative z-10 flex flex-col items-center">
+                  <div key={st.num} className="relative z-10 flex flex-col items-center">
                     <div
-                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-300 ${
-                        isCompleted
-                          ? "bg-[#C9A227] text-[#0B0A09] shadow-md shadow-[#C9A227]/30"
+                      className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${
+                        isPassed
+                          ? "bg-[#C9A227] text-[#0B0A09] shadow-md shadow-[#C9A227]/20"
                           : isCurrent
-                          ? "bg-[#141518] border-2 border-[#C9A227] text-[#C9A227] shadow-lg shadow-[#C9A227]/20 ring-4 ring-[#C9A227]/10"
-                          : "bg-[#0B0A09] border border-[#2A2B2E] text-[#B9B7B0]/60"
+                          ? "bg-[#C9A227] text-[#0B0A09] ring-4 ring-[#C9A227]/20 font-black"
+                          : "bg-[#141518] text-[#B9B7B0] border border-[#2A2B2E]"
                       }`}
                     >
-                      {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : step.num}
+                      {isPassed ? <CheckCircle2 className="w-4 h-4" /> : number(st.num, locale)}
                     </div>
                     <span
-                      className={`text-[11px] sm:text-xs mt-2 font-semibold transition-colors ${
-                        isCurrent
-                          ? "text-[#C9A227]"
-                          : isCompleted
-                          ? "text-[#F4F2EC]"
-                          : "text-[#B9B7B0]/50"
+                      className={`text-[11px] mt-1.5 font-medium hidden sm:block ${
+                        isCurrent ? "text-[#C9A227] font-bold" : "text-[#B9B7B0]"
                       }`}
                     >
-                      {step.title}
+                      {st.title}
                     </span>
                   </div>
                 )
@@ -279,20 +323,26 @@ function BookingCheckoutContent() {
               <div className="rounded-xl border border-[#2A2B2E] bg-[#141518] p-5 flex flex-col sm:flex-row items-center gap-5">
                 <img
                   src={car.image}
-                  alt={car.name}
+                  alt={carName}
                   className="w-full sm:w-48 h-32 rounded-lg object-cover bg-[#0B0A09]"
                 />
                 <div className="flex-1 text-start w-full">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[11px] font-bold text-[#C9A227] bg-[#C9A227]/10 px-2 py-0.5 rounded border border-[#C9A227]/30">
-                      {t("categoryBadge", { type: car.type })}
+                      {t("categoryBadge", { type: categoryLabel })}
                     </span>
-                    <span className="text-[11px] text-[#B9B7B0]">{t("modelBadge", { year: car.year })}</span>
+                    <span className="text-[11px] text-[#B9B7B0]">
+                      {t("modelBadge", { year: number(car.year, locale) })}
+                    </span>
                   </div>
-                  <h3 className="text-xl font-bold text-[#F4F2EC]">{car.name}</h3>
-                  <p className="text-xs text-[#B9B7B0] mt-1 line-clamp-1">{car.description}</p>
+                  <h3 className="text-xl font-bold text-[#F4F2EC]">{carName}</h3>
+                  <p className="text-xs text-[#B9B7B0] mt-1 line-clamp-1">
+                    {pick(car.description, locale)}
+                  </p>
                   <div className="mt-3 flex items-baseline gap-2 font-mono">
-                    <span className="text-lg font-black text-[#C9A227]">{formatEGP(car.pricePerDay)}</span>
+                    <span className="text-lg font-black text-[#C9A227]">
+                      {money(car.pricePerDay, locale)}
+                    </span>
                     <span className="text-xs text-[#B9B7B0]">{t("perDay")}</span>
                   </div>
                 </div>
@@ -307,20 +357,28 @@ function BookingCheckoutContent() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3.5 space-y-1">
-                    <span className="text-[11px] font-bold text-[#C9A227] block">{t("pickupBranch")}</span>
-                    <p className="text-sm font-bold text-[#F4F2EC]">{pickupBranchObj.name}</p>
-                    <p className="text-[#B9B7B0]">{pickupBranchObj.address}</p>
-                    <p className="text-[11px] text-[#B9B7B0] font-mono pt-1">
-                      {t("pickupDateLabel")}{pickupDate}
+                    <span className="text-[11px] font-bold text-[#C9A227] block">
+                      {t("pickupBranch")}
+                    </span>
+                    <p className="text-sm font-bold text-[#F4F2EC]">
+                      {pick(pickupBranchObj.name, locale)}
+                    </p>
+                    <p className="text-[#B9B7B0]">{pick(pickupBranchObj.address, locale)}</p>
+                    <p className="text-[11px] text-[#B9B7B0] pt-1">
+                      {t("pickupDateLabel")}{date(pickupDate, locale)}
                     </p>
                   </div>
 
                   <div className="rounded-lg border border-[#2A2B2E] bg-[#0B0A09] p-3.5 space-y-1">
-                    <span className="text-[11px] font-bold text-[#C9A227] block">{t("returnBranch")}</span>
-                    <p className="text-sm font-bold text-[#F4F2EC]">{returnBranchObj.name}</p>
-                    <p className="text-[#B9B7B0]">{returnBranchObj.address}</p>
-                    <p className="text-[11px] text-[#B9B7B0] font-mono pt-1">
-                      {t("returnDateLabel")}{returnDate}
+                    <span className="text-[11px] font-bold text-[#C9A227] block">
+                      {t("returnBranch")}
+                    </span>
+                    <p className="text-sm font-bold text-[#F4F2EC]">
+                      {pick(returnBranchObj.name, locale)}
+                    </p>
+                    <p className="text-[#B9B7B0]">{pick(returnBranchObj.address, locale)}</p>
+                    <p className="text-[11px] text-[#B9B7B0] pt-1">
+                      {t("returnDateLabel")}{date(returnDate, locale)}
                     </p>
                   </div>
                 </div>
@@ -338,11 +396,11 @@ function BookingCheckoutContent() {
                           key={extra.id}
                           className="flex items-center justify-between rounded-md bg-[#0B0A09] px-3 py-2 text-xs border border-[#2A2B2E]/60"
                         >
-                          <span className="text-[#F4F2EC]">{extra.name}</span>
+                          <span className="text-[#F4F2EC]">{pick(extra.name, locale)}</span>
                           <span className="font-mono text-[#C9A227]">
                             {t("extraPerDayFormat", {
-                              price: extra.pricePerDay,
-                              total: formatEGP(extra.pricePerDay * rentalDays),
+                              price: money(extra.pricePerDay, locale),
+                              total: money(extra.pricePerDay * rentalDays, locale),
                             })}
                           </span>
                         </div>
@@ -357,25 +415,29 @@ function BookingCheckoutContent() {
                     <span>
                       {t("baseRentSummary", {
                         days: rentalDays,
-                        price: formatEGP(car.pricePerDay),
+                        price: money(car.pricePerDay, locale),
                       })}
                     </span>
-                    <span className="font-mono text-[#F4F2EC]">{formatEGP(baseRentalCost)}</span>
+                    <span className="font-mono text-[#F4F2EC]">
+                      {money(baseRentalCost, locale)}
+                    </span>
                   </div>
                   {totalExtrasCost > 0 && (
                     <div className="flex justify-between text-[#B9B7B0]">
                       <span>{t("extrasCostSummary", { days: rentalDays })}</span>
-                      <span className="font-mono text-[#C9A227]">+{formatEGP(totalExtrasCost)}</span>
+                      <span className="font-mono text-[#C9A227]">
+                        +{money(totalExtrasCost, locale)}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between text-[#B9B7B0]">
                     <span>{t("vatSummary")}</span>
-                    <span className="font-mono text-[#F4F2EC]">{formatEGP(taxAmount)}</span>
+                    <span className="font-mono text-[#F4F2EC]">{money(taxAmount, locale)}</span>
                   </div>
                   <div className="border-t border-[#2A2B2E] pt-3 flex justify-between items-baseline font-bold">
                     <span className="text-sm text-[#F4F2EC]">{t("totalDue")}</span>
                     <span className="text-xl font-black text-[#C9A227] font-mono">
-                      {formatEGP(grandTotal)}
+                      {money(grandTotal, locale)}
                     </span>
                   </div>
                 </div>
@@ -443,12 +505,14 @@ function BookingCheckoutContent() {
                         {t("phoneLabel")}
                       </label>
                       <div className="relative">
-                        <input
-                          type="tel"
-                          value={customerPhone}
-                          onChange={(e) => setCustomerPhone(e.target.value)}
-                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
-                        />
+                        <bdi dir="ltr" className="block">
+                          <input
+                            type="tel"
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value)}
+                            className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
+                          />
+                        </bdi>
                         <Phone className="absolute top-3.5 end-3 w-4 h-4 text-[#B9B7B0]/60" />
                       </div>
                       {step2Errors.phone && (
@@ -463,12 +527,14 @@ function BookingCheckoutContent() {
                       {t("emailLabel")}
                     </label>
                     <div className="relative">
-                      <input
-                        type="email"
-                        value={customerEmail}
-                        onChange={(e) => setCustomerEmail(e.target.value)}
-                        className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
-                      />
+                      <bdi dir="ltr" className="block">
+                        <input
+                          type="email"
+                          value={customerEmail}
+                          onChange={(e) => setCustomerEmail(e.target.value)}
+                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] focus:border-[#C9A227] focus:outline-none"
+                        />
+                      </bdi>
                       <Mail className="absolute top-3.5 end-3 w-4 h-4 text-[#B9B7B0]/60" />
                     </div>
                     {step2Errors.email && (
@@ -483,13 +549,15 @@ function BookingCheckoutContent() {
                         {t("idNumberLabel")}
                       </label>
                       <div className="relative">
-                        <input
-                          type="text"
-                          value={nationalId}
-                          onChange={(e) => setNationalId(e.target.value)}
-                          placeholder="29508140102345"
-                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
-                        />
+                        <bdi dir="ltr" className="block">
+                          <input
+                            type="text"
+                            value={nationalId}
+                            onChange={(e) => setNationalId(e.target.value)}
+                            placeholder="29508140102345"
+                            className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
+                          />
+                        </bdi>
                         <FileText className="absolute top-3.5 end-3 w-4 h-4 text-[#B9B7B0]/60" />
                       </div>
                       {step2Errors.nationalId && (
@@ -502,13 +570,15 @@ function BookingCheckoutContent() {
                         {t("licenseNumberLabel")}
                       </label>
                       <div className="relative">
-                        <input
-                          type="text"
-                          value={licenseNumber}
-                          onChange={(e) => setLicenseNumber(e.target.value)}
-                          placeholder="DL-EGY-89420"
-                          className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
-                        />
+                        <bdi dir="ltr" className="block">
+                          <input
+                            type="text"
+                            value={licenseNumber}
+                            onChange={(e) => setLicenseNumber(e.target.value)}
+                            placeholder="DL-EGY-89420"
+                            className="w-full rounded-md border border-[#2A2B2E] bg-[#0B0A09] px-3.5 py-3 pe-10 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
+                          />
+                        </bdi>
                         <ShieldCheck className="absolute top-3.5 end-3 w-4 h-4 text-[#B9B7B0]/60" />
                       </div>
                       {step2Errors.license && (
@@ -563,7 +633,7 @@ function BookingCheckoutContent() {
                     {t("choosePaymentTitle")}
                   </h2>
                   <p className="text-xs text-[#B9B7B0] mt-1">
-                    {t("totalDueSubtitle", { amount: formatEGP(grandTotal) })}
+                    {t("totalDueSubtitle", { amount: money(grandTotal, locale) })}
                   </p>
                 </div>
 
@@ -628,57 +698,75 @@ function BookingCheckoutContent() {
                     {/* Simulated Credit Card Visual */}
                     <div className="rounded-xl bg-gradient-to-tr from-[#1b1916] via-[#2a2414] to-[#141518] p-5 border border-[#C9A227]/40 shadow-xl max-w-sm mx-auto mb-4 text-start">
                       <div className="flex justify-between items-center mb-6">
-                        <span className="text-xs font-bold text-[#C9A227] tracking-widest uppercase">Golden Card VIP</span>
+                        <span className="text-xs font-bold text-[#C9A227] tracking-widest uppercase">
+                          Golden Card VIP
+                        </span>
                         <div className="w-8 h-6 bg-[#C9A227]/30 rounded border border-[#C9A227]/50" />
                       </div>
                       <div className="text-lg font-mono tracking-widest text-[#F4F2EC] mb-4 text-center">
-                        {cardNumber}
+                        <bdi dir="ltr">{cardNumber}</bdi>
                       </div>
                       <div className="flex justify-between items-end text-xs text-[#B9B7B0]">
                         <div>
                           <span className="block text-[9px] uppercase">{t("cardHolderLabel")}</span>
-                          <span className="font-bold text-[#F4F2EC] truncate max-w-[140px] block">{cardHolder}</span>
+                          <span className="font-bold text-[#F4F2EC] truncate max-w-[140px] block">
+                            {cardHolder}
+                          </span>
                         </div>
                         <div className="text-end font-mono">
                           <span className="block text-[9px] uppercase">{t("cardExpiryLabel")}</span>
-                          <span className="text-[#F4F2EC]">{cardExpiry}</span>
+                          <span className="text-[#F4F2EC]">
+                            <bdi dir="ltr">{cardExpiry}</bdi>
+                          </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-xs font-bold text-[#B9B7B0] mb-1">{t("cardNumberLabel")}</label>
-                        <input
-                          type="text"
-                          value={cardNumber}
-                          onChange={(e) => setCardNumber(e.target.value)}
-                          className="w-full rounded-md border border-[#2A2B2E] bg-[#141518] px-3.5 py-2.5 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
-                        />
+                        <label className="block text-xs font-bold text-[#B9B7B0] mb-1">
+                          {t("cardNumberLabel")}
+                        </label>
+                        <bdi dir="ltr" className="block">
+                          <input
+                            type="text"
+                            value={cardNumber}
+                            onChange={(e) => setCardNumber(e.target.value)}
+                            className="w-full rounded-md border border-[#2A2B2E] bg-[#141518] px-3.5 py-2.5 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
+                          />
+                        </bdi>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-bold text-[#B9B7B0] mb-1">{t("cardExpiryInputLabel")}</label>
-                          <input
-                            type="text"
-                            value={cardExpiry}
-                            onChange={(e) => setCardExpiry(e.target.value)}
-                            placeholder="MM/YY"
-                            className="w-full rounded-md border border-[#2A2B2E] bg-[#141518] px-3.5 py-2.5 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
-                          />
+                          <label className="block text-xs font-bold text-[#B9B7B0] mb-1">
+                            {t("cardExpiryInputLabel")}
+                          </label>
+                          <bdi dir="ltr" className="block">
+                            <input
+                              type="text"
+                              value={cardExpiry}
+                              onChange={(e) => setCardExpiry(e.target.value)}
+                              placeholder="MM/YY"
+                              className="w-full rounded-md border border-[#2A2B2E] bg-[#141518] px-3.5 py-2.5 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
+                            />
+                          </bdi>
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-[#B9B7B0] mb-1">{t("cardCvvLabel")}</label>
-                          <input
-                            type="password"
-                            maxLength={4}
-                            value={cardCvv}
-                            onChange={(e) => setCardCvv(e.target.value)}
-                            placeholder="•••"
-                            className="w-full rounded-md border border-[#2A2B2E] bg-[#141518] px-3.5 py-2.5 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
-                          />
+                          <label className="block text-xs font-bold text-[#B9B7B0] mb-1">
+                            {t("cardCvvLabel")}
+                          </label>
+                          <bdi dir="ltr" className="block">
+                            <input
+                              type="password"
+                              maxLength={4}
+                              value={cardCvv}
+                              onChange={(e) => setCardCvv(e.target.value)}
+                              placeholder="•••"
+                              className="w-full rounded-md border border-[#2A2B2E] bg-[#141518] px-3.5 py-2.5 text-xs text-[#F4F2EC] font-mono focus:border-[#C9A227] focus:outline-none"
+                            />
+                          </bdi>
                         </div>
                       </div>
                     </div>
@@ -694,7 +782,7 @@ function BookingCheckoutContent() {
                 {paymentMethod === "cash" && (
                   <div className="rounded-xl border border-[#2A2B2E] bg-[#0B0A09] p-5 text-xs text-[#B9B7B0] space-y-2">
                     <p className="font-bold text-[#F4F2EC]">{t("cashTermsTitle")}</p>
-                    <p>{t("cashTerm1", { amount: formatEGP(grandTotal) })}</p>
+                    <p>{t("cashTerm1", { amount: money(grandTotal, locale) })}</p>
                     <p>{t("cashTerm2")}</p>
                     <p>{t("cashTerm3")}</p>
                   </div>
@@ -715,7 +803,7 @@ function BookingCheckoutContent() {
                   type="button"
                   onClick={handleConfirmBooking}
                   disabled={isSubmitting}
-                  className="px-9 py-4 rounded-md bg-[#C9A227] text-[#0B0A09] font-black text-sm hover:bg-[#E6CF85] transition-all active:scale-95 flex items-center gap-2 cursor-pointer shadow-xl shadow-[#C9A227]/20 disabled:opacity-50"
+                  className="px-8 py-3.5 rounded-md bg-[#C9A227] text-[#0B0A09] font-bold text-sm hover:bg-[#E6CF85] transition-all active:scale-95 flex items-center gap-2 cursor-pointer shadow-lg shadow-[#C9A227]/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
@@ -757,9 +845,11 @@ function BookingCheckoutContent() {
 
                 {/* Booking Code Banner */}
                 <div className="my-6 inline-block rounded-xl border border-[#C9A227]/50 bg-[#0B0A09] px-6 py-4 shadow-inner">
-                  <span className="block text-xs text-[#B9B7B0] mb-1">{t("referenceNumberLabel")}</span>
+                  <span className="block text-xs text-[#B9B7B0] mb-1">
+                    {t("referenceNumberLabel")}
+                  </span>
                   <span className="text-2xl sm:text-3xl font-black text-[#C9A227] font-mono tracking-wider">
-                    {confirmedBookingId}
+                    <bdi dir="ltr">{confirmedBookingId}</bdi>
                   </span>
                 </div>
 
@@ -767,20 +857,22 @@ function BookingCheckoutContent() {
                 <div className="rounded-xl border border-[#2A2B2E] bg-[#0B0A09] p-5 text-start text-xs max-w-xl mx-auto space-y-3 mb-8">
                   <div className="flex justify-between items-center border-b border-[#2A2B2E] pb-2.5">
                     <span className="text-[#B9B7B0]">{t("reservedCarLabel")}</span>
-                    <span className="font-bold text-[#F4F2EC] text-sm">{car.name}</span>
+                    <span className="font-bold text-[#F4F2EC] text-sm">{carName}</span>
                   </div>
 
                   <div className="flex justify-between items-center border-b border-[#2A2B2E] pb-2.5">
                     <span className="text-[#B9B7B0]">{t("pickupBranchLabel")}</span>
-                    <span className="font-bold text-[#F4F2EC]">{pickupBranchObj.name}</span>
+                    <span className="font-bold text-[#F4F2EC]">
+                      {pick(pickupBranchObj.name, locale)}
+                    </span>
                   </div>
 
                   <div className="flex justify-between items-center border-b border-[#2A2B2E] pb-2.5">
                     <span className="text-[#B9B7B0]">{t("travelDatesLabel")}</span>
                     <span className="font-mono text-[#F4F2EC]">
                       {t("datesRangeWithDays", {
-                        pickup: pickupDate,
-                        returnDate,
+                        pickup: date(pickupDate, locale),
+                        returnDate: date(returnDate, locale),
                         days: rentalDays,
                       })}
                     </span>
@@ -789,14 +881,16 @@ function BookingCheckoutContent() {
                   <div className="flex justify-between items-center border-b border-[#2A2B2E] pb-2.5">
                     <span className="text-[#B9B7B0]">{t("paymentMethodLabel")}</span>
                     <span className="font-bold text-[#C9A227]">
-                      {paymentMethod === "online" ? tCommon("onlinePayment") : tCommon("cashPayment")}
+                      {paymentMethod === "online"
+                        ? tCommon("onlinePayment")
+                        : tCommon("cashPayment")}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-baseline pt-1 font-bold">
                     <span className="text-sm text-[#F4F2EC]">{t("totalAmountLabel")}</span>
                     <span className="text-lg font-black text-[#C9A227] font-mono">
-                      {formatEGP(grandTotal)}
+                      {money(grandTotal, locale)}
                     </span>
                   </div>
                 </div>
@@ -817,14 +911,6 @@ function BookingCheckoutContent() {
                   >
                     <span>{t("browseOtherCars")}</span>
                   </Link>
-
-                  <button
-                    onClick={() => window.print()}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md border border-[#2A2B2E] bg-[#141518] px-5 py-3.5 text-sm font-semibold text-[#B9B7B0] hover:text-[#F4F2EC] hover:border-[#C9A227] transition-all cursor-pointer"
-                  >
-                    <Printer className="w-4 h-4" />
-                    <span>{t("printReceipt")}</span>
-                  </button>
                 </div>
               </div>
             </div>
@@ -835,11 +921,16 @@ function BookingCheckoutContent() {
   )
 }
 
-export default function BookingCheckoutPage() {
+export default function BookingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0B0A09]" />}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#0B0A09] flex items-center justify-center text-[#C9A227]">
+          Loading...
+        </div>
+      }
+    >
       <BookingCheckoutContent />
     </Suspense>
   )
 }
-

@@ -20,6 +20,7 @@ export default function Footer() {
   return (
     <footer
       id="footer"
+      data-scene="footer"
       className="relative z-30 border-t border-[#2A2B2E] bg-[#0B0A09] px-6 pt-16 pb-24 lg:px-12"
     >
       <div className="mx-auto flex max-w-[1200px] flex-col justify-between gap-12 md:flex-row">

@@ -1,13 +1,14 @@
 "use client"
 
 import React from "react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import { useApp } from "@/context/AppContext"
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react"
 
 export default function ToastContainer() {
   const { toasts, removeToast } = useApp()
   const tA11y = useTranslations("a11y")
+  const locale = useLocale()
 
   if (toasts.length === 0) return null
 
@@ -31,7 +32,9 @@ export default function ToastContainer() {
               {isError && <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />}
               {!isSuccess && !isError && <Info className="w-5 h-5 text-blue-400 shrink-0" />}
               <span className="text-sm font-medium text-[#F4F2EC] leading-snug">
-                {toast.message}
+                {typeof toast.message === "object" && toast.message !== null
+                  ? toast.message[locale === "en" ? "en" : "ar"] || toast.message.ar || toast.message.en
+                  : toast.message}
               </span>
             </div>
 

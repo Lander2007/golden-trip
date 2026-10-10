@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useEffect, forwardRef, useImperativeHandle } from "react"
 import gsap from "gsap"
+import { HeroMoon } from "@/components/CelestialBody"
 
 interface RGB {
   r: number
@@ -100,11 +101,6 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
       }
     }
     quickMoonOpacity.current?.(moonOp)
-
-    if (moonRef.current) {
-      const moonLeft = Math.max(70, Math.min(90, 90 - ((clamped - 0.2) / 0.8) * 20))
-      moonRef.current.style.left = `${moonLeft}%`
-    }
   }
 
   useEffect(() => {
@@ -138,7 +134,8 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
 
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+      className="pointer-events-none fixed inset-0 z-[-1] overflow-hidden"
+      style={{ zIndex: -1 }}
       aria-hidden="true"
     >
       {/* 1. Dawn Photographic Sky Grading */}
@@ -191,59 +188,21 @@ const SkySystem = forwardRef<SkySystemHandle, SkySystemProps>(function SkySystem
         </svg>
       </div>
 
-      {/* Shared Moon: isolated to prevent full-screen blend cost */}
+      {/* Shared Moon: positioned via CSS logical properties, visual right side in both /en and /ar */}
       <div
         ref={moonRef}
+        dir="ltr"
         className="shared-moon pointer-events-none absolute z-[2]"
         style={{
           top: "24%",
-          left: "90%",
-          transform: "translate(-50%, -50%)",
+          insetInlineEnd: "16%",
+          transform: "translate(50%, -50%)",
           opacity: 0,
-          width: "clamp(56px, 7vw, 96px)",
-          height: "clamp(56px, 7vw, 96px)",
           isolation: "isolate",
         }}
       >
-        <svg
-          viewBox="0 0 200 200"
-          className="w-full h-full overflow-visible"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <mask id="sharedMoonMask">
-              <rect x="0" y="0" width="200" height="200" fill="black" />
-              <circle cx="100" cy="100" r="45" fill="white" />
-              <circle cx="126" cy="100" r="45" fill="black" />
-            </mask>
-            <radialGradient id="sharedMoonGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#EADFC8" stopOpacity="0.4" />
-              <stop offset="50%" stopColor="#EADFC8" stopOpacity="0.1" />
-              <stop offset="100%" stopColor="#EADFC8" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-
-          {/* Cool subtle halo */}
-          <circle
-            cx="100"
-            cy="100"
-            r="75"
-            fill="url(#sharedMoonGlow)"
-            className="hero-moon-glow"
-          />
-
-          {/* Crescent Moon */}
-          <circle
-            cx="100"
-            cy="100"
-            r="45"
-            fill="#EADFC8"
-            mask="url(#sharedMoonMask)"
-          />
-        </svg>
+        <HeroMoon />
       </div>
-
-      <div className="vignette absolute inset-0" />
     </div>
   )
 })

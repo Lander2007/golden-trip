@@ -9,11 +9,15 @@ import {
   MOCK_USER,
   SEED_BOOKINGS,
   Review,
+  migrateLegacyCar,
+  migrateLegacyBooking,
 } from "@/lib/mockData"
+import { LocalizedString } from "@/lib/localized"
+import { transliterateArabicNameToEnglish } from "@/lib/translate"
 
 export interface ToastItem {
   id: string
-  message: string
+  message: string | LocalizedString
   type: "success" | "info" | "error"
 }
 
@@ -50,15 +54,20 @@ interface AppContextType {
 
   // Toast notifications
   toasts: ToastItem[]
-  showToast: (message: string, type?: "success" | "info" | "error") => void
+  showToast: (message: string | LocalizedString, type?: "success" | "info" | "error") => void
   removeToast: (id: string) => void
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
-const USER_STORAGE_KEY = "gt_prototype_user"
-const BOOKINGS_STORAGE_KEY = "gt_prototype_bookings"
-const CARS_STORAGE_KEY = "gt_prototype_cars"
+const USER_STORAGE_KEY = "gt_prototype_user_v2"
+const BOOKINGS_STORAGE_KEY = "gt_prototype_bookings_v2"
+const CARS_STORAGE_KEY = "gt_prototype_cars_v2"
+
+// Old storage keys to migrate from
+const LEGACY_USER_KEY = "gt_prototype_user"
+const LEGACY_BOOKINGS_KEY = "gt_prototype_bookings"
+const LEGACY_CARS_KEY = "gt_prototype_cars"
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -73,24 +82,68 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [pickupDate, setPickupDate] = useState("2026-10-12")
   const [returnDate, setReturnDate] = useState("2026-10-15")
 
-  // Hydrate from localStorage on client mount
+  // Hydrate from localStorage on client mount with automatic migration
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem(USER_STORAGE_KEY)
-      if (storedUser) {
-        setCurrentUser(JSON.parse(storedUser))
+      // User
+      let rawUser = localStorage.getItem(USER_STORAGE_KEY)
+      if (!rawUser) {
+        rawUser = localStorage.getItem(LEGACY_USER_KEY)
+      }
+      if (rawUser) {
+        try {
+          const parsed = JSON.parse(rawUser)
+          if (typeof parsed.name === "string") {
+            parsed.name = {
+              en: transliterateArabicNameToEnglish(parsed.name),
+              ar: parsed.name,
+            }
+          }
+          setCurrentUser(parsed)
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(parsed))
+        } catch {
+          // fallback
+        }
       }
 
-      const storedBookings = localStorage.getItem(BOOKINGS_STORAGE_KEY)
-      if (storedBookings) {
-        setBookings(JSON.parse(storedBookings))
+      // Bookings
+      let rawBookings = localStorage.getItem(BOOKINGS_STORAGE_KEY)
+      if (!rawBookings) {
+        rawBookings = localStorage.getItem(LEGACY_BOOKINGS_KEY)
+      }
+      if (rawBookings) {
+        try {
+          const parsed = JSON.parse(rawBookings)
+          const migrated = Array.isArray(parsed)
+            ? parsed.map((b) => migrateLegacyBooking(b))
+            : SEED_BOOKINGS
+          setBookings(migrated)
+          localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(migrated))
+        } catch {
+          setBookings(SEED_BOOKINGS)
+          localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(SEED_BOOKINGS))
+        }
       } else {
         localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(SEED_BOOKINGS))
       }
 
-      const storedCars = localStorage.getItem(CARS_STORAGE_KEY)
-      if (storedCars) {
-        setCars(JSON.parse(storedCars))
+      // Cars
+      let rawCars = localStorage.getItem(CARS_STORAGE_KEY)
+      if (!rawCars) {
+        rawCars = localStorage.getItem(LEGACY_CARS_KEY)
+      }
+      if (rawCars) {
+        try {
+          const parsed = JSON.parse(rawCars)
+          const migrated = Array.isArray(parsed)
+            ? parsed.map((c) => migrateLegacyCar(c))
+            : MOCK_CARS
+          setCars(migrated)
+          localStorage.setItem(CARS_STORAGE_KEY, JSON.stringify(migrated))
+        } catch {
+          setCars(MOCK_CARS)
+          localStorage.setItem(CARS_STORAGE_KEY, JSON.stringify(MOCK_CARS))
+        }
       } else {
         localStorage.setItem(CARS_STORAGE_KEY, JSON.stringify(MOCK_CARS))
       }
@@ -111,7 +164,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const showToast = (message: string, type: "success" | "info" | "error" = "success") => {
+  const showToast = (
+    message: string | LocalizedString,
+    type: "success" | "info" | "error" = "success"
+  ) => {
     const id = "toast-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4)
     setToasts((prev) => [...prev, { id, message, type }])
     setTimeout(() => {
@@ -124,7 +180,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }
 
   const demoLogin = async () => {
-    // Artificial small delay for realism
     await new Promise((r) => setTimeout(r, 400))
     setCurrentUser(MOCK_USER)
     try {
@@ -132,15 +187,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error(e)
     }
-    showToast(`مرحباً بك مجدداً، ${MOCK_USER.name}! تم تسجيل الدخول بنجاح`, "success")
+    showToast(
+      {
+        en: `Welcome back, ${(MOCK_USER.name as LocalizedString).en}! Signed in successfully.`,
+        ar: `مرحباً بك مجدداً، ${(MOCK_USER.name as LocalizedString).ar}! تم تسجيل الدخول بنجاح`,
+      },
+      "success"
+    )
   }
 
   const login = async (identifier: string, _pass: string, customName?: string) => {
     await new Promise((r) => setTimeout(r, 450))
-    const userName = customName || (identifier.includes("@") ? identifier.split("@")[0] : "أحمد محمود")
+    const userNameRaw = customName || (identifier.includes("@") ? identifier.split("@")[0] : "Ahmed Mahmoud")
     const user: User = {
       id: "user-" + Date.now(),
-      name: userName,
+      name: {
+        en: transliterateArabicNameToEnglish(userNameRaw),
+        ar: userNameRaw,
+      },
       email: identifier.includes("@") ? identifier : `${identifier}@goldentrip.eg`,
       phone: identifier.includes("@") ? "010 1234 5678" : identifier,
       nationalId: "29508140102345",
@@ -152,7 +216,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error(e)
     }
-    showToast(`تم تسجيل الدخول بنجاح! أهلاً بك يا ${user.name}`, "success")
+    showToast(
+      {
+        en: `Signed in successfully! Welcome, ${(user.name as LocalizedString).en}`,
+        ar: `تم تسجيل الدخول بنجاح! أهلاً بك يا ${(user.name as LocalizedString).ar}`,
+      },
+      "success"
+    )
     return true
   }
 
@@ -166,7 +236,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await new Promise((r) => setTimeout(r, 500))
     const user: User = {
       id: "user-" + Date.now(),
-      name: userData.name,
+      name: {
+        en: transliterateArabicNameToEnglish(userData.name),
+        ar: userData.name,
+      },
       email: userData.email,
       phone: userData.phone,
       nationalId: userData.nationalId || "29508140102345",
@@ -178,7 +251,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error(e)
     }
-    showToast(`تم إنشاء الحساب بنجاح! أهلاً بك في جولدن تريب، ${user.name}`, "success")
+    showToast(
+      {
+        en: `Account created successfully! Welcome to Golden Trip, ${(user.name as LocalizedString).en}`,
+        ar: `تم إنشاء الحساب بنجاح! أهلاً بك في جولدن تريب، ${(user.name as LocalizedString).ar}`,
+      },
+      "success"
+    )
     return true
   }
 
@@ -189,7 +268,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error(e)
     }
-    showToast("تم تسجيل الخروج بنجاح. نتمنى رؤيتك قريباً", "info")
+    showToast(
+      {
+        en: "Signed out successfully. See you soon!",
+        ar: "تم تسجيل الخروج بنجاح. نتمنى رؤيتك قريباً",
+      },
+      "info"
+    )
   }
 
   const getCarById = (id: string): Car | undefined => {
@@ -197,12 +282,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }
 
   const addCarReview = (carId: string, rating: number, comment: string, reviewerName: string) => {
+    const isArabic = /[\u0600-\u06FF]/.test(comment)
     const newRev: Review = {
       id: "rev-" + Date.now(),
-      userName: reviewerName,
+      userName: {
+        en: transliterateArabicNameToEnglish(reviewerName),
+        ar: reviewerName,
+      },
       rating,
       date: new Date().toISOString().split("T")[0],
-      comment,
+      comment: {
+        en: comment,
+        ar: comment,
+      },
+      originalLang: isArabic ? "ar" : "en",
     }
 
     setCars((prevCars) => {
@@ -237,7 +330,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ...bookingData,
       id: `GT-2026-${randomNum}`,
       createdAt: new Date().toISOString().split("T")[0],
-      status: "مؤكد",
+      status: "confirmed",
     }
 
     setBookings((prev) => {
@@ -250,7 +343,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return updated
     })
 
-    showToast(`تم تأكيد الحجز بنجاح! رقم الحجز: ${newBooking.id}`, "success")
+    showToast(
+      {
+        en: `Booking confirmed successfully! Booking ID: ${newBooking.id}`,
+        ar: `تم تأكيد الحجز بنجاح! رقم الحجز: ${newBooking.id}`,
+      },
+      "success"
+    )
     return newBooking
   }
 
@@ -260,7 +359,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const updated = prev.map((b) => {
         if (b.id === bookingId) {
           found = true
-          return { ...b, status: "ملغي" as const }
+          return { ...b, status: "cancelled" as const }
         }
         return b
       })
@@ -273,7 +372,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     })
 
     if (found) {
-      showToast(`تم إلغاء الحجز رقم ${bookingId} بنجاح`, "info")
+      showToast(
+        {
+          en: `Booking #${bookingId} was successfully cancelled`,
+          ar: `تم إلغاء الحجز رقم ${bookingId} بنجاح`,
+        },
+        "info"
+      )
     }
     return found
   }
@@ -290,7 +395,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ...b,
             userReview: {
               rating,
-              comment,
+              comment: {
+                en: comment,
+                ar: comment,
+              },
               date: reviewDate,
             },
           }
@@ -306,8 +414,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     })
 
     if (carIdToUpdate && currentUser) {
-      addCarReview(carIdToUpdate, rating, comment, currentUser.name)
-      showToast("شكراً لتقييمك! تم نشر مراجعتك بنجاح على صفحة السيارة", "success")
+      const authorName =
+        typeof currentUser.name === "object"
+          ? currentUser.name.ar || currentUser.name.en
+          : currentUser.name
+      addCarReview(carIdToUpdate, rating, comment, authorName)
+      showToast(
+        {
+          en: "Thank you for your rating! Your review is now published on the car page.",
+          ar: "شكراً لتقييمك! تم نشر مراجعتك بنجاح على صفحة السيارة",
+        },
+        "success"
+      )
       return true
     }
     return false

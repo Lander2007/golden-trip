@@ -1,6 +1,6 @@
 "use client"
 
-interface CelestialProps {
+export interface CelestialProps {
   className?: string
   reducedMotion?: boolean
 }

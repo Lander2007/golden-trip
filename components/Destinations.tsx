@@ -4,7 +4,7 @@ import { useRef, useState } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import Scene from "./Scene"
 import RouteMap, { type RouteMapHandle } from "./map/RouteMap"
 import CityPanel from "./map/CityPanel"
@@ -59,12 +59,17 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
       // Desktop & Tablet: Pinned scroll-driven journey
       mm.add("(min-width: 768px)", () => {
         const trigger = ScrollTrigger.create({
+          id: "destinations-pin",
           trigger: sceneRef.current,
           start: "top top",
           end: "+=260%",
           pin: true,
-          scrub: 0.8,
+          pinSpacing: true,
           anticipatePin: 1,
+          refreshPriority: 1,
+          invalidateOnRefresh: true,
+          fastScrollEnd: true,
+          scrub: 0.8,
           onUpdate: (self) => {
             const p = self.progress
             setScrollProgressVal(p)
@@ -104,7 +109,12 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
     { scope: sceneRef, dependencies: [frames] }
   )
 
+  const locale = useLocale()
+  const isAr = locale === "ar"
   const tCities = useTranslations("cities")
+  const numFormat = new Intl.NumberFormat(isAr ? "ar-EG" : "en", {
+    numberingSystem: isAr ? "arab" : "latn",
+  })
   const currentCity = manualCity || ROUTE_CITIES[activeCityIndex] || ROUTE_CITIES[0]
 
   const handleSelectCity = (city: CityData) => {
@@ -132,6 +142,13 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
     }
   }
 
+  const currentLegStr = isAr
+    ? numFormat.format(activeCityIndex + 1).padStart(2, numFormat.format(0))
+    : String(activeCityIndex + 1).padStart(2, "0")
+  const totalLegStr = isAr
+    ? numFormat.format(6).padStart(2, numFormat.format(0))
+    : "06"
+
   return (
     <>
       <Scene sceneRef={sceneRef} index={2} id="destinations" frames={frames}>
@@ -140,11 +157,11 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
           <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-semibold text-[#FFD54F]">
+                <span className="text-xs rtl:text-[13px] font-medium text-[#FFD54F] tracking-[0.01em] rtl:tracking-0">
                   {tCities("networkDirectory")}
                 </span>
                 <span className="hidden md:inline-block h-1 w-1 rounded-full bg-[#C9A227]" />
-                <span className="hidden md:inline-block font-mono text-[11px] text-[#B9B7B0]/80">
+                <span className="hidden md:inline-block text-xs rtl:text-[13px] font-medium text-[#B9B7B0]/80">
                   {tCities("scrollNavigation")}
                 </span>
               </div>
@@ -158,7 +175,7 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
             </div>
 
             {/* Dynamic Driver Guidance Prompt */}
-            <div className="hidden md:flex items-center gap-2 self-start sm:self-auto rounded-full border border-[#C9A227]/25 bg-[#0B0A09]/80 px-3 py-1 font-mono text-[11px] backdrop-blur-md">
+            <div className="hidden md:flex items-center gap-2 self-start sm:self-auto rounded-full border border-[#C9A227]/25 bg-[#0B0A09]/80 px-3 py-1 text-xs rtl:text-[13px] font-medium backdrop-blur-md">
               <Compass
                 className="h-3.5 w-3.5 text-[#C9A227] animate-spin"
                 style={{ animationDuration: "10s" }}
@@ -168,8 +185,8 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
                 {scrollProgressVal < 0.05
                   ? tCities("scrollWheelPrompt")
                   : tCities("traversingLegPrompt", {
-                      current: String(activeCityIndex + 1).padStart(2, "0"),
-                      total: "06",
+                      current: currentLegStr,
+                      total: totalLegStr,
                     })}
               </span>
               <span className="hidden sm:inline text-white/30">|</span>
@@ -205,7 +222,10 @@ export default function Destinations({ frames = false }: { frames?: boolean }) {
       </Scene>
 
       {/* Full 14 Destinations Directory Grid below Pinned Section */}
-      <section className="relative z-10 bg-[#0B0A09] px-6 pb-[12vh] md:pb-[22vh] pt-8 md:pt-4 sm:px-8 lg:px-12">
+      <section
+        data-scene={2}
+        className="relative z-10 bg-[#0B0A09] px-6 pb-[12vh] md:pb-[22vh] pt-8 md:pt-4 sm:px-8 lg:px-12"
+      >
         <div className="mx-auto w-full max-w-[1200px]">
           <DestinationsList />
         </div>

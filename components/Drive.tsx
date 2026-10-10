@@ -8,7 +8,6 @@ import { useGSAP } from "@gsap/react"
 import Lenis from "lenis"
 import ScrollCar, { type ScrollCarHandle } from "./ScrollCar"
 import Odometer, { type OdometerHandle } from "./Odometer"
-import CelestialBody, { type CelestialBodyHandle } from "./landscape/CelestialBody"
 import SkySystem, { getSkyColor, type SkySystemHandle } from "./landscape/SkySystem"
 import { scrollProgress, updateScrollProgress } from "@/lib/scrollEngine"
 import DustTrail, { type DustTrailHandle } from "./vehicle/DustTrail"
@@ -31,7 +30,6 @@ export default function Drive({
   const scrollCarRef = useRef<ScrollCarHandle>(null)
   const odometerRef = useRef<OdometerHandle>(null)
   const skyRef = useRef<SkySystemHandle>(null)
-  const celestialRef = useRef<CelestialBodyHandle>(null)
   const dustRef = useRef<DustTrailHandle>(null)
 
   const [activeScene, setActiveScene] = useState(0)
@@ -41,6 +39,8 @@ export default function Drive({
   // 1. Lenis & Master GSAP Ticker Integration (exactly once at app level)
   useEffect(() => {
     if (frames || typeof window === "undefined") return
+
+    ScrollTrigger.config({ ignoreMobileResize: true })
 
     const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     setReducedMotion(isReduced)
@@ -88,7 +88,6 @@ export default function Drive({
       // Imperative DOM updates via refs and quickSetters inside ticker
       odometerRef.current?.updateKm(scrollProgress.km)
       skyRef.current?.update(p)
-      celestialRef.current?.update(p)
       scrollCarRef.current?.updatePhysics(vel, lenis?.scroll || 0)
       if (!LITE) dustRef.current?.tick(vel)
     }
@@ -180,10 +179,16 @@ export default function Drive({
         // SCENE 0: HERO (Pin hero for 120% extra scroll)
         const heroTimeline = gsap.timeline({
           scrollTrigger: {
+            id: "hero-pin",
             trigger: "#alexandria",
             start: "top top",
             end: "+=120%",
             pin: true,
+            pinSpacing: true,
+            anticipatePin: 1,
+            refreshPriority: 2,
+            invalidateOnRefresh: true,
+            fastScrollEnd: true,
             scrub: 0.5,
             onEnter: () => {
               scrollCarRef.current?.setVariant("suv")
@@ -306,7 +311,7 @@ export default function Drive({
         )
 
         // 9. Headlight beam brightens across p: 0.40 -> 0.85
-        if (root.current.querySelector(".headlight-beam")) {
+        if (root.current?.querySelector(".headlight-beam")) {
           heroTimeline.to(
             ".headlight-beam",
             { opacity: 1, duration: 0.45, ease: "none" },
@@ -367,26 +372,6 @@ export default function Drive({
           { y: 28, opacity: 0.35 },
           { y: 0, opacity: 1, duration: 1, ease: "power2.out" }
         )
-
-        // SCENE 2: MAP SECTION / DESTINATIONS (#destinations)
-        ScrollTrigger.create({
-          trigger: "#destinations",
-          start: "top 95%",
-          end: "bottom top",
-          onEnter: () => {
-            scrollCarRef.current?.setVisible(false)
-          },
-          onEnterBack: () => {
-            scrollCarRef.current?.setVisible(false)
-          },
-          onLeave: () => {
-            scrollCarRef.current?.setVisible(false)
-          },
-          onLeaveBack: () => {
-            scrollCarRef.current?.setVariant("sedan")
-            scrollCarRef.current?.setVisible(true)
-          },
-        })
 
         // SCENE 3: HOW IT WORKS (#how-it-works)
         ScrollTrigger.create({
@@ -587,12 +572,9 @@ export default function Drive({
   )
 
   return (
-    <div ref={root} className="relative w-full">
+    <div ref={root} className="relative w-full isolate" style={{ isolation: "isolate" }}>
       {/* Sky System */}
       {!frames && <SkySystem ref={skyRef} />}
-
-      {/* Floating Celestial Body */}
-      {!frames && <CelestialBody ref={celestialRef} />}
 
       {/* Main Scenes */}
       <main className="relative z-10">{children}</main>

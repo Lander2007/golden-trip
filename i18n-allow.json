@@ -21,7 +21,8 @@
     "cities.sharm.code",
     "cities.hurghada.code",
     "cities.luxor.code",
-    "cities.aswan.code"
+    "cities.aswan.code",
+    "common.categorySuv"
   ],
   "allowedLatinTokensInArabic": [
     "GT",
@@ -75,6 +76,19 @@
     "MUH",
     "DHB",
     "Golden Trip",
+    "CN7",
+    "NX4",
+    "S500",
+    "H-1",
+    "CAR-13",
+    "C200",
+    "X5",
+    "xDrive",
+    "USB",
+    "3D",
+    "High-End",
+    "M Sport",
+    "M",
     "N"
   ],
   "allowedArabicTokensInEnglish": [
