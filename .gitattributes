@@ -144,3 +144,14 @@
 *.stl                filter=lfs diff=lfs merge=lfs -text
 *.nc                 filter=lfs diff=lfs merge=lfs -text
 *.mat                filter=lfs diff=lfs merge=lfs -text
+
+# ---------------------------------------------------------------------------
+# Exempt public website assets from Git LFS so Vercel can serve real images directly
+# ---------------------------------------------------------------------------
+public/**              -filter -diff -merge text=auto
+public/**/*.webp       -filter -diff -merge -text
+public/**/*.png        -filter -diff -merge -text
+public/**/*.jpg        -filter -diff -merge -text
+public/**/*.jpeg       -filter -diff -merge -text
+public/**/*.svg        -filter -diff -merge -text
+public/**/*.ico        -filter -diff -merge -text
