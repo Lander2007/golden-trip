@@ -324,6 +324,14 @@ function BookingCheckoutContent() {
                 <img
                   src={car.image}
                   alt={carName}
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const target = e.currentTarget
+                    const fallback = car.type === "family_van" ? "/vehicles/van.webp" : car.type === "suv" || car.type === "luxury" ? "/vehicles/suv.webp" : "/vehicles/sedan.webp"
+                    if (target.src !== fallback && !target.src.endsWith(fallback)) {
+                      target.src = fallback
+                    }
+                  }}
                   className="w-full sm:w-48 h-32 rounded-lg object-cover bg-[#0B0A09]"
                 />
                 <div className="flex-1 text-start w-full">

@@ -139,10 +139,18 @@ export default function Hero({ frames = false }: { frames?: boolean }) {
             alt={tHero("altBackdrop")}
             fill
             priority
+            unoptimized
             sizes="100vw"
             placeholder="blur"
             blurDataURL="data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADQAQCdASoQAAkABUB8JaACdAEOun1YAAD+qhDOSCNS68/8eSnk6UbMlVOBsLCSzgGkK/8L/ZISgAAA"
-            onError={() => setImgFailed(true)}
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement
+              if (target && !target.src.includes(".jpg")) {
+                target.src = "/images/hero-giza-dawn.jpg"
+              } else {
+                setImgFailed(true)
+              }
+            }}
             className="hero-bg-photo hero-parallax-far absolute inset-0 h-full w-full object-cover object-center pointer-events-none z-[1]"
           />
         ) : (

@@ -198,6 +198,14 @@ export default function CarDetailsPage() {
                   <img
                     src={car.image}
                     alt={carName}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const target = e.currentTarget
+                      const fallback = car.type === "family_van" ? "/vehicles/van.webp" : car.type === "suv" || car.type === "luxury" ? "/vehicles/suv.webp" : "/vehicles/sedan.webp"
+                      if (target.src !== fallback && !target.src.endsWith(fallback)) {
+                        target.src = fallback
+                      }
+                    }}
                     className="h-full w-full object-cover object-center"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#141518] via-transparent to-black/30" />

@@ -86,6 +86,7 @@ export default function Vehicle({
         alt={altMap[variant] || tA11y("suvAriaLabel")}
         width={560}
         height={190}
+        unoptimized
         sizes="(max-width: 768px) 340px, 560px"
         placeholder="blur"
         blurDataURL={BLUR_PLACEHOLDERS[variant] || BLUR_PLACEHOLDERS.suv}

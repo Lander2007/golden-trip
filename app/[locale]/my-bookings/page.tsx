@@ -316,6 +316,14 @@ export default function MyBookingsPage() {
                         <img
                           src={b.carImage}
                           alt={carName}
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            const target = e.currentTarget
+                            const fallback = b.carType === "family_van" ? "/vehicles/van.webp" : b.carType === "suv" || b.carType === "luxury" ? "/vehicles/suv.webp" : "/vehicles/sedan.webp"
+                            if (target.src !== fallback && !target.src.endsWith(fallback)) {
+                              target.src = fallback
+                            }
+                          }}
                           className="w-28 sm:w-36 h-24 rounded-lg object-cover bg-[#0B0A09] border border-[#2A2B2E] shrink-0"
                         />
                         <div>

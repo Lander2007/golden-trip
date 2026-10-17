@@ -31,16 +31,16 @@ export default function HowItWorks({ frames = false }: { frames?: boolean }) {
   ]
 
   return (
-    <Scene index={3} id="how-it-works" light frames={frames}>
+    <Scene index={3} id="how-it-works" frames={frames}>
       <div className="mb-12">
-        <h2 className="font-display text-[clamp(1.75rem,4vw+0.5rem,3.5rem)] font-extrabold tracking-[-0.04em] text-[#0B0A09] text-balance">
+        <h2 className="font-display text-[clamp(1.75rem,4vw+0.5rem,3.5rem)] font-extrabold tracking-[-0.04em] text-white text-balance">
           {tSteps("headingPart1")}
           <span className="font-accent italic font-normal text-[#C9A227] rtl:not-italic">
             {tSteps("headingAccent")}
           </span>
           {tSteps("headingPeriod")}
         </h2>
-        <p className="mt-3 text-sm sm:text-base text-[#4A4B4E]">
+        <p className="mt-3 text-sm sm:text-base text-[#B9B7B0]">
           {tSteps("subtitle")}
         </p>
       </div>
